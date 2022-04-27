@@ -51,7 +51,7 @@ class Lexer(private val code: String) {
 
         val tokenTypesValues = TokenType.values()
         tokenTypesValues.forEach { tokenType ->
-            val resultMatch: MatchResult? = tokenType.regex.find(code.substring(pos))
+            val resultMatch: MatchResult? = tokenType.regex?.find(code.substring(pos))
             if (resultMatch != null && resultMatch.value.isNotEmpty()) {
                 val token = Token(tokenType, resultMatch.value, pos)
                 pos += token.text.length

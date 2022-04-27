@@ -8,7 +8,8 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "set milk 123;"
+    // val code = "set text \"No washi on " + '\u005C' + "\$a\";"
+    val code = "set text \"No washi on \$a;"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()
@@ -19,8 +20,8 @@ fun setupLexer() {
 }
 
 fun debugRegex() {
-    val inputString = "asd ? das : 1321"
-    val regex = "^([\\w ]*[?][\\w ]*[:][\\w ])*".toRegex()
+    val inputString = "\u005C"
+    val regex = "^\\u005C".toRegex()
 
     val match = regex.find(inputString)!!
     println(match.value)

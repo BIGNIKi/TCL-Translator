@@ -1,15 +1,16 @@
 package lexer
 
-enum class TokenType(val label: String, val regex: Regex) {
+enum class TokenType(val label: String, val regex: Regex?) {
     FLOAT("FLOAT", Regex("^([0-9]*[.,][0-9]*)")),
     NUMBER("NUMBER", Regex("^[0-9]*")),
-
+    STRING("STRING", null),
     // STRING("STRING", Regex("^[ \\w]*")),
     // STRING("STRING", Regex("^[\"][\\w ]*[\"]")),
 
     COMMENT("COMMENT", Regex("^#[ \\w]*")),
 
     SYMBOL("SYMBOL", Regex("^[.,_:#]*")),
+    CANCEL_SYMBOL("CANCEL_SYMBOL", Regex("^\\u005C")),
 
     SEMICOLON("SEMICOLON", Regex("^[;\n]")),
     SPACE("SPACE", Regex("^[ \t\r]")),

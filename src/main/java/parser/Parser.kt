@@ -1,16 +1,12 @@
 package parser
 
-import ast.BinOperationNode
-import ast.ExpressionNode
-import ast.StatementsNode
-import ast.VariableNode
+import ast.*
 import lexer.Token
 import lexer.TokenType
 
-class Parser(private val tokens: List<Token>)  {
+class Parser(private val tokens: List<Token>) {
     var pos: Int = 0
     val scope: HashMap<String, Any> = hashMapOf()
-
 
     fun parseCode(): ExpressionNode {
         val root = StatementsNode()
@@ -27,22 +23,147 @@ class Parser(private val tokens: List<Token>)  {
      */
     private fun parseExpression(): ExpressionNode {
         return when {
-            match(TokenType.SET) != null -> { parseSetExpr() }
-            else -> { throw Exception("Unknown TokenType") }
+            isCurrentTokenTypeEqualTo(TokenType.SET) -> {
+                parseSetExpr()
+            }
+            else -> {
+                throw Exception("Unknown TokenType")
+            }
         }
 
     }
 
-    private fun parseFormula(): ExpressionNode {
-        return ExpressionNode()
+    private fun parseSetOrPutsFormula(): ExpressionNode {
+        return when {
+            isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
+                val variable = match(TokenType.VARIABLE)!!
+                VariableNode(variable)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
+                incCurrentPos()
+                parseQuotExpression()
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
+                incCurrentPos()
+                parseSquareBracketsExpression()
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
+                incCurrentPos()
+                parseCurlyBracketsExpression()
+            }
+            else -> throw Exception("Unknown TokenType")
+        }
+    }
+
+    private fun parseCurlyBracketsExpression(): ExpressionNode {
+        return CurlyBracketsNodes()
+    }
+
+    private fun parseSquareBracketsExpression(): ExpressionNode {
+        return SquareBracketsNodes()
+    }
+
+    /**
+     * Grammar
+     * Case 1: Variable (which corresponds to string variable)
+     * Case 2: Space character (we must consider all space related characters while concatenating string)
+     * Case 3: Semicolon character (we must consider \n character while concatenating string)
+     * Case 4: Cancel symbol
+     * Case 5: Link variable
+     * Case 6: Internal curly braces expression
+     * Case 7: Internal square braces expression
+     * Case 8: Right curly brace (in case that we used cancel symbol on left curly brace)
+     * Case 9: Right square brace (in case that we used cancel symbol on left square brace)
+     */
+    private fun parseQuotExpression(): ExpressionNode {
+        val quotationsNode = QuotationNodes()
+        var stringNode = StringNode()
+
+        while (pos < tokens.size) {
+            when {
+                isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
+                    val string = match(TokenType.VARIABLE)!!
+                    stringNode.join(string.text)
+                }
+                isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
+                    val space = match(TokenType.SPACE)!!
+                    stringNode.join(space.text)
+                }
+                isCurrentTokenTypeEqualTo(TokenType.SEMICOLON) -> {
+                    val semicolon = match(TokenType.SEMICOLON)!!
+                    stringNode.join(semicolon.text)
+                }
+                isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL) -> {
+                    incCurrentPos()
+                }
+                // If /$a then substitution is canceled otherwise we return variable node
+                isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                    val linkVariable = match(TokenType.LINK_VARIABLE)!!
+                    val isCancelSymbolSet = checkIfCancelSymbolSet()
+                    if (isCancelSymbolSet) {
+                        stringNode.join(linkVariable.text)
+                    } else {
+                        // finish forming string Node
+                        quotationsNode.addNode(stringNode)
+                        stringNode = StringNode()
+
+                        quotationsNode.addNode(VariableNode(linkVariable))
+                    }
+                }
+                isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
+                    incCurrentPos()
+                    // finish forming string Node
+                    quotationsNode.addNode(stringNode)
+                    stringNode = StringNode()
+
+                    val curlyBracketsExpression = parseCurlyBracketsExpression()
+                    quotationsNode.addNode(curlyBracketsExpression)
+                }
+                isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
+                    incCurrentPos()
+                    // finish forming string Node
+                    quotationsNode.addNode(stringNode)
+                    stringNode = StringNode()
+
+                    val squareBracketsExpression = parseSquareBracketsExpression()
+                    quotationsNode.addNode(squareBracketsExpression)
+                }
+                isCurrentTokenTypeEqualTo(TokenType.RCUR) -> {
+                    val rightCurlyBrace = match(TokenType.RCUR)!!
+                    stringNode.join(rightCurlyBrace.text)
+                }
+                isCurrentTokenTypeEqualTo(TokenType.RSQU) -> {
+                    val rightSquareBrace = match(TokenType.RSQU)!!
+                    stringNode.join(rightSquareBrace.text)
+                }
+                // if we reach the end of equation, we simply return quotationsNode
+                isCurrentTokenTypeEqualTo(TokenType.QUOT) ->  {
+                    incCurrentPos()
+                    if (stringNode.string.isNotEmpty()) {
+                        // finish forming string Node
+                        quotationsNode.addNode(stringNode)
+                    }
+                    return quotationsNode
+                }
+            }
+        }
+
+        throw Exception("Missing closing \"")
+    }
+
+    private fun checkIfCancelSymbolSet(): Boolean {
+        pos -= 2
+        if (pos < 0) return false
+        val cancelSymbol = isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)
+        pos += 2
+        return cancelSymbol
     }
 
     private fun parseSetExpr(): ExpressionNode {
-        pos -= 1
         val assignOperator = match(TokenType.SET)!!
 
         val variableNode = parseVariable()
-        val rightFormulaNode = parseFormula()
+        val rightFormulaNode = parseSetOrPutsFormula()
 
         return BinOperationNode(assignOperator, variableNode, rightFormulaNode)
     }
@@ -68,7 +189,7 @@ class Parser(private val tokens: List<Token>)  {
     }
 
     /**
-     * По текущей позиции возвращает токен из списка
+     * По текущей позиции возвращает токен из списка и сдвигает на один текущую позицию
      */
     private fun match(tokenType: TokenType): Token? {
         if (pos < tokens.size) {
@@ -79,5 +200,25 @@ class Parser(private val tokens: List<Token>)  {
             }
         }
         return null
+    }
+
+    /**
+     * Сравнивает текущий тип токена и tokenType
+     */
+    private fun isCurrentTokenTypeEqualTo(tokenType: TokenType): Boolean {
+        if (pos < tokens.size) {
+            val currentToken = tokens[pos]
+            if (tokenType == currentToken.type) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Сдвигает текущую позицию в списке токенов на один
+     */
+    private fun incCurrentPos() {
+        pos++
     }
 }
