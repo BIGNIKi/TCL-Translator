@@ -6,12 +6,42 @@ class Lexer(private val code: String) {
 
     fun lexAnalysis(): List<Token> {
         while (nextToken()) { }
+        return removeUnnecessaryTokensFromList()
+    }
 
-        return tokenList
-        // todo(внутри конструкций мы не должны убирать Space)
-        /*return tokenList.filter { token ->
-            token.type.label != TokenType.SPACE.name
-        }*/
+    /**
+     * Удаляет лишние токена Space, кроме случаев, когда мы находимся внутри "...", [...], {...}
+     */
+    private fun removeUnnecessaryTokensFromList(): List<Token> {
+        var isInsideQuote = false
+        var quoteCounter = 0
+        var isInsideCurlyBraces = false
+        var isInsideSquareBraces = false
+
+        val newTokenList: MutableList<Token> = mutableListOf()
+
+        tokenList.forEach { token ->
+            when (token.type) {
+                TokenType.QUOT -> {
+                    quoteCounter++
+                    isInsideQuote = quoteCounter % 2 != 0
+                }
+                TokenType.LCUR -> { isInsideCurlyBraces = true }
+                TokenType.RCUR -> { isInsideCurlyBraces = false }
+                TokenType.LSQU -> { isInsideSquareBraces = true }
+                TokenType.RSQU -> { isInsideSquareBraces = false }
+                else -> {}
+            }
+
+            // если токен это space и он находится не внутри "...", [...], {...}
+            if (token.type == TokenType.SPACE && !isInsideQuote && !isInsideCurlyBraces && !isInsideSquareBraces) {
+                return@forEach
+            }
+
+            newTokenList.add(token)
+        }
+
+        return newTokenList
     }
 
     private fun nextToken(): Boolean {
