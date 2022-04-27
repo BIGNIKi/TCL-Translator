@@ -1,4 +1,5 @@
 import lexer.Lexer
+import parser.Parser
 
 fun main() {
 
@@ -7,11 +8,14 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "# assign variable Y\nset Y 1.24\n\n;# output of X and Y\nputs \$X"
+    val code = "set milk 123;"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()
     println(tokenList)
+
+    val parser = Parser(tokenList)
+    parser.parseCode()
 }
 
 fun debugRegex() {
