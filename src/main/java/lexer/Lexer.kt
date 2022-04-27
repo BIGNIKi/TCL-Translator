@@ -7,9 +7,11 @@ class Lexer(private val code: String) {
     fun lexAnalysis(): List<Token> {
         while (nextToken()) { }
 
-        return tokenList.filter { token ->
+        return tokenList
+        // todo(внутри конструкций мы не должны убирать Space)
+        /*return tokenList.filter { token ->
             token.type.label != TokenType.SPACE.name
-        }
+        }*/
     }
 
     private fun nextToken(): Boolean {
