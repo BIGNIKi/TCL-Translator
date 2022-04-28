@@ -8,11 +8,11 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "set a {[set b \"Some string\"]};"
+    val code = ""
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()
-    //println(tokenList)
+    println(tokenList)
 
     val parser = Parser(tokenList)
     println(parser.parseCode())
