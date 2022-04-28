@@ -49,14 +49,35 @@ class Parser(private val tokens: List<Token>) {
             }
             isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
                 incCurrentPos()
-                parseCurlyBracketsExpression()
+                parseCurlyBracesExpression()
             }
             else -> throw Exception("Unknown TokenType")
         }
     }
 
-    private fun parseCurlyBracketsExpression(): ExpressionNode {
-        return CurlyBracketsNodes()
+    /**
+     * Grammar
+     * Case 1. No replacement is made inside the curly brackets
+     */
+    private fun parseCurlyBracesExpression(): ExpressionNode {
+        val curlyBracesNode = CurlyBracesNodes()
+        val stringNode = StringNode()
+
+        while (pos < tokens.size) {
+            if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+                incCurrentPos()
+                if (stringNode.string.isNotEmpty()) {
+                    // finish forming string Node
+                    curlyBracesNode.addNode(stringNode)
+                }
+                return curlyBracesNode
+            }
+
+            val token = getCurrentToken()
+            stringNode.join(token.text)
+        }
+
+        throw Exception("Missing closing }")
     }
 
     private fun parseSquareBracketsExpression(): ExpressionNode {
@@ -111,13 +132,8 @@ class Parser(private val tokens: List<Token>) {
                     }
                 }
                 isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
-                    incCurrentPos()
-                    // finish forming string Node
-                    quotationsNode.addNode(stringNode)
-                    stringNode = StringNode()
-
-                    val curlyBracketsExpression = parseCurlyBracketsExpression()
-                    quotationsNode.addNode(curlyBracketsExpression)
+                    val leftCurlyBrace = match(TokenType.LCUR)!!
+                    stringNode.join(leftCurlyBrace.text)
                 }
                 isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
                     incCurrentPos()
@@ -213,6 +229,13 @@ class Parser(private val tokens: List<Token>) {
             }
         }
         return false
+    }
+
+    /**
+     * Получить текущий токен по текущей позиции и увеличить позицию на 1
+     */
+    private fun getCurrentToken(): Token {
+        return tokens[pos++]
     }
 
     /**

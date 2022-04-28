@@ -1,6 +1,6 @@
 package ast
 
-class CurlyBracketsNodes : ExpressionNode() {
+class CurlyBracesNodes : ExpressionNode() {
     private val nodes: MutableList<ExpressionNode> = mutableListOf()
 
     fun addNode(node: ExpressionNode) {
