@@ -8,9 +8,7 @@ fun main() {
 }
 
 fun setupLexer() {
-    // val code = "set text \"No washi on " + '\u005C' + "\$a\";"
-    // val code = "set text \"No washi on {\$a}\";"
-    val code = "set ab {abab \$a};"
+    val code = "set a [set b { 123 }];"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

@@ -1,0 +1,12 @@
+Rules:
+1. each string must end with ; or \n
+2. only English letters are supported
+
+
+
+Test for grouping with [ ]
+set a {[set b "Some string"]};  -->  [set b "Some string"]
+set a "[set b {Some string}]";  -->  Some string
+set a "\[set b {Some string}]"; -->  [set b {Some string}]
+set a [set b " 123 "];          -->   123
+set a [set b { 123 }];          -->   123

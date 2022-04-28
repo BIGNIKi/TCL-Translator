@@ -13,28 +13,30 @@ class Lexer(private val code: String) {
      * Удаляет лишние токена Space, кроме случаев, когда мы находимся внутри "...", [...], {...}
      */
     private fun removeUnnecessaryTokensFromList(): List<Token> {
-        var isInsideQuote = false
         var quoteCounter = 0
-        var isInsideCurlyBraces = false
-        var isInsideSquareBraces = false
 
         val newTokenList: MutableList<Token> = mutableListOf()
+        val bracesSequence: MutableList<TokenType> = mutableListOf()
 
         tokenList.forEach { token ->
             when (token.type) {
                 TokenType.QUOT -> {
                     quoteCounter++
-                    isInsideQuote = quoteCounter % 2 != 0
+                    if (quoteCounter % 2 != 0) {
+                        bracesSequence.add(TokenType.QUOT)
+                    } else {
+                        bracesSequence.removeLast()
+                    }
                 }
-                TokenType.LCUR -> { isInsideCurlyBraces = true }
-                TokenType.RCUR -> { isInsideCurlyBraces = false }
-                TokenType.LSQU -> { isInsideSquareBraces = true }
-                TokenType.RSQU -> { isInsideSquareBraces = false }
+                TokenType.LCUR -> { bracesSequence.add(TokenType.LCUR) }
+                TokenType.RCUR -> { bracesSequence.removeLast() }
+                TokenType.LSQU -> { bracesSequence.add(TokenType.LSQU) }
+                TokenType.RSQU -> { bracesSequence.removeLast() }
                 else -> {}
             }
 
-            // если токен это space и он находится не внутри "...", [...], {...}
-            if (token.type == TokenType.SPACE && !isInsideQuote && !isInsideCurlyBraces && !isInsideSquareBraces) {
+            // Убираем space везде, если мы не внутри braces
+            if (token.type == TokenType.SPACE && bracesSequence.isEmpty()) {
                 return@forEach
             }
 
