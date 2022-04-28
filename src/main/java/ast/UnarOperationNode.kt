@@ -5,4 +5,10 @@ import lexer.Token
 class UnarOperationNode(
     val operator: Token,
     val operand: ExpressionNode
-) : ExpressionNode()
+) : ExpressionNode() {
+    override fun toString(): String {
+        return "UnarOperationNode\n" +
+                "operator: $operator\n" +
+                "operand: $operand"
+    }
+}

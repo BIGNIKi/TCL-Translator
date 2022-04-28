@@ -9,4 +9,11 @@ class StatementsNode : ExpressionNode() {
     fun addNode(node: ExpressionNode) {
         codeStrings.add(node)
     }
+
+    override fun toString(): String {
+        return "StatementsNode: \n" +
+                "$codeStrings"
+    }
+
+
 }

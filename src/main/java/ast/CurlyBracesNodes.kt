@@ -6,4 +6,9 @@ class CurlyBracesNodes : ExpressionNode() {
     fun addNode(node: ExpressionNode) {
         nodes.add(node)
     }
+
+    override fun toString(): String {
+        return "CurlyBracesNodes:\n" +
+                "nodes: $nodes"
+    }
 }

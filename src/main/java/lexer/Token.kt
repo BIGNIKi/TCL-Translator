@@ -6,6 +6,6 @@ data class Token(
     val pos: Int
 ) {
     override fun toString(): String {
-        return "Token(type=$type, text='$text', pos=$pos)\n"
+        return "Token(type=$type, text='$text', pos=$pos)"
     }
 }

@@ -6,4 +6,10 @@ class SquareBracesNodes : ExpressionNode() {
     fun addNode(node: ExpressionNode) {
         nodes.add(node)
     }
+
+    override fun toString(): String {
+        return "SquareBracesNodes:\n" +
+                "nodes: $nodes"
+    }
+
 }
