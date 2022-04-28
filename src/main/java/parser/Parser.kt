@@ -26,11 +26,36 @@ class Parser(private val tokens: List<Token>) {
             isCurrentTokenTypeEqualTo(TokenType.SET) -> {
                 parseSetExpr()
             }
+            isCurrentTokenTypeEqualTo(TokenType.PUTS) -> {
+                parsePutsExpr()
+            }
             else -> {
                 throw Exception("Unknown TokenType")
             }
         }
 
+    }
+
+    private fun parsePutsFormula(): ExpressionNode {
+        return when {
+            isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
+                incCurrentPos()
+                parseQuotExpression()
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
+                incCurrentPos()
+                parseSquareBracesExpression()
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
+                incCurrentPos()
+                parseCurlyBracesExpression()
+            }
+            isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
+                incCurrentPos()
+                parseSetFormula()
+            }
+            else -> throw Exception("Unknown TokenType")
+        }
     }
 
     private fun parseSetFormula(): ExpressionNode {
@@ -135,9 +160,12 @@ class Parser(private val tokens: List<Token>) {
                     if (isCancelSymbolSet) {
                         stringNode.join(linkVariable.text)
                     } else {
-                        // finish forming string Node
-                        quotationsNode.addNode(stringNode)
-                        stringNode = StringNode()
+
+                        if (stringNode.string.isNotEmpty()) {
+                            // finish forming string Node
+                            quotationsNode.addNode(stringNode)
+                            stringNode = StringNode()
+                        }
 
                         quotationsNode.addNode(VariableNode(linkVariable))
                     }
@@ -197,6 +225,16 @@ class Parser(private val tokens: List<Token>) {
         val cancelSymbol = isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)
         pos += 2
         return cancelSymbol
+    }
+
+    private fun parsePutsExpr(): ExpressionNode {
+        skipSpaces()
+        val putsOperator = match(TokenType.PUTS)!!
+
+        skipSpaces()
+        val rightFormulaNode = parsePutsFormula()
+
+        return UnarOperationNode(putsOperator, rightFormulaNode)
     }
 
     private fun parseSetExpr(): ExpressionNode {

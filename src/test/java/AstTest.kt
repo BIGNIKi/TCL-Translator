@@ -156,4 +156,82 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `puts + grouping with braces test 9`() {
+        val code = "puts \"Hello world\";"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: Hello world]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `puts + grouping with braces test 10`() {
+        val code = "puts {Hello world};"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: CurlyBracesNodes:\n" +
+                "nodes: [StringNode: Hello world]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `puts + grouping with braces test 11`() {
+        val code = "puts \"Hello world\"; puts \"Hello world\";"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: Hello world], UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=20)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: Hello world]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `puts + grouping with braces test 12`() {
+        val code = "puts \"\$a \$b\";"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=6), StringNode:  , VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=9)]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `puts + grouping with braces test 13`() {
+        val code = "puts \"\$a " + "\u005C" + "\$b\";"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=6), StringNode:  \$b]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
 }
