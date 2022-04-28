@@ -36,29 +36,7 @@ class Parser(private val tokens: List<Token>) {
 
     }
 
-    private fun parsePutsFormula(): ExpressionNode {
-        return when {
-            isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
-                incCurrentPos()
-                parseQuotExpression()
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
-                incCurrentPos()
-                parseSquareBracesExpression()
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
-                incCurrentPos()
-                parseCurlyBracesExpression()
-            }
-            isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
-                incCurrentPos()
-                parseSetFormula()
-            }
-            else -> throw Exception("Unknown TokenType")
-        }
-    }
-
-    private fun parseSetFormula(): ExpressionNode {
+    private fun parseSetOrPutsFormula(): ExpressionNode {
         return when {
             isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
                 val variable = match(TokenType.VARIABLE)!!
@@ -78,7 +56,7 @@ class Parser(private val tokens: List<Token>) {
             }
             isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
                 incCurrentPos()
-                parseSetFormula()
+                parseSetOrPutsFormula()
             }
             else -> throw Exception("Unknown TokenType")
         }
@@ -232,7 +210,7 @@ class Parser(private val tokens: List<Token>) {
         val putsOperator = match(TokenType.PUTS)!!
 
         skipSpaces()
-        val rightFormulaNode = parsePutsFormula()
+        val rightFormulaNode = parseSetOrPutsFormula()
 
         return UnarOperationNode(putsOperator, rightFormulaNode)
     }
@@ -245,7 +223,7 @@ class Parser(private val tokens: List<Token>) {
         val variableNode = parseVariable()
 
         skipSpaces()
-        val rightFormulaNode = parseSetFormula()
+        val rightFormulaNode = parseSetOrPutsFormula()
 
         return BinOperationNode(assignOperator, variableNode, rightFormulaNode)
     }
