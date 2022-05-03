@@ -2,7 +2,7 @@ package lexer
 
 enum class TokenType(val label: String, val regex: Regex?) {
     FLOAT("FLOAT", Regex("^([0-9]*[.,][0-9]*)")),
-    NUMBER("NUMBER", Regex("^[0-9]*")),
+    INTEGER("INTEGER", Regex("^[0-9]*")),
     STRING("STRING", null),
     // STRING("STRING", Regex("^[ \\w]*")),
     // STRING("STRING", Regex("^[\"][\\w ]*[\"]")),
@@ -32,6 +32,7 @@ enum class TokenType(val label: String, val regex: Regex?) {
 
     EXPR("EXPR", Regex("^expr")),
     SQRT("SQRT", Regex("^sqrt")),
+    LOG("LOG", Regex("^log")),
 
     VARIABLE("VARIABLE", Regex("^[\\w]*")),
     LINK_VARIABLE("LINK_VARIABLE", Regex("^(\\$\\w)*")),

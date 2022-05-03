@@ -158,7 +158,7 @@ class AstTest {
     }
 
     @Test
-    internal fun `puts + grouping with braces test 9`() {
+    internal fun `puts + grouping with braces test 1`() {
         val code = "puts \"Hello world\";"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
@@ -173,7 +173,7 @@ class AstTest {
     }
 
     @Test
-    internal fun `puts + grouping with braces test 10`() {
+    internal fun `puts + grouping with braces test 2`() {
         val code = "puts {Hello world};"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
@@ -188,7 +188,7 @@ class AstTest {
     }
 
     @Test
-    internal fun `puts + grouping with braces test 11`() {
+    internal fun `puts + grouping with braces test 3`() {
         val code = "puts \"Hello world\"; puts \"Hello world\";"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
@@ -206,7 +206,7 @@ class AstTest {
     }
 
     @Test
-    internal fun `puts + grouping with braces test 12`() {
+    internal fun `puts + grouping with braces test 4`() {
         val code = "puts \"\$a \$b\";"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
@@ -221,7 +221,7 @@ class AstTest {
     }
 
     @Test
-    internal fun `puts + grouping with braces test 13`() {
+    internal fun `puts + grouping with braces test 5`() {
         val code = "puts \"\$a " + "\u005C" + "\$b\";"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
@@ -231,6 +231,116 @@ class AstTest {
                 "operator: Token(type=PUTS, text='puts', pos=0)\n" +
                 "operand: QuotationNodes\n" +
                 "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=6), StringNode:  \$b]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 1`() {
+        val code = "puts [expr 2 + (3 * (4 - 2)) + 1];"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [NumberNode: Token(type=INTEGER, text='2', pos=11)), OperationNode: Token(type=OPERATION, text='+', pos=13)), BracesNodes\n" +
+                "nodes: [NumberNode: Token(type=INTEGER, text='3', pos=16)), OperationNode: Token(type=OPERATION, text='*', pos=18)), BracesNodes\n" +
+                "nodes: [NumberNode: Token(type=INTEGER, text='4', pos=21)), OperationNode: Token(type=OPERATION, text='-', pos=23)), NumberNode: Token(type=INTEGER, text='2', pos=25))]], OperationNode: Token(type=OPERATION, text='+', pos=29)), NumberNode: Token(type=INTEGER, text='1', pos=31))]]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 2`() {
+        val code = "puts [expr 2 * 4 + 1];"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [NumberNode: Token(type=INTEGER, text='2', pos=11)), OperationNode: Token(type=OPERATION, text='*', pos=13)), NumberNode: Token(type=INTEGER, text='4', pos=15)), OperationNode: Token(type=OPERATION, text='+', pos=17)), NumberNode: Token(type=INTEGER, text='1', pos=19))]]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 3`() {
+        val code = "puts [expr sqrt(9) + 1];"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [MathFunctionNode: funNode: Token(type=SQRT, text='sqrt', pos=11), argument: NumberNode: Token(type=INTEGER, text='9', pos=16)), OperationNode: Token(type=OPERATION, text='+', pos=19)), NumberNode: Token(type=INTEGER, text='1', pos=21))]]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 4`() {
+        val code = "puts [expr \$a + \$b + 2];"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=11), OperationNode: Token(type=OPERATION, text='+', pos=14)), VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=16), OperationNode: Token(type=OPERATION, text='+', pos=19)), NumberNode: Token(type=INTEGER, text='2', pos=21))]]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 5`() {
+        val code = "puts [expr \"\$a + \$b + 2\"];"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=12), OperationNode: Token(type=OPERATION, text='+', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=17), OperationNode: Token(type=OPERATION, text='+', pos=20)), NumberNode: Token(type=INTEGER, text='2', pos=22))]]]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 6`() {
+        val code = "puts [expr {\$a + \$b + 2}];"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
+                "operand: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=12), OperationNode: Token(type=OPERATION, text='+', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=17), OperationNode: Token(type=OPERATION, text='+', pos=20)), NumberNode: Token(type=INTEGER, text='2', pos=22))]]]"
 
         Assertions.assertEquals(expected, actual)
     }

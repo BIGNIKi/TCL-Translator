@@ -12,6 +12,7 @@ class Parser(private val tokens: List<Token>) {
         val root = StatementsNode()
         while (pos < tokens.size) {
             val codeString = parseExpression() // отдельно взятая строка кода
+            trim()
             require(listOf(TokenType.SEMICOLON))
             root.addNode(codeString)
         }
@@ -32,6 +33,66 @@ class Parser(private val tokens: List<Token>) {
             else -> {
                 throw Exception("Unknown TokenType")
             }
+        }
+
+    }
+
+    /**
+     * Case 1. [expr 1 + 2 * 3]
+     * Case 2. [expr (1 + 2) * 3]
+     * Case 3. [expr log(30)]
+     * Case 4. [expr $a + $b]
+     * Case 5. [expr "$a + $b"]
+     * Case 6. [expr {$a + $b}]
+     */
+    private fun parseExprFormula(): ExpressionNode? {
+        return when {
+            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
+                val integerToken = match(TokenType.INTEGER)!!
+                NumberNode(integerToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
+                val floatToken = match(TokenType.FLOAT)!!
+                NumberNode(floatToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.OPERATION) -> {
+                val operationToken = match(TokenType.OPERATION)!!
+                OperationNode(operationToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
+                incCurrentPos()
+                val bracesNodes = BracesNodes()
+                while (!isCurrentTokenTypeEqualTo(TokenType.RPAR)) {
+                    val expression = parseExprFormula()
+                    expression?.let { bracesNodes.addNode(it) }
+                }
+
+                incCurrentPos()
+                return if (bracesNodes.nodes.isEmpty()) {
+                    null
+                } else {
+                    bracesNodes
+                }
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                val linkVariable = match(TokenType.LINK_VARIABLE)!!
+                VariableNode(linkVariable)
+            }
+            // todo (в зависимости от функции можно проверять тип принимаемого аргумента)
+            isCurrentTokenTypeEqualTo(listOf(TokenType.SQRT)) -> {
+                val mathFun = getCurrentToken()
+                match(TokenType.LPAR) ?: throw Exception("Expected argument body () at $pos")
+                val argument = match(TokenType.INTEGER) ?: throw Exception("Expected argument inside () at $pos")
+                match(TokenType.RPAR) ?: throw Exception("Expected argument body () at $pos")
+
+                val mathFunctionNode = MathFunctionNode(mathFun, NumberNode(argument))
+                mathFunctionNode
+            }
+            isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE)) -> {
+                incCurrentPos()
+                null
+            }
+            else -> throw Exception("Unknown TokenType")
         }
 
     }
@@ -92,9 +153,27 @@ class Parser(private val tokens: List<Token>) {
      */
     private fun parseSquareBracesExpression(): ExpressionNode {
         val squareBracesNode = SquareBracesNodes()
-        val expression = parseExpression()
-        squareBracesNode.addNode(expression)
+        when {
+            isCurrentTokenTypeEqualTo(TokenType.SET) -> {
+                val expression = parseSetExpr()
+                squareBracesNode.addNode(expression)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.PUTS) -> {
+                val expression = parsePutsExpr()
+                squareBracesNode.addNode(expression)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.EXPR) -> {
+                val expression = parseExpr()
+                squareBracesNode.addNode(expression)
+            }
+            else -> {
+                throw Exception("Unknown TokenType")
+            }
+        }
+
+        trim()
         incCurrentPos()
+
         return squareBracesNode
     }
 
@@ -179,7 +258,7 @@ class Parser(private val tokens: List<Token>) {
                     stringNode.join(rightSquareBrace.text)
                 }
                 // if we reach the end of equation, we simply return quotationsNode
-                isCurrentTokenTypeEqualTo(TokenType.QUOT) ->  {
+                isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
                     incCurrentPos()
                     if (stringNode.string.isNotEmpty()) {
                         // finish forming string Node
@@ -205,24 +284,46 @@ class Parser(private val tokens: List<Token>) {
         return cancelSymbol
     }
 
+    private fun parseExpr(): ExpressionNode {
+        trim()
+        val exprOperator = match(TokenType.EXPR)!!
+
+        val mathExpNode = MathExpNodes()
+        while (!isCurrentTokenTypeEqualTo(TokenType.RSQU)) {
+            if (pos == tokens.size - 1) {
+                throw Exception("Missing closing ]")
+            }
+
+            val node = parseExprFormula()
+            node?.let { mathExpNode.addNode(it) }
+        }
+
+        if (mathExpNode.nodes.isEmpty()) {
+            throw Exception("Missing expression body")
+        }
+        // val rightFormulaNode = parseExprFormula()
+
+        return UnarOperationNode(exprOperator, mathExpNode)
+    }
+
     private fun parsePutsExpr(): ExpressionNode {
-        skipSpaces()
+        trim()
         val putsOperator = match(TokenType.PUTS)!!
 
-        skipSpaces()
+        trim()
         val rightFormulaNode = parseSetOrPutsFormula()
 
         return UnarOperationNode(putsOperator, rightFormulaNode)
     }
 
     private fun parseSetExpr(): ExpressionNode {
-        skipSpaces()
+        trim()
         val assignOperator = match(TokenType.SET)!!
 
-        skipSpaces()
+        trim()
         val variableNode = parseVariable()
 
-        skipSpaces()
+        trim()
         val rightFormulaNode = parseSetOrPutsFormula()
 
         return BinOperationNode(assignOperator, variableNode, rightFormulaNode)
@@ -276,6 +377,20 @@ class Parser(private val tokens: List<Token>) {
     }
 
     /**
+     * Сравнивает текущий тип токена и список tokenType
+     */
+    private fun isCurrentTokenTypeEqualTo(tokenType: List<TokenType>): Boolean {
+        if (pos < tokens.size) {
+            val currentToken = tokens[pos]
+            val isFound = tokenType.find { it == currentToken.type }
+            if (isFound != null) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
      * Получить текущий токен по текущей позиции и увеличить позицию на 1
      */
     private fun getCurrentToken(): Token {
@@ -292,7 +407,7 @@ class Parser(private val tokens: List<Token>) {
     /**
      * Сдвигает текущую позицию в списке токенов на один пока текущий токен это Space
      */
-    private fun skipSpaces() {
+    private fun trim() {
         while (isCurrentTokenTypeEqualTo(TokenType.SPACE)) {
             incCurrentPos()
         }
