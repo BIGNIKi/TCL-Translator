@@ -30,6 +30,10 @@ class Parser(private val tokens: List<Token>) {
             isCurrentTokenTypeEqualTo(TokenType.PUTS) -> {
                 parsePutsExpr()
             }
+            isCurrentTokenTypeEqualTo(TokenType.COMMENT) -> {
+                val commentToken = match(TokenType.COMMENT)!!
+                CommentNode(commentToken)
+            }
             else -> {
                 throw Exception("Unknown TokenType")
             }

@@ -8,7 +8,7 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "puts [expr \"\$a + \$b + 2\"];"
+    val code = "# Comment also can be parsed;"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

@@ -344,4 +344,15 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `comment test 1`() {
+        val code = "\"# Comment also can be parsed;\""
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[CommentNode: comment: 'Token(type=COMMENT, text='# Comment also can be parsed', pos=0)']"
+        Assertions.assertEquals(expected, actual)
+    }
 }
