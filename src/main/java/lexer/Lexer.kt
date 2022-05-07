@@ -46,7 +46,7 @@ class Lexer(private val code: String) {
         return newTokenList
     }
 
-    private fun nextToken(): Boolean {
+    private fun  nextToken(): Boolean {
         if (pos >= code.length) {
             return false
         }

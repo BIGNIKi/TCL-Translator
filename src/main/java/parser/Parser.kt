@@ -34,6 +34,9 @@ class Parser(private val tokens: List<Token>) {
                 val commentToken = match(TokenType.COMMENT)!!
                 CommentNode(commentToken)
             }
+            isCurrentTokenTypeEqualTo(TokenType.SWITCH) -> {
+                parseSwitchExpr()
+            }
             else -> {
                 throw Exception("Unknown TokenType")
             }
@@ -286,6 +289,88 @@ class Parser(private val tokens: List<Token>) {
         val cancelSymbol = isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)
         pos += 2
         return cancelSymbol
+    }
+
+    private fun parseSwitchExpr(): ExpressionNode {
+        trim()
+        match(TokenType.SWITCH)!!
+
+        trim()
+        val string = match(TokenType.LINK_VARIABLE)!!
+
+        trim()
+        if (isCurrentTokenTypeEqualTo(listOf(TokenType.CANCEL_SYMBOL, TokenType.LCUR))) {
+            incCurrentPos()
+        }
+
+        val cases: MutableList<SwitchCase> = mutableListOf()
+
+        do {
+            val switchCase = parseSwitchCase()
+            switchCase?.let { cases.add(it) }
+            if (switchCase?.value?.type == TokenType.DEFAULT || pos == tokens.size) { break }
+        } while (switchCase != null)
+
+        return SwitchNode(string = string, cases = cases)
+    }
+
+    /**
+     * Grammar
+     * Case 1. Value can be LINK_VARIABLE: switch $x "$a" ...
+     * Case 2. Value can be VARIABLE (Number) : switch $x "one" ...
+     * Case 3. Value can be DEFAULT: switch $x "default" ...
+     */
+    private fun parseSwitchCase(): SwitchCase? {
+        trim()
+        if (!isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
+            return null
+        }
+        match(TokenType.QUOT)!!
+        trim()
+
+        val value = if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
+            val token = match(TokenType.VARIABLE)!!
+            Token(type = TokenType.STRING, token.text, token.pos)
+        } else if (isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE)) {
+            match(TokenType.LINK_VARIABLE)!!
+        } else if (isCurrentTokenTypeEqualTo(TokenType.DEFAULT)) {
+            match(TokenType.DEFAULT)!!
+        } else {
+            throw Exception("Switch case: unknown token at $pos")
+        }
+
+        trim()
+        match(TokenType.QUOT)!! // closing " of value
+        trim()
+
+        if (!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR))) {
+            throw Exception("Switch case: expected body of case at $pos")
+        }
+
+
+        val body = CurlyBracesNodes()
+        do  {
+            if (isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
+                incCurrentPos()
+                val stringNode = StringNode()
+                while (!isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
+                    stringNode.join(getCurrentToken().text)
+                }
+                body.addNode(stringNode)
+            } else if (isCurrentTokenTypeEqualTo(TokenType.LCUR)) {
+                body.addNode(parseExpression())
+                incCurrentPos()
+            }
+        } while (!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR)) && pos < tokens.size)
+
+        trim()
+        incCurrentPos() // skip closing " of body
+        trim()
+        if (isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)) {
+            incCurrentPos()
+        }
+
+        return SwitchCase(value = value, body = body)
     }
 
     private fun parseExpr(): ExpressionNode {

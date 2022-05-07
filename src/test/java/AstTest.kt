@@ -355,4 +355,18 @@ class AstTest {
                 "[CommentNode: comment: 'Token(type=COMMENT, text='# Comment also can be parsed', pos=0)']"
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `switch case test 1`() {
+        val code = "switch \$x \"one\" \"puts one is 1\" \"two\" \"puts two is 2\" \"default\" \"puts none\";"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=STRING, text='one', pos=11), body=CurlyBracesNodes:\n" +
+                "nodes: [StringNode: puts one is 1]), SwitchCase(value=Token(type=STRING, text='two', pos=33), body=CurlyBracesNodes:\n" +
+                "nodes: [StringNode: puts two is 2]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=55), body=CurlyBracesNodes:\n" +
+                "nodes: [StringNode: puts none])]]"
+        Assertions.assertEquals(expected, actual)
+    }
 }

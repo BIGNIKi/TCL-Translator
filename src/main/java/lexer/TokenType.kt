@@ -16,8 +16,6 @@ enum class TokenType(val label: String, val regex: Regex?) {
     SPACE("SPACE", Regex("^[ \t\r]")),
 
     OPERATION("OPERATION", Regex("^[-+~!*/%&^|<>=]")),
-    // PLUS("PLUS", Regex("^+")),
-    // MINUS("MINUS", Regex("^-")),
 
     LPAR("LPAR", Regex("^\\(")),
     RPAR("RPAR", Regex("^\\)")),
@@ -33,6 +31,9 @@ enum class TokenType(val label: String, val regex: Regex?) {
     EXPR("EXPR", Regex("^expr")),
     SQRT("SQRT", Regex("^sqrt")),
     LOG("LOG", Regex("^log")),
+
+    SWITCH("SWITCH", Regex("^switch")),
+    DEFAULT("DEFAULT", Regex("^default")),
 
     VARIABLE("VARIABLE", Regex("^[\\w]*")),
     LINK_VARIABLE("LINK_VARIABLE", Regex("^(\\$\\w)*")),

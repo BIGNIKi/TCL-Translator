@@ -8,7 +8,8 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "# Comment also can be parsed;"
+    val code = "switch \$x \"one\" \"puts one is 1\" \"two\" \"puts two is 2\" \"default\" \"puts none\";"
+    // val code = "\"puts one is 1\""
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()
