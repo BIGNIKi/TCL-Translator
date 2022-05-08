@@ -8,8 +8,11 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "switch \$x \"one\" \"puts one is 1\" \"two\" \"puts two is 2\" \"default\" \"puts none\";"
-    // val code = "\"puts one is 1\""
+    val code = "switch \$x {\n" +
+            "  \"\$z\"\t\t{set y1 [expr \$y+1]; puts \"match \$z. \$y + \$z is \$y1\" } \n" +
+            "  \"one\"\t{set y1 [expr \$y+1]; puts \"match one \$y plus one is \$y1\"} \n" +
+            "  \"default\"\t{puts \"\$x none\"}\n" +
+            "}"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

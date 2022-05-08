@@ -12,8 +12,12 @@ class Parser(private val tokens: List<Token>) {
         val root = StatementsNode()
         while (pos < tokens.size) {
             val codeString = parseExpression() // отдельно взятая строка кода
-            trim()
-            require(listOf(TokenType.SEMICOLON))
+            removeSpaces()
+
+            if (pos < tokens.size) {
+                require(listOf(TokenType.SEMICOLON))
+            }
+
             root.addNode(codeString)
         }
         return root
@@ -178,7 +182,7 @@ class Parser(private val tokens: List<Token>) {
             }
         }
 
-        trim()
+        removeSpaces()
         incCurrentPos()
 
         return squareBracesNode
@@ -292,16 +296,26 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseSwitchExpr(): ExpressionNode {
-        trim()
+        removeSpaces()
         match(TokenType.SWITCH)!!
 
-        trim()
+        removeSpaces()
         val string = match(TokenType.LINK_VARIABLE)!!
 
-        trim()
-        if (isCurrentTokenTypeEqualTo(listOf(TokenType.CANCEL_SYMBOL, TokenType.LCUR))) {
+        removeSpaces()
+        var isSubstitutionsAllowed = false
+        if (isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)) {
+            isSubstitutionsAllowed = true
+            incCurrentPos()
+        } else if (isCurrentTokenTypeEqualTo(TokenType.LCUR)) {
             incCurrentPos()
         }
+
+        removeSpaces()
+        while (isCurrentTokenTypeEqualTo(TokenType.SEMICOLON)) {
+            incCurrentPos()
+        }
+        removeSpaces()
 
         val cases: MutableList<SwitchCase> = mutableListOf()
 
@@ -311,7 +325,7 @@ class Parser(private val tokens: List<Token>) {
             if (switchCase?.value?.type == TokenType.DEFAULT || pos == tokens.size) { break }
         } while (switchCase != null)
 
-        return SwitchNode(string = string, cases = cases)
+        return SwitchNode(string = string, cases = cases, isSubstitutionsAllowed = isSubstitutionsAllowed)
     }
 
     /**
@@ -321,12 +335,12 @@ class Parser(private val tokens: List<Token>) {
      * Case 3. Value can be DEFAULT: switch $x "default" ...
      */
     private fun parseSwitchCase(): SwitchCase? {
-        trim()
+        removeSpaces()
         if (!isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
             return null
         }
         match(TokenType.QUOT)!!
-        trim()
+        removeSpaces()
 
         val value = if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
             val token = match(TokenType.VARIABLE)!!
@@ -339,42 +353,57 @@ class Parser(private val tokens: List<Token>) {
             throw Exception("Switch case: unknown token at $pos")
         }
 
-        trim()
+        removeSpaces()
         match(TokenType.QUOT)!! // closing " of value
-        trim()
+        removeSpaces()
 
         if (!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR))) {
             throw Exception("Switch case: expected body of case at $pos")
         }
 
-
         val body = CurlyBracesNodes()
-        do  {
-            if (isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
-                incCurrentPos()
-                val stringNode = StringNode()
-                while (!isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
-                    stringNode.join(getCurrentToken().text)
-                }
-                body.addNode(stringNode)
-            } else if (isCurrentTokenTypeEqualTo(TokenType.LCUR)) {
-                body.addNode(parseExpression())
-                incCurrentPos()
-            }
-        } while (!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR)) && pos < tokens.size)
 
-        trim()
-        incCurrentPos() // skip closing " of body
-        trim()
+        if (isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
+            incPosAndTrim()
+            body.addNode(parseExpression())
+            incPosAndTrim()
+        } else if (isCurrentTokenTypeEqualTo(TokenType.LCUR)) {
+            incPosAndTrim()
+            while (true) {
+                body.addNode(parseExpression())
+
+                removeSpaces()
+                if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+                    incPosAndTrim()
+                    break
+                }
+                incCurrentPos()
+                removeSpaces()
+            }
+        } else {
+            throw Exception("Expected start of switch case")
+        }
+
         if (isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)) {
             incCurrentPos()
         }
+        removeSpaces()
+
+        while (isCurrentTokenTypeEqualTo(TokenType.SEMICOLON)) {
+            incCurrentPos()
+        }
+        removeSpaces()
+
+        if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            incCurrentPos()
+        }
+        removeSpaces()
 
         return SwitchCase(value = value, body = body)
     }
 
     private fun parseExpr(): ExpressionNode {
-        trim()
+        removeSpaces()
         val exprOperator = match(TokenType.EXPR)!!
 
         val mathExpNode = MathExpNodes()
@@ -396,23 +425,23 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parsePutsExpr(): ExpressionNode {
-        trim()
+        removeSpaces()
         val putsOperator = match(TokenType.PUTS)!!
 
-        trim()
+        removeSpaces()
         val rightFormulaNode = parseSetOrPutsFormula()
 
         return UnarOperationNode(putsOperator, rightFormulaNode)
     }
 
     private fun parseSetExpr(): ExpressionNode {
-        trim()
+        removeSpaces()
         val assignOperator = match(TokenType.SET)!!
 
-        trim()
+        removeSpaces()
         val variableNode = parseVariable()
 
-        trim()
+        removeSpaces()
         val rightFormulaNode = parseSetOrPutsFormula()
 
         return BinOperationNode(assignOperator, variableNode, rightFormulaNode)
@@ -496,9 +525,15 @@ class Parser(private val tokens: List<Token>) {
     /**
      * Сдвигает текущую позицию в списке токенов на один пока текущий токен это Space
      */
-    private fun trim() {
+    private fun removeSpaces() {
         while (isCurrentTokenTypeEqualTo(TokenType.SPACE)) {
             incCurrentPos()
         }
+    }
+
+    private fun incPosAndTrim() {
+        removeSpaces()
+        incCurrentPos()
+        removeSpaces()
     }
 }

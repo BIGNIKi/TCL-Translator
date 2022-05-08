@@ -347,7 +347,7 @@ class AstTest {
 
     @Test
     internal fun `comment test 1`() {
-        val code = "\"# Comment also can be parsed;\""
+        val code = "# Comment also can be parsed;"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
@@ -358,15 +358,129 @@ class AstTest {
 
     @Test
     internal fun `switch case test 1`() {
-        val code = "switch \$x \"one\" \"puts one is 1\" \"two\" \"puts two is 2\" \"default\" \"puts none\";"
+        val code = "switch \$x \"one\" \"puts one\" \"two\" \"puts two\" \"default\" \"puts none\";"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
         val expected = "StatementsNode: \n" +
                 "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=STRING, text='one', pos=11), body=CurlyBracesNodes:\n" +
-                "nodes: [StringNode: puts one is 1]), SwitchCase(value=Token(type=STRING, text='two', pos=33), body=CurlyBracesNodes:\n" +
-                "nodes: [StringNode: puts two is 2]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=55), body=CurlyBracesNodes:\n" +
-                "nodes: [StringNode: puts none])]]"
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=17)\n" +
+                "operand: VariableNode: Token(type=VARIABLE, text='one', pos=22)]), SwitchCase(value=Token(type=STRING, text='two', pos=28), body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=34)\n" +
+                "operand: VariableNode: Token(type=VARIABLE, text='two', pos=39)]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=45), body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=55)\n" +
+                "operand: VariableNode: Token(type=VARIABLE, text='none', pos=60)])], isSubstitutionsAllowed: false]"
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `switch case test 2`() {
+        val code = "switch \$x \n" +
+                "  \"one\" \t\"puts one\"  \n" +
+                "  \"two\" \t\"puts two\" \n" +
+                "  \"default\" \t\"puts none\";\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=STRING, text='one', pos=14), body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=21)\n" +
+                "operand: VariableNode: Token(type=VARIABLE, text='one', pos=26)]), SwitchCase(value=Token(type=STRING, text='two', pos=36), body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=43)\n" +
+                "operand: VariableNode: Token(type=VARIABLE, text='two', pos=48)]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=57), body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=68)\n" +
+                "operand: VariableNode: Token(type=VARIABLE, text='none', pos=73)])], isSubstitutionsAllowed: false]"
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `switch case test 3`() {
+        val code = "switch \$x" + "\u005C" + "\n" +
+                "  \"\$z\"\t\t{set y1 [expr \$y+1]; puts \"match \$z. \$y + \$z is \$y1\" } \n" +
+                "  \"one\"\t{set y1 [expr \$y+1]; puts \"match one \$y plus one is \$y1\"} \n" +
+                "  \"default\"\t{puts \"\$x none\"}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=LINK_VARIABLE, text='\$z', pos=14), body=CurlyBracesNodes:\n" +
+                "nodes: [BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=20)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=24)\n" +
+                "whatAssign: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=28)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=33), OperationNode: Token(type=OPERATION, text='+', pos=35)), NumberNode: Token(type=INTEGER, text='1', pos=36))]]\n" +
+                ", UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=40)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: match , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=52), StringNode: . , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=56), StringNode:  + , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=61), StringNode:  is , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=67), StringNode: 1]]), SwitchCase(value=Token(type=STRING, text='one', pos=78), body=CurlyBracesNodes:\n" +
+                "nodes: [BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=84)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=88)\n" +
+                "whatAssign: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=92)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=97), OperationNode: Token(type=OPERATION, text='+', pos=99)), NumberNode: Token(type=INTEGER, text='1', pos=100))]]\n" +
+                ", UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=104)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: match one , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=120), StringNode:  plus one is , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=135), StringNode: 1]]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=145), body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=155)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=161), StringNode:  none]])], isSubstitutionsAllowed: true]"
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `switch case test 4`() {
+        val code = "switch \$x {\n" +
+                "  \"\$z\"\t\t{set y1 [expr \$y+1]; puts \"match \$z. \$y + \$z is \$y1\" } \n" +
+                "  \"one\"\t{set y1 [expr \$y+1]; puts \"match one \$y plus one is \$y1\"} \n" +
+                "  \"default\"\t{puts \"\$x none\"}\n" +
+                "}"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=LINK_VARIABLE, text='\$z', pos=15), body=CurlyBracesNodes:\n" +
+                "nodes: [BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=21)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=25)\n" +
+                "whatAssign: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=29)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=34), OperationNode: Token(type=OPERATION, text='+', pos=36)), NumberNode: Token(type=INTEGER, text='1', pos=37))]]\n" +
+                ", UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=41)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: match , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=53), StringNode: . , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=57), StringNode:  + , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=62), StringNode:  is , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=68), StringNode: 1]]), SwitchCase(value=Token(type=STRING, text='one', pos=79), body=CurlyBracesNodes:\n" +
+                "nodes: [BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=85)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=89)\n" +
+                "whatAssign: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=93)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=98), OperationNode: Token(type=OPERATION, text='+', pos=100)), NumberNode: Token(type=INTEGER, text='1', pos=101))]]\n" +
+                ", UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=105)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: match one , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=121), StringNode:  plus one is , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=136), StringNode: 1]]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=146), body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=156)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=162), StringNode:  none]])], isSubstitutionsAllowed: false]"
         Assertions.assertEquals(expected, actual)
     }
 }
