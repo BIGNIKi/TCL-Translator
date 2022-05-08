@@ -41,11 +41,113 @@ class Parser(private val tokens: List<Token>) {
             isCurrentTokenTypeEqualTo(TokenType.SWITCH) -> {
                 parseSwitchExpr()
             }
+            isCurrentTokenTypeEqualTo(TokenType.IF) -> {
+                parseIfExpr()
+            }
             else -> {
                 throw Exception("Unknown TokenType")
             }
         }
 
+    }
+
+    private fun parseIfExpr(): ExpressionNode {
+        val ifNode = IfNode()
+
+        match(TokenType.IF)!!
+        removeSpaces()
+        val trueBranch = parseIfBranch()
+        ifNode.addBranch(trueBranch)
+
+        while (isCurrentTokenTypeEqualTo(TokenType.ELSEIF)) {
+            incPosAndTrim()
+            ifNode.addBranch(parseIfBranch())
+        }
+
+        if (isCurrentTokenTypeEqualTo(TokenType.ELSE)) {
+            incPosAndTrim()
+            ifNode.addBranch(parseIfBranch(true))
+        }
+
+        return ifNode
+    }
+
+    private fun parseIfBranch(isElseBranch: Boolean = false): IfBranch {
+
+        var condition: ExpressionNode? = null
+        if (!isElseBranch) {
+            // parse condition of true branch of if
+            match(listOf(TokenType.QUOT, TokenType.LCUR)) ?: throw Exception("Expected condition at ${tokens[pos].pos}")
+            removeSpaces()
+            condition = parseIfCondition()
+        }
+
+        // parse body of true branch of if
+        removeSpacesAndNewLines()
+        match(TokenType.LCUR) ?: throw Exception("Expected start of if body at ${tokens[pos].pos}")
+        removeSpacesAndNewLines()
+        val body = parseIfBody()
+
+        return IfBranch(condition = condition, body = body)
+    }
+
+    private fun parseIfBody(): ExpressionNode {
+        val body = CurlyBracesNodes()
+
+        while (true) {
+            body.addNode(parseExpression())
+
+            removeSpacesAndNewLines()
+            if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+                incPosAndTrim()
+                break
+            }
+        }
+
+        return body
+    }
+
+    /**
+     * Case 1. link variable
+     * Case 2. number
+     * Case 3. expr
+     */
+    private fun parseIfCondition(): ExpressionNode {
+        val leftArgument = parseArgumentOfCond()
+
+        removeSpaces()
+        val operator = match(
+            listOf(
+                TokenType.IS_EQUAL,
+                TokenType.IS_NOT_EQUAL,
+                TokenType.AND,
+                TokenType.OR,
+                TokenType.GREATER_OR_EQUAL,
+                TokenType.LESS_OR_EQUAL,
+                TokenType.LESS,
+                TokenType.GREATER
+            )
+        ) ?: throw Exception("expected operation at ${tokens[pos].pos}")
+
+        removeSpaces()
+        val rightArgument = parseArgumentOfCond()
+
+        removeSpaces()
+        match(listOf(TokenType.QUOT, TokenType.RCUR)) ?: throw Exception("expected closing \" or } at ${tokens[pos].pos}" )
+
+        return BinOperationNode(operator = operator, whomAssign = leftArgument, whatAssign = rightArgument)
+    }
+
+    private fun parseArgumentOfCond(): ExpressionNode {
+        return if (isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE)) {
+            VariableNode(match(TokenType.LINK_VARIABLE)!!)
+        } else if (isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT))) {
+            NumberNode(match(listOf(TokenType.INTEGER, TokenType.FLOAT))!!)
+        } else if (isCurrentTokenTypeEqualTo(TokenType.LPAR)) {
+            parseSquareBracesExpression()
+        } else {
+            throw Exception("invalid argument of condition at ${tokens[pos].pos}")
+        }
     }
 
     /**
@@ -322,7 +424,9 @@ class Parser(private val tokens: List<Token>) {
         do {
             val switchCase = parseSwitchCase()
             switchCase?.let { cases.add(it) }
-            if (switchCase?.value?.type == TokenType.DEFAULT || pos == tokens.size) { break }
+            if (switchCase?.value?.type == TokenType.DEFAULT || pos == tokens.size) {
+                break
+            }
         } while (switchCase != null)
 
         return SwitchNode(string = string, cases = cases, isSubstitutionsAllowed = isSubstitutionsAllowed)
@@ -481,6 +585,18 @@ class Parser(private val tokens: List<Token>) {
         return null
     }
 
+    private fun match(tokenType: List<TokenType>): Token? {
+        if (pos < tokens.size) {
+            val currentToken = tokens[pos]
+            val isFound = tokenType.find { it == currentToken.type }
+            isFound?.let {
+                pos += 1
+                return currentToken
+            }
+        }
+        return null
+    }
+
     /**
      * Сравнивает текущий тип токена и tokenType
      */
@@ -501,9 +617,7 @@ class Parser(private val tokens: List<Token>) {
         if (pos < tokens.size) {
             val currentToken = tokens[pos]
             val isFound = tokenType.find { it == currentToken.type }
-            if (isFound != null) {
-                return true
-            }
+            isFound?.let { return true }
         }
         return false
     }
@@ -527,6 +641,12 @@ class Parser(private val tokens: List<Token>) {
      */
     private fun removeSpaces() {
         while (isCurrentTokenTypeEqualTo(TokenType.SPACE)) {
+            incCurrentPos()
+        }
+    }
+
+    private fun removeSpacesAndNewLines() {
+        while (isCurrentTokenTypeEqualTo(listOf(TokenType.SPACE, TokenType.SEMICOLON))) {
             incCurrentPos()
         }
     }

@@ -353,6 +353,7 @@ class AstTest {
 
         val expected = "StatementsNode: \n" +
                 "[CommentNode: comment: 'Token(type=COMMENT, text='# Comment also can be parsed', pos=0)']"
+
         Assertions.assertEquals(expected, actual)
     }
 
@@ -373,6 +374,7 @@ class AstTest {
                 "nodes: [UnarOperationNode\n" +
                 "operator: Token(type=PUTS, text='puts', pos=55)\n" +
                 "operand: VariableNode: Token(type=VARIABLE, text='none', pos=60)])], isSubstitutionsAllowed: false]"
+
         Assertions.assertEquals(expected, actual)
     }
 
@@ -396,6 +398,7 @@ class AstTest {
                 "nodes: [UnarOperationNode\n" +
                 "operator: Token(type=PUTS, text='puts', pos=68)\n" +
                 "operand: VariableNode: Token(type=VARIABLE, text='none', pos=73)])], isSubstitutionsAllowed: false]"
+
         Assertions.assertEquals(expected, actual)
     }
 
@@ -438,6 +441,7 @@ class AstTest {
                 "operator: Token(type=PUTS, text='puts', pos=155)\n" +
                 "operand: QuotationNodes\n" +
                 "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=161), StringNode:  none]])], isSubstitutionsAllowed: true]"
+
         Assertions.assertEquals(expected, actual)
     }
 
@@ -481,6 +485,135 @@ class AstTest {
                 "operator: Token(type=PUTS, text='puts', pos=156)\n" +
                 "operand: QuotationNodes\n" +
                 "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=162), StringNode:  none]])], isSubstitutionsAllowed: false]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `if test 1`() {
+        val code = "if {\$x == 2} {puts \"\$x is 2\"} elseif {\$x == 3} {puts \"\$x is 3\"} else {puts \"\$x is none\"}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[IfNode(branches=[IfBranch(condition=BinOperationNode:\n" +
+                "operator: Token(type=IS_EQUAL, text='==', pos=7)\n" +
+                "whomAssign: VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=4)\n" +
+                "whatAssign: NumberNode: Token(type=INTEGER, text='2', pos=10))\n" +
+                ", body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=14)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=20), StringNode:  is 2]]), IfBranch(condition=BinOperationNode:\n" +
+                "operator: Token(type=IS_EQUAL, text='==', pos=41)\n" +
+                "whomAssign: VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=38)\n" +
+                "whatAssign: NumberNode: Token(type=INTEGER, text='3', pos=44))\n" +
+                ", body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=48)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=54), StringNode:  is 3]]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=70)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=76), StringNode:  is none]])])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `if test 2`() {
+        val code = "if {\$x == 2} {puts \"\$x is 2\"} else {puts \"\$x is none\"}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[IfNode(branches=[IfBranch(condition=BinOperationNode:\n" +
+                "operator: Token(type=IS_EQUAL, text='==', pos=7)\n" +
+                "whomAssign: VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=4)\n" +
+                "whatAssign: NumberNode: Token(type=INTEGER, text='2', pos=10))\n" +
+                ", body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=14)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=20), StringNode:  is 2]]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=36)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=42), StringNode:  is none]])])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `if test 3`() {
+        val code = "if {\$x == 2} {puts \"\$x is 2\"} \n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[IfNode(branches=[IfBranch(condition=BinOperationNode:\n" +
+                "operator: Token(type=IS_EQUAL, text='==', pos=7)\n" +
+                "whomAssign: VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=4)\n" +
+                "whatAssign: NumberNode: Token(type=INTEGER, text='2', pos=10))\n" +
+                ", body=CurlyBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=14)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=20), StringNode:  is 2]])])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `if test 4`() {
+        val code = "if { \$a == 10 } {\n" +
+                "   # if condition is true then print the following \n" +
+                "   puts \"Value of a is 10\"\n" +
+                "} elseif { \$a == 20 } {\n" +
+                "   # if else if condition is true \n" +
+                "   puts \"Value of a is 20\"\n" +
+                "} elseif { \$a == 30 } {\n" +
+                "   # if else if condition is true \n" +
+                "   puts \"Value of a is 30\"\n" +
+                "} else {\n" +
+                "   # if none of the conditions is true \n" +
+                "   puts \"None of the values is matching\"\n" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[IfNode(branches=[IfBranch(condition=BinOperationNode:\n" +
+                "operator: Token(type=IS_EQUAL, text='==', pos=8)\n" +
+                "whomAssign: VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=5)\n" +
+                "whatAssign: NumberNode: Token(type=INTEGER, text='10', pos=11))\n" +
+                ", body=CurlyBracesNodes:\n" +
+                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if condition is true then print the following ', pos=21)', UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=73)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: Value of a is 10]]), IfBranch(condition=BinOperationNode:\n" +
+                "operator: Token(type=IS_EQUAL, text='==', pos=111)\n" +
+                "whomAssign: VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=108)\n" +
+                "whatAssign: NumberNode: Token(type=INTEGER, text='20', pos=114))\n" +
+                ", body=CurlyBracesNodes:\n" +
+                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if else if condition is true ', pos=124)', UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=159)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: Value of a is 20]]), IfBranch(condition=BinOperationNode:\n" +
+                "operator: Token(type=IS_EQUAL, text='==', pos=197)\n" +
+                "whomAssign: VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=194)\n" +
+                "whatAssign: NumberNode: Token(type=INTEGER, text='30', pos=200))\n" +
+                ", body=CurlyBracesNodes:\n" +
+                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if else if condition is true ', pos=210)', UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=245)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: Value of a is 30]]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
+                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if none of the conditions is true ', pos=281)', UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=321)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: None of the values is matching]])])]"
+
         Assertions.assertEquals(expected, actual)
     }
 }
