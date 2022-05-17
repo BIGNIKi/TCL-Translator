@@ -1,8 +1,8 @@
 package lexer
 
 enum class TokenType(val label: String, val regex: Regex?) {
-    FLOAT("FLOAT", Regex("^([0-9]*[.,][0-9]*)")),
-    INTEGER("INTEGER", Regex("^[0-9]*")),
+    FLOAT("FLOAT", Regex("^([-][0-9]*[.,][0-9]*)")),
+    INTEGER("INTEGER", Regex("^[-][0-9]*")),
     STRING("STRING", null),
 
     COMMENT("COMMENT", Regex("^#[ \\w]*")),
