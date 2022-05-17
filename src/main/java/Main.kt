@@ -8,7 +8,7 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "if {\$x == 2} {puts \"\$x is 2\"} else {puts \"\$x is none\"}\n"
+    val code = "if {\$y == true || (\$x == 2 && \$b != 3)} {set x 2} elseif {\$bool == true} {set x 3} else {set x 5}\n"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

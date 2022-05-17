@@ -22,6 +22,8 @@ enum class TokenType(val label: String, val regex: Regex?) {
     LESS_OR_EQUAL("LESS_OR_EQUAL", Regex("^<=")),
     GREATER("GREATER", Regex("^>")),
     LESS("LESS", Regex("^<")),
+    TRUE("true", Regex("^true")),
+    FALSE("false", Regex("^false")),
 
     LPAR("LPAR", Regex("^\\(")),
     RPAR("RPAR", Regex("^\\)")),
@@ -46,5 +48,5 @@ enum class TokenType(val label: String, val regex: Regex?) {
     ELSE("ELSE", Regex("^else")),
 
     VARIABLE("VARIABLE", Regex("^[\\w]*")),
-    LINK_VARIABLE("LINK_VARIABLE", Regex("^(\\$\\w)*")),
+    LINK_VARIABLE("LINK_VARIABLE", Regex("^[\$][\\w]*")),
 }

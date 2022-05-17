@@ -113,40 +113,65 @@ class Parser(private val tokens: List<Token>) {
      * Case 3. expr
      */
     private fun parseIfCondition(): ExpressionNode {
-        val leftArgument = parseArgumentOfCond()
 
-        removeSpaces()
-        val operator = match(
-            listOf(
-                TokenType.IS_EQUAL,
-                TokenType.IS_NOT_EQUAL,
-                TokenType.AND,
-                TokenType.OR,
-                TokenType.GREATER_OR_EQUAL,
-                TokenType.LESS_OR_EQUAL,
-                TokenType.LESS,
-                TokenType.GREATER
-            )
-        ) ?: throw Exception("expected operation at ${tokens[pos].pos}")
+        val bracesNodes = BracesNodes()
 
-        removeSpaces()
-        val rightArgument = parseArgumentOfCond()
+        while (!isCurrentTokenTypeEqualTo(listOf(TokenType.RCUR, TokenType.QUOT))) {
+            val expression = parsLogicalConditions()
+            expression?.let { bracesNodes.addNode(it) }
+        }
 
-        removeSpaces()
-        match(listOf(TokenType.QUOT, TokenType.RCUR)) ?: throw Exception("expected closing \" or } at ${tokens[pos].pos}" )
+        removeSpacesAndNewLines()
+        match(listOf(TokenType.RCUR, TokenType.QUOT))!!
+        removeSpacesAndNewLines()
 
-        return BinOperationNode(operator = operator, whomAssign = leftArgument, whatAssign = rightArgument)
+        return bracesNodes
     }
 
-    private fun parseArgumentOfCond(): ExpressionNode {
-        return if (isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE)) {
-            VariableNode(match(TokenType.LINK_VARIABLE)!!)
-        } else if (isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT))) {
-            NumberNode(match(listOf(TokenType.INTEGER, TokenType.FLOAT))!!)
-        } else if (isCurrentTokenTypeEqualTo(TokenType.LPAR)) {
-            parseSquareBracesExpression()
-        } else {
-            throw Exception("invalid argument of condition at ${tokens[pos].pos}")
+    private fun parsLogicalConditions(): ExpressionNode? {
+        return when {
+            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
+                val integerToken = match(TokenType.INTEGER)!!
+                ValueNode(integerToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
+                val floatToken = match(TokenType.FLOAT)!!
+                ValueNode(floatToken)
+            }
+            isCurrentTokenTypeEqualTo(listOf(TokenType.TRUE, TokenType.FALSE)) -> {
+                val boolean = match(listOf(TokenType.TRUE, TokenType.FALSE))!!
+                ValueNode(boolean)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                val linkVariable = match(TokenType.LINK_VARIABLE)!!
+                VariableNode(linkVariable)
+            }
+            isCurrentTokenTypeEqualTo(operationsList) -> {
+                val operationNode = match(operationsList)!!
+                OperationNode(operationNode)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
+                incCurrentPos()
+                val bracesNodes = BracesNodes()
+                while (!isCurrentTokenTypeEqualTo(TokenType.RPAR)) {
+                    val expression = parsLogicalConditions()
+                    expression?.let { bracesNodes.addNode(it) }
+                }
+
+                incCurrentPos()
+                return if (bracesNodes.nodes.isEmpty()) {
+                    null
+                } else {
+                    bracesNodes
+                }
+            }
+            isCurrentTokenTypeEqualTo(listOf(TokenType.SPACE)) -> {
+                incCurrentPos()
+                null
+            } isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
+                parseSquareBracesExpression()
+            }
+            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
         }
     }
 
@@ -162,11 +187,11 @@ class Parser(private val tokens: List<Token>) {
         return when {
             isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
                 val integerToken = match(TokenType.INTEGER)!!
-                NumberNode(integerToken)
+                ValueNode(integerToken)
             }
             isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
                 val floatToken = match(TokenType.FLOAT)!!
-                NumberNode(floatToken)
+                ValueNode(floatToken)
             }
             isCurrentTokenTypeEqualTo(TokenType.OPERATION) -> {
                 val operationToken = match(TokenType.OPERATION)!!
@@ -198,7 +223,7 @@ class Parser(private val tokens: List<Token>) {
                 val argument = match(TokenType.INTEGER) ?: throw Exception("Expected argument inside () at $pos")
                 match(TokenType.RPAR) ?: throw Exception("Expected argument body () at $pos")
 
-                val mathFunctionNode = MathFunctionNode(mathFun, NumberNode(argument))
+                val mathFunctionNode = MathFunctionNode(mathFun, ValueNode(argument))
                 mathFunctionNode
             }
             isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE)) -> {
@@ -216,6 +241,14 @@ class Parser(private val tokens: List<Token>) {
                 val variable = match(TokenType.VARIABLE)!!
                 VariableNode(variable)
             }
+            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
+                val integerToken = match(TokenType.INTEGER)!!
+                ValueNode(integerToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
+                val floatToken = match(TokenType.FLOAT)!!
+                ValueNode(floatToken)
+            }
             isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
                 incCurrentPos()
                 parseQuotExpression()
@@ -232,7 +265,7 @@ class Parser(private val tokens: List<Token>) {
                 incCurrentPos()
                 parseSetOrPutsFormula()
             }
-            else -> throw Exception("Unknown TokenType")
+            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
         }
     }
 
@@ -655,5 +688,18 @@ class Parser(private val tokens: List<Token>) {
         removeSpaces()
         incCurrentPos()
         removeSpaces()
+    }
+
+    companion object {
+        val operationsList = listOf(
+            TokenType.IS_EQUAL,
+            TokenType.IS_NOT_EQUAL,
+            TokenType.AND,
+            TokenType.OR,
+            TokenType.GREATER_OR_EQUAL,
+            TokenType.LESS_OR_EQUAL,
+            TokenType.LESS,
+            TokenType.GREATER
+        )
     }
 }
