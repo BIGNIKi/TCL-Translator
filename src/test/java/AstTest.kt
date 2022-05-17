@@ -732,4 +732,47 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `for test 1`() {
+        val code = "for {puts \"start\"; set i 0} {\$i > 0} {incr i; puts \"incremented\"} {puts \"command\"}"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ForLoopNode(initBlock=[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=5)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: start], BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=19)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='i', pos=23)\n" +
+                "whatAssign: ValueNode: Token(type=INTEGER, text='0', pos=25))\n" +
+                "], conditionsBlock=[BracesNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$i', pos=29), OperationNode: Token(type=GREATER, text='>', pos=32)), ValueNode: Token(type=INTEGER, text='0', pos=34))]], counterBlock=[IncrNode(variable=VariableNode: Token(type=VARIABLE, text='i', pos=43), value=1), UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=46)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: incremented]], commandBlock=[UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=67)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: command]])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `for test 2`() {
+        val code = "for {set i 5} {\$i > 0 && \$i <= 100} {incr i -1;} {}"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ForLoopNode(initBlock=[BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=5)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='i', pos=9)\n" +
+                "whatAssign: ValueNode: Token(type=INTEGER, text='5', pos=11))\n" +
+                "], conditionsBlock=[BracesNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$i', pos=15), OperationNode: Token(type=GREATER, text='>', pos=18)), ValueNode: Token(type=INTEGER, text='0', pos=20)), OperationNode: Token(type=AND, text='&&', pos=22)), VariableNode: Token(type=LINK_VARIABLE, text='\$i', pos=25), OperationNode: Token(type=LESS_OR_EQUAL, text='<=', pos=28)), ValueNode: Token(type=INTEGER, text='100', pos=31))]], counterBlock=[IncrNode(variable=VariableNode: Token(type=VARIABLE, text='i', pos=42), value=-1)], commandBlock=[])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
 }

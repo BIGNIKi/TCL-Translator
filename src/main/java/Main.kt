@@ -8,7 +8,7 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "set a -231.52"
+    val code = "for {set i 5} {\$i > 0 && \$i <= 100} {incr i -1;} {}"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()
