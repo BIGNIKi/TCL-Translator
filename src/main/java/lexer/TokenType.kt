@@ -47,6 +47,10 @@ enum class TokenType(val label: String, val regex: Regex?) {
     ELSEIF("ELSEIF", Regex("^elseif")),
     ELSE("ELSE", Regex("^else")),
 
+    WHILE("WHILE", Regex("^while")),
+    CONTINUE("CONTINUE", Regex("^continue")),
+    BREAK("BREAK", Regex("^break")),
+
     VARIABLE("VARIABLE", Regex("^[\\w]*")),
     LINK_VARIABLE("LINK_VARIABLE", Regex("^[\$][\\w]*")),
 }

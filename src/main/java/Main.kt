@@ -8,7 +8,12 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "if {\$y == true || (\$x == 2 && \$b != 3)} {set x 2} elseif {\$bool == true} {set x 3} else {set x 5}\n"
+    // todo add parsing of negative numbers
+    val code = "while {\$x >= 1 && \$x <= 0} {\n" +
+            "set x 4\n" +
+            "puts \"x is \$x\"\n" +
+            "if {\$x > 4} {break}" +
+            "} \n"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

@@ -678,4 +678,58 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `while test 1`() {
+        val code = "while \"\$x >= 1 && \$x <= 0\" {\n" +
+                "set x 4\n" +
+                "puts \"x is \$x\"\n" +
+                "if {\$x > 4} {break}" +
+                "} \n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[WhileLoopNode(condition=BracesNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=7), OperationNode: Token(type=GREATER_OR_EQUAL, text='>=', pos=10)), ValueNode: Token(type=INTEGER, text='1', pos=13)), OperationNode: Token(type=AND, text='&&', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=18), OperationNode: Token(type=LESS_OR_EQUAL, text='<=', pos=21)), ValueNode: Token(type=INTEGER, text='0', pos=24))], body=CurlyBracesNodes:\n" +
+                "nodes: [BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=29)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=33)\n" +
+                "whatAssign: ValueNode: Token(type=INTEGER, text='4', pos=35))\n" +
+                ", UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=37)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: x is , VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=48)], IfNode(branches=[IfBranch(condition=BracesNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=56), OperationNode: Token(type=GREATER, text='>', pos=59)), ValueNode: Token(type=INTEGER, text='4', pos=61))], body=CurlyBracesNodes:\n" +
+                "nodes: [TCLKeywordsNode(keyword=Token(type=BREAK, text='break', pos=65))])])])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `while test 2`() {
+        val code = "while {\$x >= 1 && \$x <= 0} {\n" +
+                "set x 4\n" +
+                "puts \"x is \$x\"\n" +
+                "if {\$x > 4} {break}" +
+                "} \n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[WhileLoopNode(condition=BracesNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=7), OperationNode: Token(type=GREATER_OR_EQUAL, text='>=', pos=10)), ValueNode: Token(type=INTEGER, text='1', pos=13)), OperationNode: Token(type=AND, text='&&', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=18), OperationNode: Token(type=LESS_OR_EQUAL, text='<=', pos=21)), ValueNode: Token(type=INTEGER, text='0', pos=24))], body=CurlyBracesNodes:\n" +
+                "nodes: [BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=29)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=33)\n" +
+                "whatAssign: ValueNode: Token(type=INTEGER, text='4', pos=35))\n" +
+                ", UnarOperationNode\n" +
+                "operator: Token(type=PUTS, text='puts', pos=37)\n" +
+                "operand: QuotationNodes\n" +
+                "nodes: [StringNode: x is , VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=48)], IfNode(branches=[IfBranch(condition=BracesNodes\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=56), OperationNode: Token(type=GREATER, text='>', pos=59)), ValueNode: Token(type=INTEGER, text='4', pos=61))], body=CurlyBracesNodes:\n" +
+                "nodes: [TCLKeywordsNode(keyword=Token(type=BREAK, text='break', pos=65))])])])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
 }

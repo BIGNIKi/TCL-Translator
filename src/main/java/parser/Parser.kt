@@ -44,11 +44,37 @@ class Parser(private val tokens: List<Token>) {
             isCurrentTokenTypeEqualTo(TokenType.IF) -> {
                 parseIfExpr()
             }
+            isCurrentTokenTypeEqualTo(TokenType.WHILE) -> {
+                parseWhileExpr()
+            }
+            isCurrentTokenTypeEqualTo(listOf(TokenType.CONTINUE, TokenType.BREAK)) -> {
+                TCLKeywordsNode(match(listOf(TokenType.CONTINUE, TokenType.BREAK))!!)
+            }
             else -> {
-                throw Exception("Unknown TokenType")
+                throw Exception("Unknown TokenType at ${tokens[pos].pos}")
             }
         }
 
+    }
+
+    private fun parseWhileExpr(): ExpressionNode {
+
+        removeSpaces()
+        match(TokenType.WHILE)!!
+        removeSpaces()
+
+        match(listOf(TokenType.QUOT, TokenType.LCUR)) ?: throw Exception("Expected condition at ${tokens[pos].pos}")
+        removeSpaces()
+        val condition = parseCondition()
+
+
+        // parse body of while loop
+        removeSpacesAndNewLines()
+        match(TokenType.LCUR) ?: throw Exception("Expected start of if body at ${tokens[pos].pos}")
+        removeSpacesAndNewLines()
+        val body = parseBody()
+
+        return WhileLoopNode(condition = condition, body = body)
     }
 
     private fun parseIfExpr(): ExpressionNode {
@@ -79,19 +105,21 @@ class Parser(private val tokens: List<Token>) {
             // parse condition of true branch of if
             match(listOf(TokenType.QUOT, TokenType.LCUR)) ?: throw Exception("Expected condition at ${tokens[pos].pos}")
             removeSpaces()
-            condition = parseIfCondition()
+            condition = parseCondition()
         }
 
         // parse body of true branch of if
         removeSpacesAndNewLines()
+        // todo (скобки не обязательны, надо поправить)
         match(TokenType.LCUR) ?: throw Exception("Expected start of if body at ${tokens[pos].pos}")
+
         removeSpacesAndNewLines()
-        val body = parseIfBody()
+        val body = parseBody()
 
         return IfBranch(condition = condition, body = body)
     }
 
-    private fun parseIfBody(): ExpressionNode {
+    private fun parseBody(): ExpressionNode {
         val body = CurlyBracesNodes()
 
         while (true) {
@@ -112,7 +140,7 @@ class Parser(private val tokens: List<Token>) {
      * Case 2. number
      * Case 3. expr
      */
-    private fun parseIfCondition(): ExpressionNode {
+    private fun parseCondition(): ExpressionNode {
 
         val bracesNodes = BracesNodes()
 
@@ -168,7 +196,8 @@ class Parser(private val tokens: List<Token>) {
             isCurrentTokenTypeEqualTo(listOf(TokenType.SPACE)) -> {
                 incCurrentPos()
                 null
-            } isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
                 parseSquareBracesExpression()
             }
             else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
