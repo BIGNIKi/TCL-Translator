@@ -8,9 +8,6 @@ class BinOperationNode(
     private val whatAssign: ExpressionNode
 ) : ExpressionNode() {
     override fun toString(): String {
-        return "BinOperationNode:\n" +
-                "operator: $operator\n" +
-                "whomAssign: $whomAssign\n" +
-                "whatAssign: $whatAssign\n"
+        return "BinOperationNode(operator=$operator, whomAssign=$whomAssign, whatAssign=$whatAssign)"
     }
 }

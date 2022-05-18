@@ -4,6 +4,6 @@ import lexer.Token
 
 class VariableNode(val variable: Token) : ExpressionNode() {
     override fun toString(): String {
-        return "VariableNode: $variable"
+        return "VariableNode(variable=$variable)"
     }
 }

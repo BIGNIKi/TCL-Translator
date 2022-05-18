@@ -11,9 +11,6 @@ class StatementsNode : ExpressionNode() {
     }
 
     override fun toString(): String {
-        return "StatementsNode: \n" +
-                "$codeStrings"
+        return "StatementsNode(codeStrings=$codeStrings)"
     }
-
-
 }

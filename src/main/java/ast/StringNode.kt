@@ -7,6 +7,6 @@ class StringNode(var string: String = ""): ExpressionNode() {
     }
 
     override fun toString(): String {
-        return "StringNode: $string"
+        return "StringNode(string='$string')"
     }
 }

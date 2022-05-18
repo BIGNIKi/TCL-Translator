@@ -8,7 +8,7 @@ class CurlyBracesNodes : ExpressionNode() {
     }
 
     override fun toString(): String {
-        return "CurlyBracesNodes:\n" +
-                "nodes: $nodes"
+        return "CurlyBracesNodes(nodes=$nodes)"
     }
+
 }

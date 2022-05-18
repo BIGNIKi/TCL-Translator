@@ -8,8 +8,6 @@ class SquareBracesNodes : ExpressionNode() {
     }
 
     override fun toString(): String {
-        return "SquareBracesNodes:\n" +
-                "nodes: $nodes"
+        return "SquareBracesNodes(nodes=$nodes)"
     }
-
 }

@@ -8,7 +8,6 @@ class QuotationNodes : ExpressionNode() {
     }
 
     override fun toString(): String {
-        return "QuotationNodes\n" +
-                "nodes: $nodes"
+        return "QuotationNodes(nodes=$nodes)"
     }
 }

@@ -8,7 +8,7 @@ class SwitchNode(
     private val isSubstitutionsAllowed: Boolean
 ) : ExpressionNode() {
     override fun toString(): String {
-        return "SwitchNode: string: $string, cases: $cases, isSubstitutionsAllowed: $isSubstitutionsAllowed"
+        return "SwitchNode(string=$string, cases=$cases, isSubstitutionsAllowed=$isSubstitutionsAllowed)"
     }
 }
 

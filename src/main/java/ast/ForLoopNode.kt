@@ -25,6 +25,4 @@ class ForLoopNode: ExpressionNode() {
     override fun toString(): String {
         return "ForLoopNode(initBlock=$initBlock, conditionsBlock=$conditionsBlock, counterBlock=$counterBlock, commandBlock=$commandBlock)"
     }
-
-
 }

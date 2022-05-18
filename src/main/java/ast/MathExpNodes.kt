@@ -8,7 +8,6 @@ class MathExpNodes : ExpressionNode() {
     }
 
     override fun toString(): String {
-        return "MathExpNodes:\n" +
-                "nodes: $nodes"
+        return "MathExpNodes(nodes=$nodes)"
     }
 }

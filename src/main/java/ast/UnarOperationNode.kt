@@ -7,8 +7,6 @@ class UnarOperationNode(
     private val operand: ExpressionNode
 ) : ExpressionNode() {
     override fun toString(): String {
-        return "UnarOperationNode\n" +
-                "operator: $operator\n" +
-                "operand: $operand"
+        return "UnarOperationNode(operator=$operator, operand=$operand)"
     }
 }

@@ -11,13 +11,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: CurlyBracesNodes:\n" +
-                "nodes: [StringNode: [set b \"Some string\"]]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=CurlyBracesNodes(nodes=[StringNode(string='[set b \"Some string\"]')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -28,19 +22,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: QuotationNodes\n" +
-                "nodes: [SquareBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=8)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='b', pos=12)\n" +
-                "whatAssign: CurlyBracesNodes:\n" +
-                "nodes: [StringNode: Some string]\n" +
-                "]]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=QuotationNodes(nodes=[SquareBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=8), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='b', pos=12)), whatAssign=CurlyBracesNodes(nodes=[StringNode(string='Some string')]))])]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -51,13 +33,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: QuotationNodes\n" +
-                "nodes: [StringNode: [set b {Some string}]]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=QuotationNodes(nodes=[StringNode(string='[set b {Some string}]')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -68,18 +44,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: SquareBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=7)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='b', pos=11)\n" +
-                "whatAssign: QuotationNodes\n" +
-                "nodes: [StringNode:  123 ]\n" +
-                "]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=SquareBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=7), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='b', pos=11)), whatAssign=QuotationNodes(nodes=[StringNode(string=' 123 ')]))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -90,18 +55,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: SquareBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=7)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='b', pos=11)\n" +
-                "whatAssign: CurlyBracesNodes:\n" +
-                "nodes: [StringNode:  123 ]\n" +
-                "]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=SquareBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=7), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='b', pos=11)), whatAssign=CurlyBracesNodes(nodes=[StringNode(string=' 123 ')]))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -112,13 +66,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: QuotationNodes\n" +
-                "nodes: [StringNode: Some string]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=QuotationNodes(nodes=[StringNode(string='Some string')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -129,13 +77,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: QuotationNodes\n" +
-                "nodes: [StringNode: Some string , VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=19)]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=QuotationNodes(nodes=[StringNode(string='Some string '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=19))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -146,13 +88,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='a', pos=4)\n" +
-                "whatAssign: QuotationNodes\n" +
-                "nodes: [StringNode: Some string \$a]\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='a', pos=4)), whatAssign=QuotationNodes(nodes=[StringNode(string='Some string \$a')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -163,12 +99,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=4)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='3', pos=6))\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=4)), whatAssign=ValueNode(value=Token(type=INTEGER, text='3', pos=6)))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -179,12 +110,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=4)\n" +
-                "whatAssign: ValueNode: Token(type=FLOAT, text='3.333', pos=6))\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=4)), whatAssign=ValueNode(value=Token(type=FLOAT, text='3.333', pos=6)))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -195,12 +121,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=0)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=4)\n" +
-                "whatAssign: VariableNode: Token(type=VARIABLE, text='hello', pos=6)\n" +
-                "]"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=4)), whatAssign=VariableNode(variable=Token(type=VARIABLE, text='hello', pos=6)))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -211,11 +132,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: Hello world]]"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=QuotationNodes(nodes=[StringNode(string='Hello world')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -226,11 +143,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: CurlyBracesNodes:\n" +
-                "nodes: [StringNode: Hello world]]"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=CurlyBracesNodes(nodes=[StringNode(string='Hello world')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -241,14 +154,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: Hello world], UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=20)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: Hello world]]"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=QuotationNodes(nodes=[StringNode(string='Hello world')])), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=20), operand=QuotationNodes(nodes=[StringNode(string='Hello world')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -259,11 +165,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=6), StringNode:  , VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=9)]]"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=6)), StringNode(string=' '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=9))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -274,11 +176,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=6), StringNode:  \$b]]"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=6)), StringNode(string=' \$b')]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -289,16 +187,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [ValueNode: Token(type=INTEGER, text='2', pos=11)), OperationNode: Token(type=OPERATION, text='+', pos=13)), BracesNodes\n" +
-                "nodes: [ValueNode: Token(type=INTEGER, text='3', pos=16)), OperationNode: Token(type=OPERATION, text='*', pos=18)), BracesNodes\n" +
-                "nodes: [ValueNode: Token(type=INTEGER, text='4', pos=21)), OperationNode: Token(type=OPERATION, text='-', pos=23)), ValueNode: Token(type=INTEGER, text='2', pos=25))]], OperationNode: Token(type=OPERATION, text='+', pos=29)), ValueNode: Token(type=INTEGER, text='1', pos=31))]]]"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='2', pos=11)), OperationNode(operation=Token(type=OPERATION, text='+', pos=13)), BracesNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='3', pos=16)), OperationNode(operation=Token(type=OPERATION, text='*', pos=18)), BracesNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='4', pos=21)), OperationNode(operation=Token(type=OPERATION, text='-', pos=23)), ValueNode(value=Token(type=INTEGER, text='2', pos=25))])]), OperationNode(operation=Token(type=OPERATION, text='+', pos=29)), ValueNode(value=Token(type=INTEGER, text='1', pos=31))]))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -309,15 +198,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [ValueNode: Token(type=INTEGER, text='2', pos=11)), OperationNode: Token(type=OPERATION, text='*', pos=13)), ValueNode: Token(type=INTEGER, text='4', pos=15)), OperationNode: Token(type=OPERATION, text='+', pos=17)), ValueNode: Token(type=INTEGER, text='1', pos=19))]]]"
-
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='2', pos=11)), OperationNode(operation=Token(type=OPERATION, text='*', pos=13)), ValueNode(value=Token(type=INTEGER, text='4', pos=15)), OperationNode(operation=Token(type=OPERATION, text='+', pos=17)), ValueNode(value=Token(type=INTEGER, text='1', pos=19))]))]))])"
         Assertions.assertEquals(expected, actual)
     }
 
@@ -327,15 +208,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [MathFunctionNode: funNode: Token(type=SQRT, text='sqrt', pos=11), argument: ValueNode: Token(type=INTEGER, text='9', pos=16)), OperationNode: Token(type=OPERATION, text='+', pos=19)), ValueNode: Token(type=INTEGER, text='1', pos=21))]]]"
-
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=SQRT, text='sqrt', pos=11), argument=ValueNode(value=Token(type=INTEGER, text='9', pos=16))), OperationNode(operation=Token(type=OPERATION, text='+', pos=19)), ValueNode(value=Token(type=INTEGER, text='1', pos=21))]))]))])"
         Assertions.assertEquals(expected, actual)
     }
 
@@ -345,15 +218,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=11), OperationNode: Token(type=OPERATION, text='+', pos=14)), VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=16), OperationNode: Token(type=OPERATION, text='+', pos=19)), ValueNode: Token(type=INTEGER, text='2', pos=21))]]]"
-
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=11)), OperationNode(operation=Token(type=OPERATION, text='+', pos=14)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=16)), OperationNode(operation=Token(type=OPERATION, text='+', pos=19)), ValueNode(value=Token(type=INTEGER, text='2', pos=21))]))]))])"
         Assertions.assertEquals(expected, actual)
     }
 
@@ -363,14 +228,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=12), OperationNode: Token(type=OPERATION, text='+', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=17), OperationNode: Token(type=OPERATION, text='+', pos=20)), ValueNode: Token(type=INTEGER, text='2', pos=22))]]]"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=12)), OperationNode(operation=Token(type=OPERATION, text='+', pos=15)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=17)), OperationNode(operation=Token(type=OPERATION, text='+', pos=20)), ValueNode(value=Token(type=INTEGER, text='2', pos=22))]))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -381,15 +239,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=0)\n" +
-                "operand: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=6)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=12), OperationNode: Token(type=OPERATION, text='+', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=17), OperationNode: Token(type=OPERATION, text='+', pos=20)), ValueNode: Token(type=INTEGER, text='2', pos=22))]]]"
-
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=12)), OperationNode(operation=Token(type=OPERATION, text='+', pos=15)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=17)), OperationNode(operation=Token(type=OPERATION, text='+', pos=20)), ValueNode(value=Token(type=INTEGER, text='2', pos=22))]))]))])"
         Assertions.assertEquals(expected, actual)
     }
 
@@ -399,8 +249,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[CommentNode: comment: 'Token(type=COMMENT, text='# Comment also can be parsed', pos=0)']"
+        val expected = "StatementsNode(codeStrings=[CommentNode(comment=Token(type=COMMENT, text='# Comment also can be parsed', pos=0))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -411,17 +260,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=STRING, text='one', pos=11), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=17)\n" +
-                "operand: VariableNode: Token(type=VARIABLE, text='one', pos=22)]), SwitchCase(value=Token(type=STRING, text='two', pos=28), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=34)\n" +
-                "operand: VariableNode: Token(type=VARIABLE, text='two', pos=39)]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=45), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=55)\n" +
-                "operand: VariableNode: Token(type=VARIABLE, text='none', pos=60)])], isSubstitutionsAllowed: false]"
+        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=STRING, text='one', pos=11), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=17), operand=VariableNode(variable=Token(type=VARIABLE, text='one', pos=22)))])), SwitchCase(value=Token(type=STRING, text='two', pos=28), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=34), operand=VariableNode(variable=Token(type=VARIABLE, text='two', pos=39)))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=45), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=55), operand=VariableNode(variable=Token(type=VARIABLE, text='none', pos=60)))]))], isSubstitutionsAllowed=false)])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -435,17 +274,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=STRING, text='one', pos=14), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=21)\n" +
-                "operand: VariableNode: Token(type=VARIABLE, text='one', pos=26)]), SwitchCase(value=Token(type=STRING, text='two', pos=36), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=43)\n" +
-                "operand: VariableNode: Token(type=VARIABLE, text='two', pos=48)]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=57), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=68)\n" +
-                "operand: VariableNode: Token(type=VARIABLE, text='none', pos=73)])], isSubstitutionsAllowed: false]"
+        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=STRING, text='one', pos=14), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=21), operand=VariableNode(variable=Token(type=VARIABLE, text='one', pos=26)))])), SwitchCase(value=Token(type=STRING, text='two', pos=36), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=43), operand=VariableNode(variable=Token(type=VARIABLE, text='two', pos=48)))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=57), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=68), operand=VariableNode(variable=Token(type=VARIABLE, text='none', pos=73)))]))], isSubstitutionsAllowed=false)])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -459,36 +288,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=LINK_VARIABLE, text='\$z', pos=14), body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=20)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=24)\n" +
-                "whatAssign: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=28)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=33), OperationNode: Token(type=OPERATION, text='+', pos=35)), ValueNode: Token(type=INTEGER, text='1', pos=36))]]\n" +
-                ", UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=40)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: match , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=52), StringNode: . , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=56), StringNode:  + , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=61), StringNode:  is , VariableNode: Token(type=LINK_VARIABLE, text='\$y1', pos=67)]]), SwitchCase(value=Token(type=STRING, text='one', pos=78), body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=84)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=88)\n" +
-                "whatAssign: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=92)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=97), OperationNode: Token(type=OPERATION, text='+', pos=99)), ValueNode: Token(type=INTEGER, text='1', pos=100))]]\n" +
-                ", UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=104)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: match one , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=120), StringNode:  plus one is , VariableNode: Token(type=LINK_VARIABLE, text='\$y1', pos=135)]]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=145), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=155)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=161), StringNode:  none]])], isSubstitutionsAllowed: true]"
+        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=LINK_VARIABLE, text='\$z', pos=14), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=20), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='y1', pos=24)), whatAssign=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=28), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=33)), OperationNode(operation=Token(type=OPERATION, text='+', pos=35)), ValueNode(value=Token(type=INTEGER, text='1', pos=36))]))])), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=40), operand=QuotationNodes(nodes=[StringNode(string='match '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$z', pos=52)), StringNode(string='. '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=56)), StringNode(string=' + '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$z', pos=61)), StringNode(string=' is '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y1', pos=67))]))])), SwitchCase(value=Token(type=STRING, text='one', pos=78), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=84), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='y1', pos=88)), whatAssign=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=92), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=97)), OperationNode(operation=Token(type=OPERATION, text='+', pos=99)), ValueNode(value=Token(type=INTEGER, text='1', pos=100))]))])), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=104), operand=QuotationNodes(nodes=[StringNode(string='match one '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=120)), StringNode(string=' plus one is '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y1', pos=135))]))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=145), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=155), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=161)), StringNode(string=' none')]))]))], isSubstitutionsAllowed=true)])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -503,36 +303,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[SwitchNode: string: Token(type=LINK_VARIABLE, text='\$x', pos=7), cases: [SwitchCase(value=Token(type=LINK_VARIABLE, text='\$z', pos=15), body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=21)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=25)\n" +
-                "whatAssign: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=29)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=34), OperationNode: Token(type=OPERATION, text='+', pos=36)), ValueNode: Token(type=INTEGER, text='1', pos=37))]]\n" +
-                ", UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=41)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: match , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=53), StringNode: . , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=57), StringNode:  + , VariableNode: Token(type=LINK_VARIABLE, text='\$z', pos=62), StringNode:  is , VariableNode: Token(type=LINK_VARIABLE, text='\$y1', pos=68)]]), SwitchCase(value=Token(type=STRING, text='one', pos=79), body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=85)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='y1', pos=89)\n" +
-                "whatAssign: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=93)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=98), OperationNode: Token(type=OPERATION, text='+', pos=100)), ValueNode: Token(type=INTEGER, text='1', pos=101))]]\n" +
-                ", UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=105)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: match one , VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=121), StringNode:  plus one is , VariableNode: Token(type=LINK_VARIABLE, text='\$y1', pos=136)]]), SwitchCase(value=Token(type=DEFAULT, text='default', pos=146), body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=156)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=162), StringNode:  none]])], isSubstitutionsAllowed: false]"
+        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=LINK_VARIABLE, text='\$z', pos=15), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=21), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='y1', pos=25)), whatAssign=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=29), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=34)), OperationNode(operation=Token(type=OPERATION, text='+', pos=36)), ValueNode(value=Token(type=INTEGER, text='1', pos=37))]))])), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=41), operand=QuotationNodes(nodes=[StringNode(string='match '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$z', pos=53)), StringNode(string='. '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=57)), StringNode(string=' + '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$z', pos=62)), StringNode(string=' is '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y1', pos=68))]))])), SwitchCase(value=Token(type=STRING, text='one', pos=79), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=85), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='y1', pos=89)), whatAssign=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=93), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=98)), OperationNode(operation=Token(type=OPERATION, text='+', pos=100)), ValueNode(value=Token(type=INTEGER, text='1', pos=101))]))])), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=105), operand=QuotationNodes(nodes=[StringNode(string='match one '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=121)), StringNode(string=' plus one is '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y1', pos=136))]))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=146), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=156), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=162)), StringNode(string=' none')]))]))], isSubstitutionsAllowed=false)])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -543,23 +314,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=4), OperationNode: Token(type=IS_EQUAL, text='==', pos=7)), ValueNode: Token(type=INTEGER, text='2', pos=10))], body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=14)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=20), StringNode:  is 2]]), IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=38), OperationNode: Token(type=IS_EQUAL, text='==', pos=41)), ValueNode: Token(type=INTEGER, text='3', pos=44))], body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=48)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=54), StringNode:  is 3]]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=70)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=76), StringNode:  is none]])])]"
-
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=4)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=7)), ValueNode(value=Token(type=INTEGER, text='2', pos=10))]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=14), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=20)), StringNode(string=' is 2')]))])), IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=38)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=41)), ValueNode(value=Token(type=INTEGER, text='3', pos=44))]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=48), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=54)), StringNode(string=' is 3')]))])), IfBranch(condition=null, body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=70), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=76)), StringNode(string=' is none')]))]))])])"
         Assertions.assertEquals(expected, actual)
     }
 
@@ -569,17 +324,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=4), OperationNode: Token(type=IS_EQUAL, text='==', pos=7)), ValueNode: Token(type=INTEGER, text='2', pos=10))], body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=14)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=20), StringNode:  is 2]]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=36)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=42), StringNode:  is none]])])]"
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=4)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=7)), ValueNode(value=Token(type=INTEGER, text='2', pos=10))]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=14), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=20)), StringNode(string=' is 2')]))])), IfBranch(condition=null, body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=36), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=42)), StringNode(string=' is none')]))]))])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -590,13 +335,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=4), OperationNode: Token(type=IS_EQUAL, text='==', pos=7)), ValueNode: Token(type=INTEGER, text='2', pos=10))], body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=14)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=20), StringNode:  is 2]])])]"
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=4)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=7)), ValueNode(value=Token(type=INTEGER, text='2', pos=10))]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=14), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=20)), StringNode(string=' is 2')]))]))])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -619,27 +358,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=5), OperationNode: Token(type=IS_EQUAL, text='==', pos=8)), ValueNode: Token(type=INTEGER, text='10', pos=11))], body=CurlyBracesNodes:\n" +
-                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if condition is true then print the following ', pos=21)', UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=73)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: Value of a is 10]]), IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=108), OperationNode: Token(type=IS_EQUAL, text='==', pos=111)), ValueNode: Token(type=INTEGER, text='20', pos=114))], body=CurlyBracesNodes:\n" +
-                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if else if condition is true ', pos=124)', UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=159)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: Value of a is 20]]), IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$a', pos=194), OperationNode: Token(type=IS_EQUAL, text='==', pos=197)), ValueNode: Token(type=INTEGER, text='30', pos=200))], body=CurlyBracesNodes:\n" +
-                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if else if condition is true ', pos=210)', UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=245)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: Value of a is 30]]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
-                "nodes: [CommentNode: comment: 'Token(type=COMMENT, text='# if none of the conditions is true ', pos=281)', UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=321)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: None of the values is matching]])])]"
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=5)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=8)), ValueNode(value=Token(type=INTEGER, text='10', pos=11))]), body=CurlyBracesNodes(nodes=[CommentNode(comment=Token(type=COMMENT, text='# if condition is true then print the following ', pos=21)), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=73), operand=QuotationNodes(nodes=[StringNode(string='Value of a is 10')]))])), IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=108)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=111)), ValueNode(value=Token(type=INTEGER, text='20', pos=114))]), body=CurlyBracesNodes(nodes=[CommentNode(comment=Token(type=COMMENT, text='# if else if condition is true ', pos=124)), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=159), operand=QuotationNodes(nodes=[StringNode(string='Value of a is 20')]))])), IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=194)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=197)), ValueNode(value=Token(type=INTEGER, text='30', pos=200))]), body=CurlyBracesNodes(nodes=[CommentNode(comment=Token(type=COMMENT, text='# if else if condition is true ', pos=210)), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=245), operand=QuotationNodes(nodes=[StringNode(string='Value of a is 30')]))])), IfBranch(condition=null, body=CurlyBracesNodes(nodes=[CommentNode(comment=Token(type=COMMENT, text='# if none of the conditions is true ', pos=281)), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=321), operand=QuotationNodes(nodes=[StringNode(string='None of the values is matching')]))]))])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -650,17 +369,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=4), OperationNode: Token(type=IS_EQUAL, text='==', pos=7)), ValueNode: Token(type=INTEGER, text='2', pos=10)), OperationNode: Token(type=OR, text='||', pos=12)), VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=15), OperationNode: Token(type=IS_EQUAL, text='==', pos=18)), ValueNode: Token(type=INTEGER, text='3', pos=21))], body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=25)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=31), StringNode:  is 2]]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=47)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=53), StringNode:  is none]])])]"
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=4)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=7)), ValueNode(value=Token(type=INTEGER, text='2', pos=10)), OperationNode(operation=Token(type=OR, text='||', pos=12)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=15)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=18)), ValueNode(value=Token(type=INTEGER, text='3', pos=21))]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=25), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=31)), StringNode(string=' is 2')]))])), IfBranch(condition=null, body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=47), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=53)), StringNode(string=' is none')]))]))])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -671,26 +380,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$y', pos=4), OperationNode: Token(type=IS_EQUAL, text='==', pos=7)), ValueNode: Token(type=TRUE, text='true', pos=10)), OperationNode: Token(type=OR, text='||', pos=15)), BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=19), OperationNode: Token(type=IS_EQUAL, text='==', pos=22)), ValueNode: Token(type=INTEGER, text='2', pos=25)), OperationNode: Token(type=AND, text='&&', pos=27)), VariableNode: Token(type=LINK_VARIABLE, text='\$b', pos=30), OperationNode: Token(type=IS_NOT_EQUAL, text='!=', pos=33)), ValueNode: Token(type=INTEGER, text='3', pos=36))]], body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=41)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=45)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='2', pos=47))\n" +
-                "]), IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$bool', pos=58), OperationNode: Token(type=IS_EQUAL, text='==', pos=64)), ValueNode: Token(type=TRUE, text='true', pos=67))], body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=74)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=78)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='3', pos=80))\n" +
-                "]), IfBranch(condition=null, body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=89)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=93)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='5', pos=95))\n" +
-                "])])]"
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=4)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=7)), ValueNode(value=Token(type=TRUE, text='true', pos=10)), OperationNode(operation=Token(type=OR, text='||', pos=15)), BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=19)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=22)), ValueNode(value=Token(type=INTEGER, text='2', pos=25)), OperationNode(operation=Token(type=AND, text='&&', pos=27)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=30)), OperationNode(operation=Token(type=IS_NOT_EQUAL, text='!=', pos=33)), ValueNode(value=Token(type=INTEGER, text='3', pos=36))])]), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=41), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=45)), whatAssign=ValueNode(value=Token(type=INTEGER, text='2', pos=47)))])), IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$bool', pos=58)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=64)), ValueNode(value=Token(type=TRUE, text='true', pos=67))]), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=74), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=78)), whatAssign=ValueNode(value=Token(type=INTEGER, text='3', pos=80)))])), IfBranch(condition=null, body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=89), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=93)), whatAssign=ValueNode(value=Token(type=INTEGER, text='5', pos=95)))]))])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -705,19 +395,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[WhileLoopNode(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=7), OperationNode: Token(type=GREATER_OR_EQUAL, text='>=', pos=10)), ValueNode: Token(type=INTEGER, text='1', pos=13)), OperationNode: Token(type=AND, text='&&', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=18), OperationNode: Token(type=LESS_OR_EQUAL, text='<=', pos=21)), ValueNode: Token(type=INTEGER, text='0', pos=24))], body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=29)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=33)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='4', pos=35))\n" +
-                ", UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=37)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: x is , VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=48)], IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=56), OperationNode: Token(type=GREATER, text='>', pos=59)), ValueNode: Token(type=INTEGER, text='4', pos=61))], body=CurlyBracesNodes:\n" +
-                "nodes: [TCLKeywordsNode(keyword=Token(type=BREAK, text='break', pos=65))])])])]"
+        val expected = "StatementsNode(codeStrings=[WhileLoopNode(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=7)), OperationNode(operation=Token(type=GREATER_OR_EQUAL, text='>=', pos=10)), ValueNode(value=Token(type=INTEGER, text='1', pos=13)), OperationNode(operation=Token(type=AND, text='&&', pos=15)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=18)), OperationNode(operation=Token(type=LESS_OR_EQUAL, text='<=', pos=21)), ValueNode(value=Token(type=INTEGER, text='0', pos=24))]), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=29), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=33)), whatAssign=ValueNode(value=Token(type=INTEGER, text='4', pos=35))), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=37), operand=QuotationNodes(nodes=[StringNode(string='x is '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=48))])), IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=56)), OperationNode(operation=Token(type=GREATER, text='>', pos=59)), ValueNode(value=Token(type=INTEGER, text='4', pos=61))]), body=CurlyBracesNodes(nodes=[TCLKeywordsNode(keyword=Token(type=BREAK, text='break', pos=65))]))])]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -732,19 +410,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[WhileLoopNode(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=7), OperationNode: Token(type=GREATER_OR_EQUAL, text='>=', pos=10)), ValueNode: Token(type=INTEGER, text='1', pos=13)), OperationNode: Token(type=AND, text='&&', pos=15)), VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=18), OperationNode: Token(type=LESS_OR_EQUAL, text='<=', pos=21)), ValueNode: Token(type=INTEGER, text='0', pos=24))], body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=29)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=33)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='4', pos=35))\n" +
-                ", UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=37)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: x is , VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=48)], IfNode(branches=[IfBranch(condition=BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=56), OperationNode: Token(type=GREATER, text='>', pos=59)), ValueNode: Token(type=INTEGER, text='4', pos=61))], body=CurlyBracesNodes:\n" +
-                "nodes: [TCLKeywordsNode(keyword=Token(type=BREAK, text='break', pos=65))])])])]"
+        val expected = "StatementsNode(codeStrings=[WhileLoopNode(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=7)), OperationNode(operation=Token(type=GREATER_OR_EQUAL, text='>=', pos=10)), ValueNode(value=Token(type=INTEGER, text='1', pos=13)), OperationNode(operation=Token(type=AND, text='&&', pos=15)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=18)), OperationNode(operation=Token(type=LESS_OR_EQUAL, text='<=', pos=21)), ValueNode(value=Token(type=INTEGER, text='0', pos=24))]), body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=29), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=33)), whatAssign=ValueNode(value=Token(type=INTEGER, text='4', pos=35))), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=37), operand=QuotationNodes(nodes=[StringNode(string='x is '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=48))])), IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=56)), OperationNode(operation=Token(type=GREATER, text='>', pos=59)), ValueNode(value=Token(type=INTEGER, text='4', pos=61))]), body=CurlyBracesNodes(nodes=[TCLKeywordsNode(keyword=Token(type=BREAK, text='break', pos=65))]))])]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -755,22 +421,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ForLoopNode(initBlock=[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=5)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: start], BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=19)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='i', pos=23)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='0', pos=25))\n" +
-                "], conditionsBlock=[BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$i', pos=29), OperationNode: Token(type=GREATER, text='>', pos=32)), ValueNode: Token(type=INTEGER, text='0', pos=34))]], counterBlock=[IncrNode(variable=VariableNode: Token(type=VARIABLE, text='i', pos=43), value=1), UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=46)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: incremented]], commandBlock=[UnarOperationNode\n" +
-                "operator: Token(type=PUTS, text='puts', pos=67)\n" +
-                "operand: QuotationNodes\n" +
-                "nodes: [StringNode: command]])]"
+        val expected = "StatementsNode(codeStrings=[ForLoopNode(initBlock=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=5), operand=QuotationNodes(nodes=[StringNode(string='start')])), BinOperationNode(operator=Token(type=SET, text='set', pos=19), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='i', pos=23)), whatAssign=ValueNode(value=Token(type=INTEGER, text='0', pos=25)))], conditionsBlock=[BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$i', pos=29)), OperationNode(operation=Token(type=GREATER, text='>', pos=32)), ValueNode(value=Token(type=INTEGER, text='0', pos=34))])], counterBlock=[IncrNode(variable=VariableNode(variable=Token(type=VARIABLE, text='i', pos=43)), value=1), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=46), operand=QuotationNodes(nodes=[StringNode(string='incremented')]))], commandBlock=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=67), operand=QuotationNodes(nodes=[StringNode(string='command')]))])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -781,13 +432,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ForLoopNode(initBlock=[BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=5)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='i', pos=9)\n" +
-                "whatAssign: ValueNode: Token(type=INTEGER, text='5', pos=11))\n" +
-                "], conditionsBlock=[BracesNodes\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$i', pos=15), OperationNode: Token(type=GREATER, text='>', pos=18)), ValueNode: Token(type=INTEGER, text='0', pos=20)), OperationNode: Token(type=AND, text='&&', pos=22)), VariableNode: Token(type=LINK_VARIABLE, text='\$i', pos=25), OperationNode: Token(type=LESS_OR_EQUAL, text='<=', pos=28)), ValueNode: Token(type=INTEGER, text='100', pos=31))]], counterBlock=[IncrNode(variable=VariableNode: Token(type=VARIABLE, text='i', pos=42), value=-1)], commandBlock=[])]"
+        val expected = "StatementsNode(codeStrings=[ForLoopNode(initBlock=[BinOperationNode(operator=Token(type=SET, text='set', pos=5), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='i', pos=9)), whatAssign=ValueNode(value=Token(type=INTEGER, text='5', pos=11)))], conditionsBlock=[BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$i', pos=15)), OperationNode(operation=Token(type=GREATER, text='>', pos=18)), ValueNode(value=Token(type=INTEGER, text='0', pos=20)), OperationNode(operation=Token(type=AND, text='&&', pos=22)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$i', pos=25)), OperationNode(operation=Token(type=LESS_OR_EQUAL, text='<=', pos=28)), ValueNode(value=Token(type=INTEGER, text='100', pos=31))])], counterBlock=[IncrNode(variable=VariableNode(variable=Token(type=VARIABLE, text='i', pos=42)), value=-1)], commandBlock=[])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -800,9 +445,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
-                "nodes: [ReturnNode(returnValue=null)])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=null)]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -815,9 +458,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
-                "nodes: [ReturnNode(returnValue=ValueNode: Token(type=INTEGER, text='0', pos=21)))])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=ValueNode(value=Token(type=INTEGER, text='0', pos=21)))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -830,9 +471,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
-                "nodes: [ReturnNode(returnValue=ValueNode: Token(type=FLOAT, text='2.54', pos=21)))])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=ValueNode(value=Token(type=FLOAT, text='2.54', pos=21)))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -845,10 +484,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
-                "nodes: [ReturnNode(returnValue=QuotationNodes\n" +
-                "nodes: [StringNode: hello world])])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=QuotationNodes(nodes=[StringNode(string='hello world')]))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -861,9 +497,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
-                "nodes: [ReturnNode(returnValue=StringNode: hello)])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=StringNode(string='hello'))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -876,13 +510,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
-                "nodes: [ReturnNode(returnValue=SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=22)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [ValueNode: Token(type=INTEGER, text='2', pos=27)), OperationNode: Token(type=OPERATION, text='+', pos=29)), ValueNode: Token(type=INTEGER, text='3', pos=31))]])])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=22), operand=MathExpNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='2', pos=27)), OperationNode(operation=Token(type=OPERATION, text='+', pos=29)), ValueNode(value=Token(type=INTEGER, text='3', pos=31))]))]))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -896,17 +524,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: sum, args=[VariableNode: Token(type=VARIABLE, text='arg1', pos=10), VariableNode: Token(type=VARIABLE, text='arg2', pos=15)], body=CurlyBracesNodes:\n" +
-                "nodes: [BinOperationNode:\n" +
-                "operator: Token(type=SET, text='set', pos=24)\n" +
-                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=28)\n" +
-                "whatAssign: SquareBracesNodes:\n" +
-                "nodes: [UnarOperationNode\n" +
-                "operator: Token(type=EXPR, text='expr', pos=31)\n" +
-                "operand: MathExpNodes:\n" +
-                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$arg1', pos=36), OperationNode: Token(type=OPERATION, text='+', pos=41)), VariableNode: Token(type=LINK_VARIABLE, text='\$arg2', pos=42)]]\n" +
-                ", ReturnNode(returnValue=VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=58))])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='sum'), args=[VariableNode(variable=Token(type=VARIABLE, text='arg1', pos=10)), VariableNode(variable=Token(type=VARIABLE, text='arg2', pos=15))], body=CurlyBracesNodes(nodes=[BinOperationNode(operator=Token(type=SET, text='set', pos=24), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=28)), whatAssign=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=31), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$arg1', pos=36)), OperationNode(operation=Token(type=OPERATION, text='+', pos=41)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$arg2', pos=42))]))])), ReturnNode(returnValue=VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=58)))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -919,9 +537,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode: \n" +
-                "[ProcNode(functionName=StringNode: sum, args=[], body=CurlyBracesNodes:\n" +
-                "nodes: [ReturnNode(returnValue=ValueNode: Token(type=INTEGER, text='0', pos=22)))])]"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='sum'), args=[], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=ValueNode(value=Token(type=INTEGER, text='0', pos=22)))]))])"
 
         Assertions.assertEquals(expected, actual)
     }
