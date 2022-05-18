@@ -115,8 +115,6 @@ class Parser(private val tokens: List<Token>) {
             val returnValue = match(listOf(TokenType.VARIABLE, TokenType.STRING))!!.text
             ReturnNode(StringNode(returnValue))
         } else if (isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
-            incCurrentPos()
-            // todo (fix position)
             val returnValue = parseQuotExpression()
             ReturnNode(returnValue as QuotationNodes)
         } else if (isCurrentTokenTypeEqualTo(TokenType.LSQU)) {
@@ -406,14 +404,12 @@ class Parser(private val tokens: List<Token>) {
                 ValueNode(floatToken)
             }
             isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
-                incCurrentPos()
                 parseQuotExpression()
             }
             isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
                 parseSquareBracesExpression()
             }
             isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
-                incCurrentPos()
                 parseCurlyBracesExpression()
             }
             isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
@@ -429,6 +425,8 @@ class Parser(private val tokens: List<Token>) {
      * Case 1: No replacement is made inside the curly brackets
      */
     private fun parseCurlyBracesExpression(): ExpressionNode {
+        match(TokenType.LCUR)!!
+
         val curlyBracesNode = CurlyBracesNodes()
         val stringNode = StringNode()
 
@@ -449,11 +447,9 @@ class Parser(private val tokens: List<Token>) {
         throw Exception("Missing closing }")
     }
 
-    /**
-     * Grammar
-     */
     private fun parseSquareBracesExpression(): ExpressionNode {
         match(TokenType.LSQU)!!
+        removeSpaces()
 
         val squareBracesNode = SquareBracesNodes()
         when {
@@ -493,6 +489,8 @@ class Parser(private val tokens: List<Token>) {
      * Case 9: Right square brace (in case that we used cancel symbol on left square brace)
      */
     private fun parseQuotExpression(): ExpressionNode {
+        match(TokenType.QUOT)!!
+
         val quotationsNode = QuotationNodes()
         var stringNode = StringNode()
 
@@ -817,7 +815,6 @@ class Parser(private val tokens: List<Token>) {
     /**
      * Получить текущий токен по текущей позиции и увеличить позицию на 1
      */
-    // todo (убрать и заменить на матч)
     private fun getCurrentToken(): Token {
         return tokens[pos++]
     }
