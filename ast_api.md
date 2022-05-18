@@ -6,6 +6,11 @@
   * Float
   * String
 
+**CommentNode**
+* `value: Token`
+  * Comment
+
+
 ## Commands
 **puts**
 * ValueNode
