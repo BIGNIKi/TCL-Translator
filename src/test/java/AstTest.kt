@@ -121,7 +121,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=4)), whatAssign=VariableNode(variable=Token(type=VARIABLE, text='hello', pos=6)))])"
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='x', pos=4)), whatAssign=ValueNode(value=Token(type=STRING, text='hello', pos=6)))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -177,6 +177,39 @@ class AstTest {
         val actual = asl.toString()
 
         val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=6)), StringNode(string=' \$b')]))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `puts test 6`() {
+        val code = "puts hello;"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=ValueNode(value=Token(type=STRING, text='hello', pos=5)))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `puts test 7`() {
+        val code = "puts 3;"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=ValueNode(value=Token(type=INTEGER, text='3', pos=5)))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `puts test 8`() {
+        val code = "puts 3.33;"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=ValueNode(value=Token(type=FLOAT, text='3.33', pos=5)))])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -260,7 +293,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=STRING, text='one', pos=11), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=17), operand=VariableNode(variable=Token(type=VARIABLE, text='one', pos=22)))])), SwitchCase(value=Token(type=STRING, text='two', pos=28), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=34), operand=VariableNode(variable=Token(type=VARIABLE, text='two', pos=39)))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=45), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=55), operand=VariableNode(variable=Token(type=VARIABLE, text='none', pos=60)))]))], isSubstitutionsAllowed=false)])"
+        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=STRING, text='one', pos=11), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=17), operand=ValueNode(value=Token(type=STRING, text='one', pos=22)))])), SwitchCase(value=Token(type=STRING, text='two', pos=28), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=34), operand=ValueNode(value=Token(type=STRING, text='two', pos=39)))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=45), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=55), operand=ValueNode(value=Token(type=STRING, text='none', pos=60)))]))], isSubstitutionsAllowed=false)])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -274,7 +307,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=STRING, text='one', pos=14), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=21), operand=VariableNode(variable=Token(type=VARIABLE, text='one', pos=26)))])), SwitchCase(value=Token(type=STRING, text='two', pos=36), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=43), operand=VariableNode(variable=Token(type=VARIABLE, text='two', pos=48)))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=57), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=68), operand=VariableNode(variable=Token(type=VARIABLE, text='none', pos=73)))]))], isSubstitutionsAllowed=false)])"
+        val expected = "StatementsNode(codeStrings=[SwitchNode(string=Token(type=LINK_VARIABLE, text='\$x', pos=7), cases=[SwitchCase(value=Token(type=STRING, text='one', pos=14), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=21), operand=ValueNode(value=Token(type=STRING, text='one', pos=26)))])), SwitchCase(value=Token(type=STRING, text='two', pos=36), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=43), operand=ValueNode(value=Token(type=STRING, text='two', pos=48)))])), SwitchCase(value=Token(type=DEFAULT, text='default', pos=57), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=68), operand=ValueNode(value=Token(type=STRING, text='none', pos=73)))]))], isSubstitutionsAllowed=false)])"
 
         Assertions.assertEquals(expected, actual)
     }

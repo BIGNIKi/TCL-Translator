@@ -8,7 +8,7 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "set a asda;"
+    val code = "puts 3.33;"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

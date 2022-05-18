@@ -9,3 +9,11 @@ data class Token(
         return "Token(type=$type, text='$text', pos=$pos)"
     }
 }
+
+fun Token.convertTo(type: TokenType) : Token {
+    return Token(
+        type = type,
+        text = this.text,
+        pos = this.pos
+    )
+}

@@ -1,5 +1,17 @@
-## Commands
+## Values
 
+**ValueNode**
+* `value: Token`
+  * Integer
+  * Float
+  * String
+
+## Commands
+**puts**
+* ValueNode
+* SquareBracesNodes
+* CurlyBracesNodes
+* QuotationNodes
 
 ## Operations
 
@@ -17,7 +29,6 @@ Ex: puts
 Ex: set
 
 
-
 ## Functions
 
 **ProcNode**
@@ -27,7 +38,7 @@ Ex: set
   * SquareBracesNodes
 
 
-**RetrunNode**
+**ReturnNode**
 * `returnValue: ExpressionNode?`
   * ValueNode
   * VariableNode

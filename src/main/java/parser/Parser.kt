@@ -3,6 +3,7 @@ package parser
 import ast.*
 import lexer.Token
 import lexer.TokenType
+import lexer.convertTo
 
 class Parser(private val tokens: List<Token>) {
     var pos: Int = 0
@@ -684,7 +685,8 @@ class Parser(private val tokens: List<Token>) {
             // it corresponds to single string like "set a hello;"
             isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
                 val variable = match(TokenType.VARIABLE)!!
-                VariableNode(variable)
+                val stringToken = variable.convertTo(TokenType.STRING)
+                ValueNode(stringToken)
             }
             isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
                 val integerToken = match(TokenType.INTEGER)!!
