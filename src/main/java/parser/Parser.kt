@@ -579,14 +579,6 @@ class Parser(private val tokens: List<Token>) {
         throw Exception("Missing closing \"")
     }
 
-    private fun checkIfCancelSymbolSet(): Boolean {
-        pos -= 1
-        if (pos < 0) return false
-        val cancelSymbol = isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)
-        pos += 1
-        return cancelSymbol
-    }
-
     private fun parseSwitchExpr(): ExpressionNode {
         removeSpaces()
         match(TokenType.SWITCH)!!
@@ -812,6 +804,14 @@ class Parser(private val tokens: List<Token>) {
         return false
     }
 
+    private fun checkIfCancelSymbolSet(): Boolean {
+        pos -= 1
+        if (pos < 0) return false
+        val cancelSymbol = isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)
+        pos += 1
+        return cancelSymbol
+    }
+
     /**
      * Получить текущий токен по текущей позиции и увеличить позицию на 1
      */
@@ -846,9 +846,9 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun incPosAndTrim() {
-        removeSpaces()
+        removeSpacesAndNewLines()
         incCurrentPos()
-        removeSpaces()
+        removeSpacesAndNewLines()
     }
 
     companion object {
