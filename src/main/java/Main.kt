@@ -8,7 +8,9 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "for {set i 5} {\$i > 0 && \$i <= 100} {incr i -1;} {}"
+    val code = "proc sum {} {\n" +
+            "\treturn 0" +
+            "}\n"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

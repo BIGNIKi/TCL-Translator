@@ -54,6 +54,9 @@ enum class TokenType(val label: String, val regex: Regex?) {
     FOR("FOR", Regex("^for")),
     INCR("INCR", Regex("^incr")),
 
+    PROC("PROC", Regex("^proc")),
+    RETURN("RETURN", Regex("^return")),
+
     VARIABLE("VARIABLE", Regex("^[\\w]*")),
     LINK_VARIABLE("LINK_VARIABLE", Regex("^[\$][\\w]*")),
 }

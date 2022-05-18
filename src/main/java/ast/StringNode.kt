@@ -1,7 +1,6 @@
 package ast
 
-class StringNode: ExpressionNode() {
-    var string: String = ""
+class StringNode(var string: String = ""): ExpressionNode() {
 
     fun join(str: String) {
         string += str
@@ -10,6 +9,4 @@ class StringNode: ExpressionNode() {
     override fun toString(): String {
         return "StringNode: $string"
     }
-
-
 }

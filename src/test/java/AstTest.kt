@@ -775,4 +775,138 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `return test 1`() {
+        val code = "proc foo {} {\n" +
+                "return " +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
+                "nodes: [ReturnNode(returnValue=null)])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `return test 2`() {
+        val code = "proc foo {} {\n" +
+                "return 0" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
+                "nodes: [ReturnNode(returnValue=ValueNode: Token(type=INTEGER, text='0', pos=21)))])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `return test 3`() {
+        val code = "proc foo {} {\n" +
+                "return 2.54" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
+                "nodes: [ReturnNode(returnValue=ValueNode: Token(type=FLOAT, text='2.54', pos=21)))])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `return test 4`() {
+        val code = "proc foo {} {\n" +
+                "return \"hello world\"" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
+                "nodes: [ReturnNode(returnValue=QuotationNodes\n" +
+                "nodes: [StringNode: hello world])])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `return test 5`() {
+        val code = "proc foo {} {\n" +
+                "return hello" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
+                "nodes: [ReturnNode(returnValue=StringNode: hello)])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `return test 6`() {
+        val code = "proc foo {} {\n" +
+                "return [expr 2 + 3]" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: foo, args=[], body=CurlyBracesNodes:\n" +
+                "nodes: [ReturnNode(returnValue=SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=22)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [ValueNode: Token(type=INTEGER, text='2', pos=27)), OperationNode: Token(type=OPERATION, text='+', pos=29)), ValueNode: Token(type=INTEGER, text='3', pos=31))]])])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `proc test 1`() {
+        val code = "proc sum {arg1 arg2} {\n" +
+                "\tset x [expr \$arg1+\$arg2];\n" +
+                "\treturn \$x\n" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: sum, args=[VariableNode: Token(type=VARIABLE, text='arg1', pos=10), VariableNode: Token(type=VARIABLE, text='arg2', pos=15)], body=CurlyBracesNodes:\n" +
+                "nodes: [BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=24)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=28)\n" +
+                "whatAssign: SquareBracesNodes:\n" +
+                "nodes: [UnarOperationNode\n" +
+                "operator: Token(type=EXPR, text='expr', pos=31)\n" +
+                "operand: MathExpNodes:\n" +
+                "nodes: [VariableNode: Token(type=LINK_VARIABLE, text='\$arg1', pos=36), OperationNode: Token(type=OPERATION, text='+', pos=41)), VariableNode: Token(type=LINK_VARIABLE, text='\$arg2', pos=42)]]\n" +
+                ", ReturnNode(returnValue=VariableNode: Token(type=LINK_VARIABLE, text='\$x', pos=58))])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `proc test 2`() {
+        val code = "proc sum {} {\n" +
+                "\treturn 0" +
+                "}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[ProcNode(functionName=StringNode: sum, args=[], body=CurlyBracesNodes:\n" +
+                "nodes: [ReturnNode(returnValue=ValueNode: Token(type=INTEGER, text='0', pos=22)))])]"
+
+        Assertions.assertEquals(expected, actual)
+    }
 }
