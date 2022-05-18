@@ -1,3 +1,23 @@
+## Commands
+
+
+## Operations
+
+**UnarOperationNode**
+* `operator: Token`
+* `operand: ExpressionNode`
+
+Ex: puts
+
+**BinOperationNode**
+* `operator: Token`
+* `whomAssign: VariableNode`
+* `whatAssign: ExpressionNode`
+
+Ex: set
+
+
+
 ## Functions
 
 **ProcNode**

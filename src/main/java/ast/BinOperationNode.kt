@@ -3,9 +3,9 @@ package ast
 import lexer.Token
 
 class BinOperationNode(
-    val operator: Token,
-    val whomAssign: ExpressionNode,
-    val whatAssign: ExpressionNode
+    private val operator: Token,
+    private val whomAssign: VariableNode,
+    private val whatAssign: ExpressionNode
 ) : ExpressionNode() {
     override fun toString(): String {
         return "BinOperationNode:\n" +

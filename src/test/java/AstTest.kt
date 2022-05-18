@@ -190,6 +190,22 @@ class AstTest {
     }
 
     @Test
+    internal fun `set test 11`() {
+        val code = "set x hello;"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode: \n" +
+                "[BinOperationNode:\n" +
+                "operator: Token(type=SET, text='set', pos=0)\n" +
+                "whomAssign: VariableNode: Token(type=VARIABLE, text='x', pos=4)\n" +
+                "whatAssign: VariableNode: Token(type=VARIABLE, text='hello', pos=6)\n" +
+                "]"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
     internal fun `puts + grouping with braces test 1`() {
         val code = "puts \"Hello world\";"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()

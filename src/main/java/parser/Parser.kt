@@ -389,37 +389,6 @@ class Parser(private val tokens: List<Token>) {
 
     }
 
-    private fun parseSetOrPutsFormula(): ExpressionNode {
-        return when {
-            isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
-                val variable = match(TokenType.VARIABLE)!!
-                VariableNode(variable)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
-                val integerToken = match(TokenType.INTEGER)!!
-                ValueNode(integerToken)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
-                val floatToken = match(TokenType.FLOAT)!!
-                ValueNode(floatToken)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
-                parseQuotExpression()
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
-                parseSquareBracesExpression()
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
-                parseCurlyBracesExpression()
-            }
-            isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
-                incCurrentPos()
-                parseSetOrPutsFormula()
-            }
-            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
-        }
-    }
-
     /**
      * Grammar
      * Case 1: No replacement is made inside the curly brackets
@@ -710,34 +679,54 @@ class Parser(private val tokens: List<Token>) {
         return UnarOperationNode(exprOperator, mathExpNode)
     }
 
+    private fun parseSetOrPutsRightFormula(): ExpressionNode {
+        return when {
+            // it corresponds to single string like "set a hello;"
+            isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
+                val variable = match(TokenType.VARIABLE)!!
+                VariableNode(variable)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
+                val integerToken = match(TokenType.INTEGER)!!
+                ValueNode(integerToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
+                val floatToken = match(TokenType.FLOAT)!!
+                ValueNode(floatToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
+                parseQuotExpression()
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
+                parseSquareBracesExpression()
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
+                parseCurlyBracesExpression()
+            }
+            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
+        }
+    }
+
     private fun parsePutsExpr(): ExpressionNode {
         removeSpaces()
         val putsOperator = match(TokenType.PUTS)!!
 
         removeSpaces()
-        val rightFormulaNode = parseSetOrPutsFormula()
+        val rightFormulaNode = parseSetOrPutsRightFormula()
 
         return UnarOperationNode(putsOperator, rightFormulaNode)
     }
 
     private fun parseSetExpr(): ExpressionNode {
+        val setOperator = match(TokenType.SET)!!
         removeSpaces()
-        val assignOperator = match(TokenType.SET)!!
 
+        val variable = match(TokenType.VARIABLE) ?: throw Exception("The variable was expected at ${tokens[pos].pos} position")
         removeSpaces()
-        val variableNode = parseVariable()
 
-        removeSpaces()
-        val rightFormulaNode = parseSetOrPutsFormula()
+        val rightFormulaNode = parseSetOrPutsRightFormula()
 
-        return BinOperationNode(assignOperator, variableNode, rightFormulaNode)
-    }
-
-    private fun parseVariable(): ExpressionNode {
-        val variable = match(TokenType.VARIABLE)
-        variable?.let {
-            return VariableNode(it)
-        } ?: throw Exception("The variable was expected at $pos position")
+        return BinOperationNode(operator = setOperator, whomAssign = VariableNode(variable), whatAssign = rightFormulaNode)
     }
 
     /**
