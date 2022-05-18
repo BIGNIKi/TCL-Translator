@@ -6,7 +6,8 @@ import lexer.TokenType
 
 class Parser(private val tokens: List<Token>) {
     var pos: Int = 0
-    val scope: HashMap<String, Any> = hashMapOf()
+    val variablesScope: HashMap<String, Any> = hashMapOf()
+    val proceduresScope: MutableList<String> = mutableListOf()
 
     fun parseCode(): ExpressionNode {
         val root = StatementsNode()
@@ -119,8 +120,6 @@ class Parser(private val tokens: List<Token>) {
             val returnValue = parseQuotExpression()
             ReturnNode(returnValue as QuotationNodes)
         } else if (isCurrentTokenTypeEqualTo(TokenType.LSQU)) {
-            incCurrentPos()
-            // todo (fix position)
             val returnValue = parseSquareBracesExpression()
             ReturnNode(returnValue as SquareBracesNodes)
         } else {
@@ -328,9 +327,6 @@ class Parser(private val tokens: List<Token>) {
                 incCurrentPos()
                 null
             }
-            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
-                parseSquareBracesExpression()
-            }
             else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
         }
     }
@@ -414,7 +410,6 @@ class Parser(private val tokens: List<Token>) {
                 parseQuotExpression()
             }
             isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
-                incCurrentPos()
                 parseSquareBracesExpression()
             }
             isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
@@ -458,6 +453,8 @@ class Parser(private val tokens: List<Token>) {
      * Grammar
      */
     private fun parseSquareBracesExpression(): ExpressionNode {
+        match(TokenType.LSQU)!!
+
         val squareBracesNode = SquareBracesNodes()
         when {
             isCurrentTokenTypeEqualTo(TokenType.SET) -> {
@@ -518,8 +515,9 @@ class Parser(private val tokens: List<Token>) {
                 }
                 // If /$a then substitution is canceled otherwise we return variable node
                 isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
-                    val linkVariable = match(TokenType.LINK_VARIABLE)!!
+                    val linkVariable = peekCurrentToken()
                     val isCancelSymbolSet = checkIfCancelSymbolSet()
+                    incCurrentPos()
                     if (isCancelSymbolSet) {
                         stringNode.join(linkVariable.text)
                     } else {
@@ -538,11 +536,12 @@ class Parser(private val tokens: List<Token>) {
                     stringNode.join(leftCurlyBrace.text)
                 }
                 isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
-                    val leftSquareBrace = match(TokenType.LSQU)!!
+                    val leftSquareBrace = peekCurrentToken()
 
                     val isCancelSymbolSet = checkIfCancelSymbolSet()
                     if (isCancelSymbolSet) {
                         stringNode.join(leftSquareBrace.text)
+                        incCurrentPos()
                     } else {
 
                         if (stringNode.string.isNotEmpty()) {
@@ -583,10 +582,10 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun checkIfCancelSymbolSet(): Boolean {
-        pos -= 2
+        pos -= 1
         if (pos < 0) return false
         val cancelSymbol = isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)
-        pos += 2
+        pos += 1
         return cancelSymbol
     }
 
@@ -818,8 +817,13 @@ class Parser(private val tokens: List<Token>) {
     /**
      * Получить текущий токен по текущей позиции и увеличить позицию на 1
      */
+    // todo (убрать и заменить на матч)
     private fun getCurrentToken(): Token {
         return tokens[pos++]
+    }
+
+    private fun peekCurrentToken(): Token {
+        return tokens[pos]
     }
 
     /**
