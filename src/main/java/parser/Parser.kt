@@ -8,6 +8,7 @@ import lexer.convertTo
 class Parser(private val tokens: List<Token>) {
     var pos: Int = 0
     val variablesScope: HashMap<String, Any> = hashMapOf()
+    // todo (добавлять созданные процедуры в список, чтобы потом отслеживать имена.)
     val proceduresScope: MutableList<String> = mutableListOf()
 
     fun parseCode(): ExpressionNode {
@@ -68,7 +69,22 @@ class Parser(private val tokens: List<Token>) {
                 throw Exception("Unknown TokenType at ${tokens[pos].pos}")
             }
         }
+    }
 
+    private fun parseBody(): ExpressionNode {
+        val body = CurlyBracesNodes()
+
+        while (true) {
+            body.addNode(parseExpression())
+
+            removeSpacesAndNewLines()
+            if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+                incPosAndTrim()
+                break
+            }
+        }
+
+        return body
     }
 
     private fun parseProcExpr(): ExpressionNode {
@@ -204,130 +220,6 @@ class Parser(private val tokens: List<Token>) {
         val body = parseBody()
 
         return WhileLoopNode(condition = condition, body = body)
-    }
-
-    private fun parseIfExpr(): ExpressionNode {
-        val ifNode = IfNode()
-
-        match(TokenType.IF)!!
-        removeSpaces()
-        val trueBranch = parseIfBranch()
-        ifNode.addBranch(trueBranch)
-
-        while (isCurrentTokenTypeEqualTo(TokenType.ELSEIF)) {
-            incPosAndTrim()
-            ifNode.addBranch(parseIfBranch())
-        }
-
-        if (isCurrentTokenTypeEqualTo(TokenType.ELSE)) {
-            incPosAndTrim()
-            ifNode.addBranch(parseIfBranch(true))
-        }
-
-        return ifNode
-    }
-
-    private fun parseIfBranch(isElseBranch: Boolean = false): IfBranch {
-
-        var condition: ExpressionNode? = null
-        if (!isElseBranch) {
-            // parse condition of true branch of if
-            match(listOf(TokenType.QUOT, TokenType.LCUR)) ?: throw Exception("Expected condition at ${tokens[pos].pos}")
-            removeSpaces()
-            condition = parseCondition()
-        }
-
-        // parse body of true branch of if
-        removeSpacesAndNewLines()
-        // todo (скобки не обязательны, надо поправить)
-        match(TokenType.LCUR) ?: throw Exception("Expected start of if body at ${tokens[pos].pos}")
-
-        removeSpacesAndNewLines()
-        val body = parseBody()
-
-        return IfBranch(condition = condition, body = body)
-    }
-
-    private fun parseBody(): ExpressionNode {
-        val body = CurlyBracesNodes()
-
-        while (true) {
-            body.addNode(parseExpression())
-
-            removeSpacesAndNewLines()
-            if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
-                incPosAndTrim()
-                break
-            }
-        }
-
-        return body
-    }
-
-    /**
-     * Case 1. link variable
-     * Case 2. number
-     * Case 3. expr
-     */
-    private fun parseCondition(): ExpressionNode {
-
-        val bracesNodes = BracesNodes()
-
-        while (!isCurrentTokenTypeEqualTo(listOf(TokenType.RCUR, TokenType.QUOT))) {
-            val expression = parsLogicalConditions()
-            expression?.let { bracesNodes.addNode(it) }
-        }
-
-        removeSpacesAndNewLines()
-        match(listOf(TokenType.RCUR, TokenType.QUOT))!!
-        removeSpacesAndNewLines()
-
-        return bracesNodes
-    }
-
-    private fun parsLogicalConditions(): ExpressionNode? {
-        return when {
-            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
-                val integerToken = match(TokenType.INTEGER)!!
-                ValueNode(integerToken)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
-                val floatToken = match(TokenType.FLOAT)!!
-                ValueNode(floatToken)
-            }
-            isCurrentTokenTypeEqualTo(listOf(TokenType.TRUE, TokenType.FALSE)) -> {
-                val boolean = match(listOf(TokenType.TRUE, TokenType.FALSE))!!
-                ValueNode(boolean)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
-                val linkVariable = match(TokenType.LINK_VARIABLE)!!
-                VariableNode(linkVariable)
-            }
-            isCurrentTokenTypeEqualTo(operationsList) -> {
-                val operationNode = match(operationsList)!!
-                OperationNode(operationNode)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
-                incCurrentPos()
-                val bracesNodes = BracesNodes()
-                while (!isCurrentTokenTypeEqualTo(TokenType.RPAR)) {
-                    val expression = parsLogicalConditions()
-                    expression?.let { bracesNodes.addNode(it) }
-                }
-
-                incCurrentPos()
-                return if (bracesNodes.nodes.isEmpty()) {
-                    null
-                } else {
-                    bracesNodes
-                }
-            }
-            isCurrentTokenTypeEqualTo(listOf(TokenType.SPACE)) -> {
-                incCurrentPos()
-                null
-            }
-            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
-        }
     }
 
     /**
@@ -487,6 +379,111 @@ class Parser(private val tokens: List<Token>) {
         }
 
         throw Exception("Missing closing \"")
+    }
+
+    private fun parseIfExpr(): ExpressionNode {
+        val ifNode = IfNode()
+
+        match(TokenType.IF)!!
+        removeSpaces()
+
+        val trueBranch = parseIfBranch()
+        ifNode.addBranch(trueBranch)
+
+        while (isCurrentTokenTypeEqualTo(TokenType.ELSEIF)) {
+            incPosAndTrim()
+            ifNode.addBranch(parseIfBranch())
+        }
+
+        if (isCurrentTokenTypeEqualTo(TokenType.ELSE)) {
+            incPosAndTrim()
+            ifNode.addBranch(parseIfBranch(true))
+        }
+
+        return ifNode
+    }
+
+    private fun parseIfBranch(isElseBranch: Boolean = false): IfBranch {
+
+        var condition: ExpressionNode? = null
+        if (!isElseBranch) {
+            // parse condition of true branch of if
+            match(listOf(TokenType.QUOT, TokenType.LCUR)) ?: throw Exception("Expected condition at ${tokens[pos].pos}")
+            removeSpaces()
+            condition = parseCondition()
+        }
+
+        // parse body of branch of if
+        removeSpacesAndNewLines()
+        match(TokenType.LCUR) ?: throw Exception("Expected start of if body at ${tokens[pos].pos}")
+
+        removeSpacesAndNewLines()
+        val body = parseBody()
+
+        return IfBranch(condition = condition, body = body)
+    }
+
+    private fun parseCondition(): ExpressionNode {
+        val bracesNodes = BracesNodes()
+
+        while (!isCurrentTokenTypeEqualTo(listOf(TokenType.RCUR, TokenType.QUOT))) {
+            val expression = parsLogicalConditions()
+            expression?.let { bracesNodes.addNode(it) }
+        }
+
+        removeSpacesAndNewLines()
+        match(listOf(TokenType.RCUR, TokenType.QUOT))!!
+        removeSpacesAndNewLines()
+
+        return bracesNodes
+    }
+
+    private fun parsLogicalConditions(): ExpressionNode? {
+        return when {
+            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
+                val integerToken = match(TokenType.INTEGER)!!
+                ValueNode(integerToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
+                val floatToken = match(TokenType.FLOAT)!!
+                ValueNode(floatToken)
+            }
+            isCurrentTokenTypeEqualTo(listOf(TokenType.TRUE, TokenType.FALSE)) -> {
+                val boolean = match(listOf(TokenType.TRUE, TokenType.FALSE))!!
+                ValueNode(boolean)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                val linkVariable = match(TokenType.LINK_VARIABLE)!!
+                VariableNode(linkVariable)
+            }
+            isCurrentTokenTypeEqualTo(operationsList) -> {
+                val operationNode = match(operationsList)!!
+                OperationNode(operationNode)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
+                incCurrentPos()
+                val bracesNodes = BracesNodes()
+                while (!isCurrentTokenTypeEqualTo(TokenType.RPAR)) {
+                    val expression = parsLogicalConditions()
+                    expression?.let { bracesNodes.addNode(it) }
+                }
+
+                incCurrentPos()
+                return if (bracesNodes.nodes.isEmpty()) {
+                    null
+                } else {
+                    bracesNodes
+                }
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
+                parseSquareBracesExpression()
+            }
+            isCurrentTokenTypeEqualTo(listOf(TokenType.SPACE)) -> {
+                incCurrentPos()
+                null
+            }
+            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
+        }
     }
 
     private fun parseSwitchExpr(): ExpressionNode {

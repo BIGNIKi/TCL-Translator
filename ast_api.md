@@ -3,6 +3,22 @@
 * In the end of the code must be ; or new line
 
 
+## If
+**IfNode**
+* `branches: MutableList<IfBranch>`
+
+**IfBranch**
+* `condition: ExpressionNode?`
+  * BracesNodes 
+    * ValueNode
+    * VariableNode
+    * OperationNode
+    * BracesNodes
+    * SquareBracesNodes
+* `body: ExpressionNode`
+  * CurlyBracesNodes
+    * Everything?
+
 ## Switch
 **SwitchNode**
 * `string: Token`
@@ -48,9 +64,11 @@
 ## Values
 **ValueNode**
 * `value: Token`
-  * Integer
-  * Float
-  * String
+  * TokenType.INTEGER
+  * TokenType.FLOAT
+  * TokenType.STRING
+  * TokenType.TRUE
+  * TokenType.FALSE
 
 **CommentNode**
 * `value: Token`

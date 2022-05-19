@@ -459,6 +459,26 @@ class AstTest {
     }
 
     @Test
+    internal fun `if test 7`() {
+        val code = "if {\$x == 2} {puts \"\$x is 2\"} elseif {\$x == 3} {puts \"\$x is 3\"}\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=4)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=7)), ValueNode(value=Token(type=INTEGER, text='2', pos=10))]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=14), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=20)), StringNode(string=' is 2')]))])), IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=38)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=41)), ValueNode(value=Token(type=INTEGER, text='3', pos=44))]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=48), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=54)), StringNode(string=' is 3')]))]))])])"
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `if test 8`() {
+        val code = "if  {\$x == [expr pow(2,4)]} {puts yes} else {puts wrong}"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[IfNode(branches=[IfBranch(condition=BracesNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=5)), OperationNode(operation=Token(type=IS_EQUAL, text='==', pos=8)), SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=12), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=POW, text='pow', pos=17), arguments=[ValueNode(value=Token(type=INTEGER, text='2', pos=21)), ValueNode(value=Token(type=INTEGER, text='4', pos=23))])]))])]), body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=29), operand=ValueNode(value=Token(type=STRING, text='yes', pos=34)))])), IfBranch(condition=null, body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=45), operand=ValueNode(value=Token(type=STRING, text='wrong', pos=50)))]))])])"
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
     internal fun `while test 1`() {
         val code = "while \"\$x >= 1 && \$x <= 0\" {\n" +
                 "set x 4\n" +
