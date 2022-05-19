@@ -13,7 +13,13 @@ enum class TokenType(val label: String, val regex: Regex?) {
     SEMICOLON("SEMICOLON", Regex("^[;\n]")),
     SPACE("SPACE", Regex("^[ \t\r]")),
 
-    OPERATION("OPERATION", Regex("^[-+~*/%]")),
+    PLUS("PLUS", Regex("^[+]")),
+    MINUS("MINUS", Regex("^[-]")),
+    DIVISION("DIVISION", Regex("^[/]")),
+    MULTIPLICATION("MULTIPLICATION", Regex("^[*]")),
+    REMINDER("REMINDER", Regex("^[%]")),
+
+
     IS_EQUAL("IS_EQUAL", Regex("^==")),
     IS_NOT_EQUAL("IS_NOT_EQUAL", Regex("^!=")),
     AND("AND", Regex("^&&")),
@@ -39,6 +45,9 @@ enum class TokenType(val label: String, val regex: Regex?) {
     EXPR("EXPR", Regex("^expr")),
     SQRT("SQRT", Regex("^sqrt")),
     LOG("LOG", Regex("^log")),
+    ABS("ABS", Regex("^abs")),
+    FLOOR("FLOOR", Regex("^floor")),
+    EXP("EXP", Regex("^exp")),
 
     SWITCH("SWITCH", Regex("^switch")),
     DEFAULT("DEFAULT", Regex("^default")),

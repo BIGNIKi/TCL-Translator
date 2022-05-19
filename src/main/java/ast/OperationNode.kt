@@ -2,7 +2,7 @@ package ast
 
 import lexer.Token
 
-class OperationNode(val operation: Token) : ExpressionNode() {
+class OperationNode(private val operation: Token) : ExpressionNode() {
     override fun toString(): String {
         return "OperationNode(operation=$operation)"
     }

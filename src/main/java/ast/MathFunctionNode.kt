@@ -2,7 +2,10 @@ package ast
 
 import lexer.Token
 
-class MathFunctionNode(val mathFun: Token, val argument: ExpressionNode) : ExpressionNode() {
+class MathFunctionNode(
+    private val mathFun: Token,
+    private val argument: ExpressionNode
+) : ExpressionNode() {
     override fun toString(): String {
         return "MathFunctionNode(mathFun=$mathFun, argument=$argument)"
     }

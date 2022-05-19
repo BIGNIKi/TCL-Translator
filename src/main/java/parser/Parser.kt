@@ -331,66 +331,6 @@ class Parser(private val tokens: List<Token>) {
     }
 
     /**
-     * Case 1. [expr 1 + 2 * 3]
-     * Case 2. [expr (1 + 2) * 3]
-     * Case 3. [expr log(30)]
-     * Case 4. [expr $a + $b]
-     * Case 5. [expr "$a + $b"]
-     * Case 6. [expr {$a + $b}]
-     */
-    private fun parseExprFormula(): ExpressionNode? {
-        return when {
-            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
-                val integerToken = match(TokenType.INTEGER)!!
-                ValueNode(integerToken)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
-                val floatToken = match(TokenType.FLOAT)!!
-                ValueNode(floatToken)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.OPERATION) -> {
-                val operationToken = match(TokenType.OPERATION)!!
-                OperationNode(operationToken)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
-                incCurrentPos()
-                val bracesNodes = BracesNodes()
-                while (!isCurrentTokenTypeEqualTo(TokenType.RPAR)) {
-                    val expression = parseExprFormula()
-                    expression?.let { bracesNodes.addNode(it) }
-                }
-
-                incCurrentPos()
-                return if (bracesNodes.nodes.isEmpty()) {
-                    null
-                } else {
-                    bracesNodes
-                }
-            }
-            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
-                val linkVariable = match(TokenType.LINK_VARIABLE)!!
-                VariableNode(linkVariable)
-            }
-            // todo (в зависимости от функции можно проверять тип принимаемого аргумента)
-            isCurrentTokenTypeEqualTo(listOf(TokenType.SQRT)) -> {
-                val mathFun = getCurrentToken()
-                match(TokenType.LPAR) ?: throw Exception("Expected argument body () at $pos")
-                val argument = match(TokenType.INTEGER) ?: throw Exception("Expected argument inside () at $pos")
-                match(TokenType.RPAR) ?: throw Exception("Expected argument body () at $pos")
-
-                val mathFunctionNode = MathFunctionNode(mathFun, ValueNode(argument))
-                mathFunctionNode
-            }
-            isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE)) -> {
-                incCurrentPos()
-                null
-            }
-            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
-        }
-
-    }
-
-    /**
      * Grammar
      * Case 1: No replacement is made inside the curly brackets
      */
@@ -647,13 +587,12 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseExpr(): ExpressionNode {
-        removeSpaces()
         val exprOperator = match(TokenType.EXPR)!!
 
         val mathExpNode = MathExpNodes()
         while (!isCurrentTokenTypeEqualTo(TokenType.RSQU)) {
             if (pos == tokens.size - 1) {
-                throw Exception("Missing closing ] at ${tokens[pos].pos}")
+                throw Exception("Missing closing ] of math expression")
             }
 
             val node = parseExprFormula()
@@ -661,11 +600,75 @@ class Parser(private val tokens: List<Token>) {
         }
 
         if (mathExpNode.nodes.isEmpty()) {
-            throw Exception("Missing expression body at ${tokens[pos].pos}")
+            throw Exception("Missing expression body")
         }
-        // val rightFormulaNode = parseExprFormula()
 
         return UnarOperationNode(exprOperator, mathExpNode)
+    }
+
+    /**
+     * Case 1. [expr 1 + 2 * 3]
+     * Case 2. [expr (1 + 2) * 3]
+     * Case 3. [expr log(30)]
+     * Case 4. [expr $a + $b]
+     * Case 5. [expr "$a + $b"]
+     * Case 6. [expr {$a + $b}]
+     */
+    private fun parseExprFormula(): ExpressionNode? {
+        return when {
+            isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
+                val integerToken = match(TokenType.INTEGER)!!
+                ValueNode(integerToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.FLOAT) -> {
+                val floatToken = match(TokenType.FLOAT)!!
+                ValueNode(floatToken)
+            }
+            isCurrentTokenTypeEqualTo(mathOperationsList) -> {
+                val operationToken = match(mathOperationsList)!!
+                OperationNode(operationToken)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
+                incCurrentPos()
+                val bracesNodes = BracesNodes()
+                while (!isCurrentTokenTypeEqualTo(TokenType.RPAR)) {
+                    val expression = parseExprFormula()
+                    expression?.let { bracesNodes.addNode(it) }
+                }
+
+                incCurrentPos()
+                return if (bracesNodes.nodes.isEmpty()) {
+                    null
+                } else {
+                    bracesNodes
+                }
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                val linkVariable = match(TokenType.LINK_VARIABLE)!!
+                VariableNode(linkVariable)
+            }
+            isCurrentTokenTypeEqualTo(mathFunctionsList) -> {
+                val mathFun = getCurrentToken()
+                match(TokenType.LPAR) ?: throw Exception("Expected argument body () at $pos")
+                val argument = match(listOf(TokenType.INTEGER, TokenType.FLOAT)) ?: throw Exception("Expected argument inside () at $pos")
+                match(TokenType.RPAR) ?: throw Exception("Expected argument body () at $pos")
+                // todo (добавить метод для функций принимающие разное кол-во параметров
+
+                //parseMathFun()
+
+                MathFunctionNode(mathFun, ValueNode(argument))
+            }
+            isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE)) -> {
+                incCurrentPos()
+                null
+            }
+            else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
+        }
+
+    }
+
+    private fun parseMathFun(): Token {
+        TODO("Not yet implemented")
     }
 
     private fun parseSetOrPutsRightFormula(): ExpressionNode {
@@ -845,6 +848,22 @@ class Parser(private val tokens: List<Token>) {
         val tclSingleKeywordsList = listOf(
             TokenType.CONTINUE,
             TokenType.BREAK
+        )
+
+        val mathOperationsList = listOf(
+            TokenType.PLUS,
+            TokenType.MINUS,
+            TokenType.DIVISION,
+            TokenType.MULTIPLICATION,
+            TokenType.REMINDER
+        )
+
+        val mathFunctionsList = listOf(
+            TokenType.SQRT,
+            TokenType.LOG,
+            TokenType.ABS,
+            TokenType.FLOOR,
+            TokenType.EXP
         )
     }
 }
