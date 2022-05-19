@@ -142,65 +142,6 @@ class Parser(private val tokens: List<Token>) {
         }
     }
 
-    private fun parseIncrExpr(): ExpressionNode {
-        match(TokenType.INCR)!!
-        removeSpaces()
-
-        val variable = match(TokenType.VARIABLE) ?: throw Exception("Expected counter variable after incr at ${tokens[pos].pos}")
-        removeSpaces()
-
-        var value = 1;
-        if (isCurrentTokenTypeEqualTo(TokenType.INTEGER)) {
-            value = match(TokenType.INTEGER)!!.text.toInt()
-        }
-
-        return IncrNode(variable = VariableNode(variable = variable), value = value)
-    }
-
-    private fun parseForExpr(): ExpressionNode {
-        removeSpaces()
-        match(TokenType.FOR)!!
-        removeSpaces()
-
-        val forLoopNode = ForLoopNode()
-
-        // block 1. Initialization
-        match(TokenType.LCUR) ?: throw Exception("Expected initialization block at ${tokens[pos].pos}")
-        removeSpacesAndNewLines()
-        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
-            forLoopNode.addExpressionToInitBlock(parseExpression())
-            removeSpacesAndNewLines()
-        }
-        incCurrentPos()
-        removeSpacesAndNewLines()
-
-        // block 2. Condition
-        match(TokenType.LCUR) ?: throw Exception("Expected condition block at ${tokens[pos].pos}")
-        removeSpacesAndNewLines()
-        forLoopNode.addExpressionToConditionBlock(parseCondition())
-
-        // block 3. Counter
-        match(TokenType.LCUR) ?: throw Exception("Expected counter block at ${tokens[pos].pos}")
-        removeSpacesAndNewLines()
-        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
-            forLoopNode.addExpressionToCounterBlock(parseExpression())
-            removeSpacesAndNewLines()
-        }
-        incCurrentPos()
-        removeSpacesAndNewLines()
-
-        // block 4. Command
-        match(TokenType.LCUR) ?: throw Exception("Expected command block at ${tokens[pos].pos}")
-        removeSpacesAndNewLines()
-        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
-            forLoopNode.addExpressionToCommandBlock(parseExpression())
-            removeSpacesAndNewLines()
-        }
-        incCurrentPos()
-        removeSpacesAndNewLines()
-
-        return forLoopNode
-    }
 
     /**
      * Grammar
@@ -359,6 +300,65 @@ class Parser(private val tokens: List<Token>) {
         }
 
         throw Exception("Missing closing \"")
+    }
+
+    private fun parseForExpr(): ExpressionNode {
+        match(TokenType.FOR)!!
+        removeSpaces()
+
+        val forLoopNode = ForLoopNode()
+
+        // block 1. Initialization
+        match(TokenType.LCUR) ?: throw Exception("Expected initialization block at ${tokens[pos].pos}")
+        removeSpacesAndNewLines()
+        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            forLoopNode.addExpressionToInitBlock(parseExpression())
+            removeSpacesAndNewLines()
+        }
+        incCurrentPos()
+        removeSpacesAndNewLines()
+
+        // block 2. Condition
+        match(TokenType.LCUR) ?: throw Exception("Expected condition block at ${tokens[pos].pos}")
+        removeSpacesAndNewLines()
+        forLoopNode.addExpressionToConditionBlock(parseCondition())
+
+        // block 3. Counter
+        match(TokenType.LCUR) ?: throw Exception("Expected counter block at ${tokens[pos].pos}")
+        removeSpacesAndNewLines()
+        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            forLoopNode.addExpressionToCounterBlock(parseExpression())
+            removeSpacesAndNewLines()
+        }
+        incCurrentPos()
+        removeSpacesAndNewLines()
+
+        // block 4. Command
+        match(TokenType.LCUR) ?: throw Exception("Expected command block at ${tokens[pos].pos}")
+        removeSpacesAndNewLines()
+        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            forLoopNode.addExpressionToCommandBlock(parseExpression())
+            removeSpacesAndNewLines()
+        }
+        incCurrentPos()
+        removeSpacesAndNewLines()
+
+        return forLoopNode
+    }
+
+    private fun parseIncrExpr(): ExpressionNode {
+        match(TokenType.INCR)!!
+        removeSpaces()
+
+        val variable = match(TokenType.VARIABLE) ?: throw Exception("Expected counter variable after incr at ${tokens[pos].pos}")
+        removeSpaces()
+
+        var value = 1;
+        if (isCurrentTokenTypeEqualTo(TokenType.INTEGER)) {
+            value = match(TokenType.INTEGER)!!.text.toInt()
+        }
+
+        return IncrNode(variable = VariableNode(variable = variable), value = value)
     }
 
     private fun parseWhileExpr(): ExpressionNode {

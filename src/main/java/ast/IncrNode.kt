@@ -1,7 +1,7 @@
 package ast
 
 class IncrNode(
-    val variable: ExpressionNode,
+    val variable: VariableNode,
     val value: Int
 ) : ExpressionNode() {
     override fun toString(): String {

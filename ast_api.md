@@ -3,6 +3,28 @@
 * In the end of the code must be ; or new line
 
 
+## For
+**IncrNode**
+* `variable: VariableNode`
+* `value: Int`
+
+**ForLoopNode**
+* `initBlock: List<ExpressionNode>`
+  * Everything? 
+* `conditionsBlock: List<ExpressionNode>`
+  * BracesNodes
+    * ValueNode
+    * VariableNode
+    * OperationNode
+    * BracesNodes
+    * SquareBracesNodes
+* `counterBlock: List<ExpressionNode>`
+  * IncrNode
+* `commandBlock: List<ExpressionNode>`
+  * CurlyBracesNodes
+    * Everything?
+
+
 ## While
 **WhileLoopNode**
 * `condition: ExpressionNode`
