@@ -8,7 +8,9 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "if  {\$x == [expr pow(2,4)]} {puts yes} else {puts wrong}"
+    val code = "proc foo{ } {puts hello}\n" +
+            "\n" +
+            "foo { }\n"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

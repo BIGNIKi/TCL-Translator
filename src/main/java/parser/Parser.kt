@@ -8,19 +8,13 @@ import lexer.convertTo
 class Parser(private val tokens: List<Token>) {
     var pos: Int = 0
     val variablesScope: HashMap<String, Any> = hashMapOf()
-    // todo (добавлять созданные процедуры в список, чтобы потом отслеживать имена.)
-    val proceduresScope: MutableList<String> = mutableListOf()
+    val proceduresScope: HashMap<String, Int> = hashMapOf()
 
     fun parseCode(): ExpressionNode {
         val root = StatementsNode()
         while (pos < tokens.size) {
             val codeString = parseExpression() // отдельно взятая строка кода
-            removeSpaces()
-
-            if (pos < tokens.size) {
-                require(listOf(TokenType.SEMICOLON))
-            }
-
+            removeSpacesAndNewLines()
             root.addNode(codeString)
         }
         return root
@@ -64,6 +58,10 @@ class Parser(private val tokens: List<Token>) {
             }
             isCurrentTokenTypeEqualTo(tclSingleKeywordsList) -> {
                 TCLKeywordsNode(match(tclSingleKeywordsList)!!)
+            }
+            // it corresponds to defined recently function
+            isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
+                parseProcCallExpr()
             }
             else -> {
                 throw Exception("Unknown TokenType at ${tokens[pos].pos}")
@@ -137,7 +135,7 @@ class Parser(private val tokens: List<Token>) {
             }
         }
 
-        removeSpaces()
+        removeSpacesAndNewLines()
         incCurrentPos()
 
         return squareBracesNode
@@ -246,6 +244,44 @@ class Parser(private val tokens: List<Token>) {
         throw Exception("Missing closing \"")
     }
 
+    private fun parseProcCallExpr(): ExpressionNode {
+        val nameOfFun = match(TokenType.VARIABLE)!!.text
+        val args: MutableList<ExpressionNode> = mutableListOf()
+        if (proceduresScope.containsKey(nameOfFun)) {
+            repeat(proceduresScope[nameOfFun]!!) {
+                when {
+                    isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR)) -> {
+                        incCurrentPos()
+                        val stringNode = StringNode()
+                        while(!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.RCUR))) {
+                            stringNode.join(getCurrentToken().text)
+                        }
+                        match(listOf(TokenType.QUOT, TokenType.RCUR))!!
+                        removeSpacesAndNewLines()
+
+                        args.add(stringNode)
+                    }
+                    isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
+                        args.add(parseSquareBracesExpression())
+                    }
+                }
+            }
+
+            if (proceduresScope[nameOfFun]!! == 0) {
+                incCurrentPos()
+                removeSpaces()
+                incCurrentPos()
+            }
+
+        } else {
+            throw Exception("Unknown function name at ${tokens[pos].pos}")
+        }
+
+        removeSpacesAndNewLines()
+
+        return ProcCallNode(functionName = StringNode(nameOfFun), args = args)
+    }
+
     private fun parseProcExpr(): ExpressionNode {
         match(TokenType.PROC)!!
         removeSpaces()
@@ -267,6 +303,9 @@ class Parser(private val tokens: List<Token>) {
             removeSpaces()
         }
         match(TokenType.RCUR)!!
+
+        // save info about function
+        proceduresScope[nameOfProc] = args.size
 
         // parse body of proc
         removeSpacesAndNewLines()

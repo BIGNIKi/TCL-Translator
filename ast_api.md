@@ -1,6 +1,5 @@
 ## Rules
 * In switch case must be default branch
-* In the end of the code must be ; or new line
 
 
 ## Proc
@@ -18,6 +17,13 @@
 * `args: List<VariableNode>`
 * `body: ExpressionNode`
   * Everything? 
+
+**ProcCallNode**
+* `functionName: StringNode`
+* `args: List<ExpressionNode>`
+  * StringNode
+  * SquareBracesNodes
+
 
 ## For
 **IncrNode**
@@ -150,19 +156,3 @@ Ex: puts, expr
 * `whatAssign: ExpressionNode`
 
 Ex: set
-
-
-## Functions
-**ProcNode**
-* `functionName: StringNode`
-* `args: List<VariableNode>`
-* `body: ExpressionNode`
-  * SquareBracesNodes
-  
-**ReturnNode**
-* `returnValue: ExpressionNode?`
-  * ValueNode
-  * VariableNode
-  * StringNode
-  * SquareBracesNodes
-  * null - means the return value is nothing.

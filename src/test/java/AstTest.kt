@@ -634,4 +634,30 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `proc call test 1`() {
+        val code = "proc foo{a b c} {puts hello}\n" +
+                "\n" +
+                "foo \"1\" {hello world} [expr 2+2]\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[VariableNode(variable=Token(type=VARIABLE, text='a', pos=9)), VariableNode(variable=Token(type=VARIABLE, text='b', pos=11)), VariableNode(variable=Token(type=VARIABLE, text='c', pos=13))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=17), operand=ValueNode(value=Token(type=STRING, text='hello', pos=22)))])), ProcCallNode(functionName=StringNode(string='foo'), args=[StringNode(string='1'), StringNode(string='hello world'), SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=53), operand=MathExpNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='2', pos=58)), OperationNode(operation=Token(type=PLUS, text='+', pos=59)), ValueNode(value=Token(type=INTEGER, text='2', pos=60))]))])])])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `proc call test 2`() {
+        val code = "proc foo{ } {puts hello}\n" +
+                "\n" +
+                "foo { }\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=13), operand=ValueNode(value=Token(type=STRING, text='hello', pos=18)))])), ProcCallNode(functionName=StringNode(string='foo'), args=[])])"
+
+        Assertions.assertEquals(expected, actual)
+    }
 }
