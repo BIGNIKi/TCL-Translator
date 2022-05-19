@@ -87,62 +87,6 @@ class Parser(private val tokens: List<Token>) {
         return body
     }
 
-    private fun parseProcExpr(): ExpressionNode {
-        match(TokenType.PROC)!!
-        removeSpaces()
-
-        // parse name of proc
-        val nameOfProc = match(TokenType.VARIABLE)?.text ?: throw Exception("Expected function name at ${tokens[pos].pos}")
-        removeSpaces()
-
-        match(TokenType.LCUR) ?: throw Exception("Expected function arguments at ${tokens[pos].pos} inside {...}")
-
-        // parse args of proc
-        val args: MutableList<VariableNode> = mutableListOf()
-        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
-            removeSpaces()
-            if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
-                val arg = match(TokenType.VARIABLE)!!
-                args.add(VariableNode(arg))
-            }
-            removeSpaces()
-        }
-        match(TokenType.RCUR)!!
-
-        // parse body of proc
-        removeSpacesAndNewLines()
-        match(TokenType.LCUR) ?: throw Exception("Expected start of proc body at ${tokens[pos].pos} inside {...}")
-        removeSpacesAndNewLines()
-        val body = parseBody()
-
-        return ProcNode(functionName = StringNode(nameOfProc), args = args, body = body)
-    }
-
-    private fun parseReturnExpr(): ExpressionNode {
-        match(TokenType.RETURN)!!
-        removeSpaces()
-
-        return if (isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING))) {
-            val returnValue = match(listOf(TokenType.INTEGER, TokenType.FLOAT))!!
-            ReturnNode(ValueNode(returnValue))
-        } else if (isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE)) {
-            val returnValue = match(TokenType.LINK_VARIABLE)!!
-            ReturnNode(VariableNode(returnValue))
-        } else if (isCurrentTokenTypeEqualTo(listOf(TokenType.VARIABLE, TokenType.STRING))) {
-            val returnValue = match(listOf(TokenType.VARIABLE, TokenType.STRING))!!.text
-            ReturnNode(StringNode(returnValue))
-        } else if (isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
-            val returnValue = parseQuotExpression()
-            ReturnNode(returnValue as QuotationNodes)
-        } else if (isCurrentTokenTypeEqualTo(TokenType.LSQU)) {
-            val returnValue = parseSquareBracesExpression()
-            ReturnNode(returnValue as SquareBracesNodes)
-        } else {
-            ReturnNode(null)
-        }
-    }
-
-
     /**
      * Grammar
      * Case 1: No replacement is made inside the curly brackets
@@ -300,6 +244,62 @@ class Parser(private val tokens: List<Token>) {
         }
 
         throw Exception("Missing closing \"")
+    }
+
+    private fun parseProcExpr(): ExpressionNode {
+        match(TokenType.PROC)!!
+        removeSpaces()
+
+        // parse name of proc
+        val nameOfProc = match(TokenType.VARIABLE)?.text ?: throw Exception("Expected function name at ${tokens[pos].pos}")
+        removeSpaces()
+
+        match(TokenType.LCUR) ?: throw Exception("Expected function arguments at ${tokens[pos].pos} inside {...}")
+
+        // parse args of proc
+        val args: MutableList<VariableNode> = mutableListOf()
+        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            removeSpaces()
+            if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
+                val arg = match(TokenType.VARIABLE)!!
+                args.add(VariableNode(arg))
+            }
+            removeSpaces()
+        }
+        match(TokenType.RCUR)!!
+
+        // parse body of proc
+        removeSpacesAndNewLines()
+        match(TokenType.LCUR) ?: throw Exception("Expected start of proc body at ${tokens[pos].pos} inside {...}")
+        removeSpacesAndNewLines()
+
+        val body = parseBody()
+
+        return ProcNode(functionName = StringNode(nameOfProc), args = args, body = body)
+    }
+
+    private fun parseReturnExpr(): ExpressionNode {
+        match(TokenType.RETURN)!!
+        removeSpaces()
+
+        return if (isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING))) {
+            val returnValue = match(listOf(TokenType.INTEGER, TokenType.FLOAT))!!
+            ReturnNode(ValueNode(returnValue))
+        } else if (isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE)) {
+            val returnValue = match(TokenType.LINK_VARIABLE)!!
+            ReturnNode(VariableNode(returnValue))
+        } else if (isCurrentTokenTypeEqualTo(listOf(TokenType.VARIABLE, TokenType.STRING))) {
+            val returnValue = match(listOf(TokenType.VARIABLE, TokenType.STRING))!!.text
+            ReturnNode(StringNode(returnValue))
+        } else if (isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
+            val returnValue = parseQuotExpression()
+            ReturnNode(returnValue as QuotationNodes)
+        } else if (isCurrentTokenTypeEqualTo(TokenType.LSQU)) {
+            val returnValue = parseSquareBracesExpression()
+            ReturnNode(returnValue as SquareBracesNodes)
+        } else {
+            ReturnNode(null)
+        }
     }
 
     private fun parseForExpr(): ExpressionNode {

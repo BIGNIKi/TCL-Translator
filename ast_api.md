@@ -3,6 +3,22 @@
 * In the end of the code must be ; or new line
 
 
+## Proc
+**ReturnNode**
+* `returnValue: ExpressionNode?`
+  * null - corresponds to empty return value
+  * ValueNode
+  * VariableNode
+  * StringNode
+  * QuotationNodes
+  * SquareBracesNodes
+
+**ProcNode**
+* `functionName: StringNode`
+* `args: List<VariableNode>`
+* `body: ExpressionNode`
+  * Everything? 
+
 ## For
 **IncrNode**
 * `variable: VariableNode`
