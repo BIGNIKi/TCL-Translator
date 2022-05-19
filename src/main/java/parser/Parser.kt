@@ -202,26 +202,6 @@ class Parser(private val tokens: List<Token>) {
         return forLoopNode
     }
 
-    private fun parseWhileExpr(): ExpressionNode {
-
-        removeSpaces()
-        match(TokenType.WHILE)!!
-        removeSpaces()
-
-        match(listOf(TokenType.QUOT, TokenType.LCUR)) ?: throw Exception("Expected condition at ${tokens[pos].pos}")
-        removeSpaces()
-        val condition = parseCondition()
-
-
-        // parse body of while loop
-        removeSpacesAndNewLines()
-        match(TokenType.LCUR) ?: throw Exception("Expected start of if body at ${tokens[pos].pos}")
-        removeSpacesAndNewLines()
-        val body = parseBody()
-
-        return WhileLoopNode(condition = condition, body = body)
-    }
-
     /**
      * Grammar
      * Case 1: No replacement is made inside the curly brackets
@@ -379,6 +359,25 @@ class Parser(private val tokens: List<Token>) {
         }
 
         throw Exception("Missing closing \"")
+    }
+
+    private fun parseWhileExpr(): ExpressionNode {
+        match(TokenType.WHILE)!!
+        removeSpaces()
+
+        match(listOf(TokenType.QUOT, TokenType.LCUR)) ?: throw Exception("Expected condition at ${tokens[pos].pos}")
+        removeSpaces()
+
+        val condition = parseCondition()
+
+        // parse body of while loop
+        removeSpacesAndNewLines()
+        match(TokenType.LCUR) ?: throw Exception("Expected start of if body at ${tokens[pos].pos}")
+        removeSpacesAndNewLines()
+
+        val body = parseBody()
+
+        return WhileLoopNode(condition = condition, body = body)
     }
 
     private fun parseIfExpr(): ExpressionNode {

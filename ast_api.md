@@ -3,6 +3,19 @@
 * In the end of the code must be ; or new line
 
 
+## While
+**WhileLoopNode**
+* `condition: ExpressionNode`
+  * BracesNodes
+    * ValueNode
+    * VariableNode
+    * OperationNode
+    * BracesNodes
+    * SquareBracesNodes
+* `body: ExpressionNode`
+  * CurlyBracesNodes
+    * Everything?
+
 ## If
 **IfNode**
 * `branches: MutableList<IfBranch>`
