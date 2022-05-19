@@ -241,7 +241,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=SQRT, text='sqrt', pos=11), argument=ValueNode(value=Token(type=INTEGER, text='9', pos=16))), OperationNode(operation=Token(type=PLUS, text='+', pos=19)), ValueNode(value=Token(type=INTEGER, text='1', pos=21))]))]))])"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=SQRT, text='sqrt', pos=11), arguments=[ValueNode(value=Token(type=INTEGER, text='9', pos=16))]), OperationNode(operation=Token(type=PLUS, text='+', pos=19)), ValueNode(value=Token(type=INTEGER, text='1', pos=21))]))]))])"
         Assertions.assertEquals(expected, actual)
     }
 
@@ -288,11 +288,31 @@ class AstTest {
 
     @Test
     internal fun `expr test 8`() {
-        val code = "puts [expr abs(2.43)]\n"
+        val code = "puts [expr pow(2, 4)]\n"
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=ABS, text='abs', pos=11), argument=ValueNode(value=Token(type=FLOAT, text='2.43', pos=15)))]))]))])"
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=POW, text='pow', pos=11), arguments=[ValueNode(value=Token(type=INTEGER, text='2', pos=15)), ValueNode(value=Token(type=INTEGER, text='4', pos=18))])]))]))])"
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 9`() {
+        val code = "puts [expr rand()]\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=RAND, text='rand', pos=11), arguments=[])]))]))])"
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `expr test 10`() {
+        val code = "puts [expr sqrt([expr pow(2, 4)])]\n"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=6), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=SQRT, text='sqrt', pos=11), arguments=[SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=17), operand=MathExpNodes(nodes=[MathFunctionNode(mathFun=Token(type=POW, text='pow', pos=22), arguments=[ValueNode(value=Token(type=INTEGER, text='2', pos=26)), ValueNode(value=Token(type=INTEGER, text='4', pos=29))])]))])])]))]))])"
         Assertions.assertEquals(expected, actual)
     }
 

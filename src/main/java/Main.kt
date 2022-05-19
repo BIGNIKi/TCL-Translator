@@ -8,7 +8,7 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "puts [expr abs(2.43)]\n"
+    val code = "puts [expr sqrt([expr pow(2, 4)])]\n"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

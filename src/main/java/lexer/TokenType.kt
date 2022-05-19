@@ -44,10 +44,8 @@ enum class TokenType(val label: String, val regex: Regex?) {
 
     EXPR("EXPR", Regex("^expr")),
     SQRT("SQRT", Regex("^sqrt")),
-    LOG("LOG", Regex("^log")),
-    ABS("ABS", Regex("^abs")),
-    FLOOR("FLOOR", Regex("^floor")),
-    EXP("EXP", Regex("^exp")),
+    RAND("RAND", Regex("^rand")),
+    POW("POW", Regex("^pow")),
 
     SWITCH("SWITCH", Regex("^switch")),
     DEFAULT("DEFAULT", Regex("^default")),

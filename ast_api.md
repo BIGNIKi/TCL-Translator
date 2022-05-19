@@ -31,13 +31,11 @@
 **MathFunctionNode**
 * `mathFun: Token,`
   * TokenType.SQRT
-  * TokenType.LOG
-  * TokenType.ABS
-  * TokenType.FLOOR
-  * TokenType.EXP
-* `argument: ExpressionNode`
-  * TokenType.INTEGER
-  * TokenType.FLOAT
+  * TokenType.RAND
+  * TokenType.POW
+* `arguments: List<ExpressionNode>`
+  * ValueNode
+  * SquareBracesNodes
 
 **OperationNode**
 * `operation: Token`

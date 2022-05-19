@@ -649,14 +649,15 @@ class Parser(private val tokens: List<Token>) {
             }
             isCurrentTokenTypeEqualTo(mathFunctionsList) -> {
                 val mathFun = getCurrentToken()
-                match(TokenType.LPAR) ?: throw Exception("Expected argument body () at $pos")
-                val argument = match(listOf(TokenType.INTEGER, TokenType.FLOAT)) ?: throw Exception("Expected argument inside () at $pos")
-                match(TokenType.RPAR) ?: throw Exception("Expected argument body () at $pos")
-                // todo (добавить метод для функций принимающие разное кол-во параметров
 
-                //parseMathFun()
+                val args = when (mathFun.type) {
+                    TokenType.SQRT -> { parseMathFunArgs(1) }
+                    TokenType.RAND -> { parseMathFunArgs(0) }
+                    TokenType.POW -> { parseMathFunArgs(2) }
+                    else -> { throw Exception("Unknown function at ${tokens[pos].pos}") }
+                }
 
-                MathFunctionNode(mathFun, ValueNode(argument))
+                MathFunctionNode(mathFun = mathFun, arguments = args)
             }
             isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE)) -> {
                 incCurrentPos()
@@ -664,11 +665,38 @@ class Parser(private val tokens: List<Token>) {
             }
             else -> throw Exception("Unknown TokenType at ${tokens[pos].pos}")
         }
-
     }
 
-    private fun parseMathFun(): Token {
-        TODO("Not yet implemented")
+    private fun parseMathFunArgs(argsNumber: Int): List<ExpressionNode> {
+        val args: MutableList<ExpressionNode> = mutableListOf()
+
+        match(TokenType.LPAR) ?: throw Exception("Expected start of function's argument at ${tokens[pos].pos}")
+
+        for (counter in argsNumber downTo 1 step 1) {
+            val value = when {
+                isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING)) -> {
+                    val token = match(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING))!!
+                    ValueNode(token)
+                }
+                isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
+                    parseSquareBracesExpression()
+                }
+                else -> {
+                    throw Exception("Unknown math function arg type at ${tokens[pos].pos}")
+                }
+            }
+            args.add(value)
+
+            removeSpaces()
+            if (counter > 1) {
+                match(TokenType.SYMBOL) ?: throw Exception("Expected ',' before next arg at ${tokens[pos].pos}")
+            }
+            removeSpaces()
+        }
+
+        match(TokenType.RPAR) ?: throw Exception("Expected end of function's argument at ${tokens[pos].pos}")
+
+        return args
     }
 
     private fun parseSetOrPutsRightFormula(): ExpressionNode {
@@ -860,10 +888,8 @@ class Parser(private val tokens: List<Token>) {
 
         val mathFunctionsList = listOf(
             TokenType.SQRT,
-            TokenType.LOG,
-            TokenType.ABS,
-            TokenType.FLOOR,
-            TokenType.EXP
+            TokenType.RAND,
+            TokenType.POW,
         )
     }
 }
