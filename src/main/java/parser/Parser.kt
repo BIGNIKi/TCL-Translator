@@ -550,13 +550,12 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseSwitchExpr(): ExpressionNode {
-        removeSpaces()
         match(TokenType.SWITCH)!!
-
         removeSpaces()
-        val string = match(TokenType.LINK_VARIABLE)!!
 
+        val string = match(TokenType.LINK_VARIABLE) ?: throw Exception("Expected link variable of switch at ${tokens[pos].pos}")
         removeSpaces()
+
         var isSubstitutionsAllowed = false
         if (isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)) {
             isSubstitutionsAllowed = true
@@ -564,32 +563,25 @@ class Parser(private val tokens: List<Token>) {
         } else if (isCurrentTokenTypeEqualTo(TokenType.LCUR)) {
             incCurrentPos()
         }
-
-        removeSpaces()
-        while (isCurrentTokenTypeEqualTo(TokenType.SEMICOLON)) {
-            incCurrentPos()
-        }
-        removeSpaces()
+        removeSpacesAndNewLines()
 
         val cases: MutableList<SwitchCase> = mutableListOf()
 
         do {
             val switchCase = parseSwitchCase()
             switchCase?.let { cases.add(it) }
-            if (switchCase?.value?.type == TokenType.DEFAULT || pos == tokens.size) {
+            if (switchCase?.value?.type == TokenType.DEFAULT) {
                 break
             }
         } while (switchCase != null)
 
+        if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            incCurrentPos()
+        }
+
         return SwitchNode(string = string, cases = cases, isSubstitutionsAllowed = isSubstitutionsAllowed)
     }
 
-    /**
-     * Grammar
-     * Case 1. Value can be LINK_VARIABLE: switch $x "$a" ...
-     * Case 2. Value can be VARIABLE (Number) : switch $x "one" ...
-     * Case 3. Value can be DEFAULT: switch $x "default" ...
-     */
     private fun parseSwitchCase(): SwitchCase? {
         removeSpaces()
         if (!isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
@@ -600,13 +592,13 @@ class Parser(private val tokens: List<Token>) {
 
         val value = if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
             val token = match(TokenType.VARIABLE)!!
-            Token(type = TokenType.STRING, token.text, token.pos)
+            token.convertTo(TokenType.STRING)
         } else if (isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE)) {
             match(TokenType.LINK_VARIABLE)!!
         } else if (isCurrentTokenTypeEqualTo(TokenType.DEFAULT)) {
             match(TokenType.DEFAULT)!!
         } else {
-            throw Exception("Switch case: unknown token at $pos")
+            throw Exception("Switch case: unknown token at ${tokens[pos].pos}")
         }
 
         removeSpaces()
@@ -614,7 +606,7 @@ class Parser(private val tokens: List<Token>) {
         removeSpaces()
 
         if (!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR))) {
-            throw Exception("Switch case: expected body of case at $pos")
+            throw Exception("Switch case: expected body of case at ${tokens[pos].pos}")
         }
 
         val body = CurlyBracesNodes()
@@ -630,30 +622,26 @@ class Parser(private val tokens: List<Token>) {
 
                 removeSpaces()
                 if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
-                    incPosAndTrim()
+                    removeSpaces()
                     break
                 }
                 incCurrentPos()
                 removeSpaces()
             }
         } else {
-            throw Exception("Expected start of switch case")
+            throw Exception("Expected start of switch case at ${tokens[pos].pos}")
         }
 
         if (isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)) {
             incCurrentPos()
         }
-        removeSpaces()
 
-        while (isCurrentTokenTypeEqualTo(TokenType.SEMICOLON)) {
-            incCurrentPos()
-        }
-        removeSpaces()
+        removeSpacesAndNewLines()
 
         if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
             incCurrentPos()
         }
-        removeSpaces()
+        removeSpacesAndNewLines()
 
         return SwitchCase(value = value, body = body)
     }
@@ -665,7 +653,7 @@ class Parser(private val tokens: List<Token>) {
         val mathExpNode = MathExpNodes()
         while (!isCurrentTokenTypeEqualTo(TokenType.RSQU)) {
             if (pos == tokens.size - 1) {
-                throw Exception("Missing closing ]")
+                throw Exception("Missing closing ] at ${tokens[pos].pos}")
             }
 
             val node = parseExprFormula()
@@ -673,7 +661,7 @@ class Parser(private val tokens: List<Token>) {
         }
 
         if (mathExpNode.nodes.isEmpty()) {
-            throw Exception("Missing expression body")
+            throw Exception("Missing expression body at ${tokens[pos].pos}")
         }
         // val rightFormulaNode = parseExprFormula()
 

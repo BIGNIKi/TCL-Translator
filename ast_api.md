@@ -1,3 +1,24 @@
+## Rules
+* In switch case must be default branch
+* In the end of the code must be ; or new line
+
+## Switch
+
+**SwitchNode**
+* `string: Token`
+  * TokenType.LINK_VARIABLE
+* `cases: List<SwitchCase>`
+* `isSubstitutionsAllowed: Boolean`
+
+**SwitchCase**
+* `value: Token`
+  * TokenType.STRING
+  * TokenType.LINK_VARIABLE
+  * TokenType.DEFAULT
+* `body: ExpressionNode`
+  * CurlyBracesNodes
+
+
 ## Values
 
 **ValueNode**
@@ -8,7 +29,7 @@
 
 **CommentNode**
 * `value: Token`
-  * Comment
+  * TokenType.COMMENT
 
 
 ## Commands
