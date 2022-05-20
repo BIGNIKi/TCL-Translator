@@ -2,6 +2,13 @@
 * In switch case must be default branch
 
 
+## Lambda
+**LambdaExprNode**
+* `args: List<VariableNode>`
+* `body: ExpressionNode`
+* `exprAsString: CurlyBracesNodes`
+  * StringNode
+
 ## Proc
 **ReturnNode**
 * `returnValue: ExpressionNode?`
