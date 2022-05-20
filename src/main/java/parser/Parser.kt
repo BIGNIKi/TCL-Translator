@@ -56,6 +56,9 @@ class Parser(private val tokens: List<Token>) {
             isCurrentTokenTypeEqualTo(TokenType.PROC) -> {
                 parseProcExpr()
             }
+            isCurrentTokenTypeEqualTo(TokenType.EXPR) -> {
+                parseExpr()
+            }
             isCurrentTokenTypeEqualTo(tclSingleKeywordsList) -> {
                 TCLKeywordsNode(match(tclSingleKeywordsList)!!)
             }
@@ -87,16 +90,57 @@ class Parser(private val tokens: List<Token>) {
 
     /**
      * Grammar
-     * Case 1: No replacement is made inside the curly brackets
+     * Case 1: No replacement is made inside the curly brackets. Inteprite as String
+     * Case 2. Lambda expression. {arg1 arg2 ... argN {command} }
      */
     private fun parseCurlyBracesExpression(): ExpressionNode {
         match(TokenType.LCUR)!!
 
+        val posBeforeParse = pos
+        val exprAsString = parseCurlyBracesExpressionAsString()
+        val posAfterParse = pos
+
+        // parse second time, trying to identify lamda expression
+        pos = posBeforeParse
+        val lambdaNode = parseCurlyBracesExpressionAsLambda(exprAsString)
+        pos = posAfterParse
+
+        lambdaNode?.let { return it}
+
+        return exprAsString
+    }
+
+    private fun parseCurlyBracesExpressionAsLambda(exprAsString: CurlyBracesNodes): LambdaExprNode? {
+        // parse args of lambda
+        val args: MutableList<VariableNode> = mutableListOf()
+        while (!isCurrentTokenTypeEqualTo(TokenType.LCUR)) {
+            removeSpaces()
+            if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
+                val arg = match(TokenType.VARIABLE)!!
+                args.add(VariableNode(arg))
+                removeSpaces()
+            } else {
+                return null
+            }
+        }
+        match(TokenType.LCUR) ?: return null
+
+        try {
+            val body = parseBody()
+            match(TokenType.RCUR) ?: return null
+            return LambdaExprNode(args = args, body = body, exprAsString = exprAsString)
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    private fun parseCurlyBracesExpressionAsString(): CurlyBracesNodes {
         val curlyBracesNode = CurlyBracesNodes()
         val stringNode = StringNode()
 
+        var rcurCounter = 1
         while (pos < tokens.size) {
-            if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            if (isCurrentTokenTypeEqualTo(TokenType.RCUR) && rcurCounter == 1) {
                 incCurrentPos()
                 if (stringNode.string.isNotEmpty()) {
                     // finish forming string Node
@@ -107,6 +151,9 @@ class Parser(private val tokens: List<Token>) {
 
             val token = getCurrentToken()
             stringNode.join(token.text)
+
+            if (token.type == TokenType.LCUR) { rcurCounter++ }
+            else if (token.type == TokenType.RCUR) { rcurCounter-- }
         }
 
         throw Exception("Missing closing }")
@@ -136,7 +183,7 @@ class Parser(private val tokens: List<Token>) {
         }
 
         removeSpacesAndNewLines()
-        incCurrentPos()
+        match(TokenType.RSQU) ?: throw Exception("Exprected closing ] at ${tokens[pos].pos}")
 
         return squareBracesNode
     }
@@ -595,13 +642,10 @@ class Parser(private val tokens: List<Token>) {
             while (true) {
                 body.addNode(parseExpression())
 
-                removeSpaces()
                 if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
                     removeSpaces()
                     break
                 }
-                incCurrentPos()
-                removeSpaces()
             }
         } else {
             throw Exception("Expected start of switch case at ${tokens[pos].pos}")
@@ -625,7 +669,7 @@ class Parser(private val tokens: List<Token>) {
         val exprOperator = match(TokenType.EXPR)!!
 
         val mathExpNode = MathExpNodes()
-        while (!isCurrentTokenTypeEqualTo(TokenType.RSQU)) {
+        while (!isCurrentTokenTypeEqualTo(listOf(TokenType.RSQU, TokenType.SEMICOLON))) {
             if (pos == tokens.size - 1) {
                 throw Exception("Missing closing ] of math expression")
             }
@@ -633,6 +677,8 @@ class Parser(private val tokens: List<Token>) {
             val node = parseExprFormula()
             node?.let { mathExpNode.addNode(it) }
         }
+
+        removeSpacesAndNewLines()
 
         if (mathExpNode.nodes.isEmpty()) {
             throw Exception("Missing expression body")
@@ -770,6 +816,8 @@ class Parser(private val tokens: List<Token>) {
         removeSpaces()
         val rightFormulaNode = parseSetOrPutsRightFormula()
 
+        removeSpacesAndNewLines()
+
         return UnarOperationNode(putsOperator, rightFormulaNode)
     }
 
@@ -781,6 +829,8 @@ class Parser(private val tokens: List<Token>) {
         removeSpaces()
 
         val rightFormulaNode = parseSetOrPutsRightFormula()
+
+        removeSpacesAndNewLines()
 
         return BinOperationNode(operator = setOperator, whomAssign = VariableNode(variable), whatAssign = rightFormulaNode)
     }

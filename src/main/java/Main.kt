@@ -8,9 +8,7 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "proc foo{ } {puts hello}\n" +
-            "\n" +
-            "foo { }\n"
+    val code = ""
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()

@@ -660,4 +660,26 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `lambda test 1`() {
+        val code = "set inc {x {expr \$x + 1; puts hello;}}"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='inc', pos=4)), whatAssign=LambdaExprNode(args=[VariableNode(variable=Token(type=VARIABLE, text='x', pos=9))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=12), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=17)), OperationNode(operation=Token(type=PLUS, text='+', pos=20)), ValueNode(value=Token(type=INTEGER, text='1', pos=22))])), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=25), operand=ValueNode(value=Token(type=STRING, text='hello', pos=30)))]), exprAsString=CurlyBracesNodes(nodes=[StringNode(string='x {expr \$x + 1; puts hello;}')])))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `lambda test 2`() {
+        val code = "set inc {x {exp \$x + 1; puts hello;}}"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='inc', pos=4)), whatAssign=CurlyBracesNodes(nodes=[StringNode(string='x {exp \$x + 1; puts hello;}')]))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
 }
