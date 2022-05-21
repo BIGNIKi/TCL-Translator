@@ -100,37 +100,50 @@ class Parser(private val tokens: List<Token>) {
         val exprAsString = parseCurlyBracesExpressionAsString()
         val posAfterParse = pos
 
-        // parse second time, trying to identify lamda expression
+        // parse second time, trying to identify lambda expression
         pos = posBeforeParse
-        val lambdaNode = parseCurlyBracesExpressionAsLambda(exprAsString)
-        pos = posAfterParse
-
-        lambdaNode?.let { return it}
-
-        return exprAsString
+        return try {
+            val lambdaNode = parseLambdaExpression()
+            pos = posAfterParse
+            lambdaNode.addStringRepresentation(exprAsString.getFirstNode() as StringNode)
+            lambdaNode
+        } catch (e: Exception) {
+            pos = posAfterParse
+            exprAsString
+        }
     }
 
-    private fun parseCurlyBracesExpressionAsLambda(exprAsString: CurlyBracesNodes): LambdaExprNode? {
+    /**
+     * lambda { {arg1 arg2 argN} { body } }
+     */
+    private fun parseLambdaExpression(): LambdaExprNode {
+
         // parse args of lambda
+        match(TokenType.LCUR) ?: throw Exception("Expected args of lambda at ${tokens[pos].pos}")
+
         val args: MutableList<VariableNode> = mutableListOf()
-        while (!isCurrentTokenTypeEqualTo(TokenType.LCUR)) {
+        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
             removeSpaces()
             if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
                 val arg = match(TokenType.VARIABLE)!!
                 args.add(VariableNode(arg))
                 removeSpaces()
             } else {
-                return null
+                throw Exception("Expected arg token type at ${tokens[pos].pos}")
             }
         }
-        match(TokenType.LCUR) ?: return null
 
+        match(TokenType.RCUR)!!
+
+        // parse body of lambda
+        removeSpaces()
+        match(TokenType.LCUR) ?: throw Exception("Expected start of lambda body at ${tokens[pos].pos}")
         try {
             val body = parseBody()
-            match(TokenType.RCUR) ?: return null
-            return LambdaExprNode(args = args, body = body, exprAsString = exprAsString)
+            match(TokenType.RCUR) ?: throw Exception("Expected } in lambda body at ${tokens[pos].pos}")
+            return LambdaExprNode(args = args, body = body)
         } catch (e: Exception) {
-            return null
+            throw e
         }
     }
 
@@ -667,18 +680,28 @@ class Parser(private val tokens: List<Token>) {
 
     private fun parseExpr(): ExpressionNode {
         val exprOperator = match(TokenType.EXPR)!!
+        removeSpaces()
 
         val mathExpNode = MathExpNodes()
-        while (!isCurrentTokenTypeEqualTo(listOf(TokenType.RSQU, TokenType.SEMICOLON))) {
-            if (pos == tokens.size - 1) {
+        var bracesCounter = 1
+        while (bracesCounter != 0) {
+            if (isCurrentTokenTypeEqualTo(TokenType.SEMICOLON)) {
+                incCurrentPos()
+                incCurrentPos()
+                break
+            }
+
+            if (isCurrentTokenTypeEqualTo(listOf(TokenType.LCUR, TokenType.LSQU))) { bracesCounter++ }
+            else if (isCurrentTokenTypeEqualTo(listOf(TokenType.RCUR, TokenType.RSQU))) { bracesCounter-- }
+
+            if (pos >= tokens.size) {
                 throw Exception("Missing closing ] of math expression")
             }
 
             val node = parseExprFormula()
             node?.let { mathExpNode.addNode(it) }
         }
-
-        removeSpacesAndNewLines()
+        pos--
 
         if (mathExpNode.nodes.isEmpty()) {
             throw Exception("Missing expression body")
@@ -740,7 +763,7 @@ class Parser(private val tokens: List<Token>) {
 
                 MathFunctionNode(mathFun = mathFun, arguments = args)
             }
-            isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE)) -> {
+            isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE, TokenType.RSQU)) -> {
                 incCurrentPos()
                 null
             }

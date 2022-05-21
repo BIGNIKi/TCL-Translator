@@ -7,6 +7,10 @@ class CurlyBracesNodes : ExpressionNode() {
         nodes.add(node)
     }
 
+    fun getFirstNode(): ExpressionNode {
+        return nodes.first()
+    }
+
     override fun toString(): String {
         return "CurlyBracesNodes(nodes=$nodes)"
     }
