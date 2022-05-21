@@ -6,8 +6,17 @@
 **LambdaExprNode**
 * `args: List<VariableNode>`
 * `body: ExpressionNode`
-* `exprAsString: CurlyBracesNodes`
-  * StringNode
+  * Everything? 
+* `exprAsString: StringNode`
+
+**ApplyNode**
+* `lambdaExpr: ExpressionNode?`
+  * VariableNode
+  * LambdaExprNode
+* `args: List<ExpressionNode>`
+  * ValueNode
+  * VariableNode
+
 
 ## Proc
 **ReturnNode**
@@ -30,6 +39,7 @@
 * `args: List<ExpressionNode>`
   * StringNode
   * SquareBracesNodes
+  * 
 
 
 ## For
