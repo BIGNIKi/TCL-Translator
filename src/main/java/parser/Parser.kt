@@ -59,6 +59,9 @@ class Parser(private val tokens: List<Token>) {
             isCurrentTokenTypeEqualTo(TokenType.EXPR) -> {
                 parseExpr()
             }
+            isCurrentTokenTypeEqualTo(TokenType.APPLY) -> {
+                parseApplyExpr()
+            }
             isCurrentTokenTypeEqualTo(tclSingleKeywordsList) -> {
                 TCLKeywordsNode(match(tclSingleKeywordsList)!!)
             }
@@ -113,40 +116,6 @@ class Parser(private val tokens: List<Token>) {
         }
     }
 
-    /**
-     * lambda { {arg1 arg2 argN} { body } }
-     */
-    private fun parseLambdaExpression(): LambdaExprNode {
-
-        // parse args of lambda
-        match(TokenType.LCUR) ?: throw Exception("Expected args of lambda at ${tokens[pos].pos}")
-
-        val args: MutableList<VariableNode> = mutableListOf()
-        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
-            removeSpaces()
-            if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
-                val arg = match(TokenType.VARIABLE)!!
-                args.add(VariableNode(arg))
-                removeSpaces()
-            } else {
-                throw Exception("Expected arg token type at ${tokens[pos].pos}")
-            }
-        }
-
-        match(TokenType.RCUR)!!
-
-        // parse body of lambda
-        removeSpaces()
-        match(TokenType.LCUR) ?: throw Exception("Expected start of lambda body at ${tokens[pos].pos}")
-        try {
-            val body = parseBody()
-            match(TokenType.RCUR) ?: throw Exception("Expected } in lambda body at ${tokens[pos].pos}")
-            return LambdaExprNode(args = args, body = body)
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-
     private fun parseCurlyBracesExpressionAsString(): CurlyBracesNodes {
         val curlyBracesNode = CurlyBracesNodes()
         val stringNode = StringNode()
@@ -177,26 +146,10 @@ class Parser(private val tokens: List<Token>) {
         removeSpaces()
 
         val squareBracesNode = SquareBracesNodes()
-        when {
-            isCurrentTokenTypeEqualTo(TokenType.SET) -> {
-                val expression = parseSetExpr()
-                squareBracesNode.addNode(expression)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.PUTS) -> {
-                val expression = parsePutsExpr()
-                squareBracesNode.addNode(expression)
-            }
-            isCurrentTokenTypeEqualTo(TokenType.EXPR) -> {
-                val expression = parseExpr()
-                squareBracesNode.addNode(expression)
-            }
-            else -> {
-                throw Exception("Unknown TokenType at ${tokens[pos].pos}")
-            }
-        }
+        squareBracesNode.addNode(parseExpression())
 
         removeSpacesAndNewLines()
-        match(TokenType.RSQU) ?: throw Exception("Exprected closing ] at ${tokens[pos].pos}")
+        match(TokenType.RSQU) ?: throw Exception("Expected closing ] at ${tokens[pos].pos}")
 
         return squareBracesNode
     }
@@ -304,6 +257,92 @@ class Parser(private val tokens: List<Token>) {
         throw Exception("Missing closing \"")
     }
 
+    /**
+     * Case 1. apply $lambda val1 val2 valN
+     * Case 2. apply {{val1 val2 valN}{body}} val1 val2 valN
+     */
+    private fun parseApplyExpr(): ExpressionNode {
+        match(TokenType.APPLY)!!
+        val applyNode = ApplyNode()
+
+        // parse lambda
+        removeSpaces()
+        when {
+            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                val lambda = match(TokenType.LINK_VARIABLE)!!
+                applyNode.lambdaExpr = VariableNode(lambda)
+            }
+            isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
+                match(TokenType.LCUR)!!
+                applyNode.lambdaExpr = parseLambdaExpression()
+            }
+            else -> throw Exception("Unknown TokenType in apply expression at ${tokens[pos].pos}")
+        }
+
+        // parse args
+        removeSpaces()
+        while (true) {
+            when {
+                isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING)) -> {
+                    val arg = match(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING))!!
+                    applyNode.args.add(ValueNode(arg))
+                }
+                isCurrentTokenTypeEqualTo(TokenType.VARIABLE) -> {
+                    val arg = match(TokenType.VARIABLE)!!
+                    val stringNode = arg.convertTo(TokenType.STRING)
+                    applyNode.args.add(ValueNode(stringNode))
+                }
+                isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                    val arg = match(TokenType.LINK_VARIABLE)!!
+                    applyNode.args.add(VariableNode(arg))
+                }
+                isCurrentTokenTypeEqualTo(TokenType.SPACE) -> { incCurrentPos() }
+                else -> break
+            }
+        }
+
+        if (pos != tokens.size) {
+            removeSpacesAndNewLines()
+        }
+
+        return applyNode
+    }
+
+    /**
+     * lambda { {arg1 arg2 argN} { body } }
+     */
+    private fun parseLambdaExpression(): LambdaExprNode {
+
+        // parse args of lambda
+        match(TokenType.LCUR) ?: throw Exception("Expected args of lambda at ${tokens[pos].pos}")
+
+        val args: MutableList<VariableNode> = mutableListOf()
+        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            removeSpaces()
+            if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
+                val arg = match(TokenType.VARIABLE)!!
+                args.add(VariableNode(arg))
+                removeSpaces()
+            } else {
+                throw Exception("Expected arg token type at ${tokens[pos].pos}")
+            }
+        }
+
+        match(TokenType.RCUR)!!
+
+        // parse body of lambda
+        removeSpaces()
+        match(TokenType.LCUR) ?: throw Exception("Expected start of lambda body at ${tokens[pos].pos}")
+        try {
+            val body = parseBody()
+            match(TokenType.RCUR) ?: throw Exception("Expected } in lambda expr at ${tokens[pos].pos}")
+            removeSpaces()
+            return LambdaExprNode(args = args, body = body)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
     private fun parseProcCallExpr(): ExpressionNode {
         val nameOfFun = match(TokenType.VARIABLE)!!.text
         val args: MutableList<ExpressionNode> = mutableListOf()
@@ -313,7 +352,7 @@ class Parser(private val tokens: List<Token>) {
                     isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR)) -> {
                         incCurrentPos()
                         val stringNode = StringNode()
-                        while(!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.RCUR))) {
+                        while (!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.RCUR))) {
                             stringNode.join(getCurrentToken().text)
                         }
                         match(listOf(TokenType.QUOT, TokenType.RCUR))!!
@@ -410,7 +449,7 @@ class Parser(private val tokens: List<Token>) {
         // block 1. Initialization
         match(TokenType.LCUR) ?: throw Exception("Expected initialization block at ${tokens[pos].pos}")
         removeSpacesAndNewLines()
-        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
             forLoopNode.addExpressionToInitBlock(parseExpression())
             removeSpacesAndNewLines()
         }
@@ -425,7 +464,7 @@ class Parser(private val tokens: List<Token>) {
         // block 3. Counter
         match(TokenType.LCUR) ?: throw Exception("Expected counter block at ${tokens[pos].pos}")
         removeSpacesAndNewLines()
-        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
             forLoopNode.addExpressionToCounterBlock(parseExpression())
             removeSpacesAndNewLines()
         }
@@ -435,7 +474,7 @@ class Parser(private val tokens: List<Token>) {
         // block 4. Command
         match(TokenType.LCUR) ?: throw Exception("Expected command block at ${tokens[pos].pos}")
         removeSpacesAndNewLines()
-        while(!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+        while (!isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
             forLoopNode.addExpressionToCommandBlock(parseExpression())
             removeSpacesAndNewLines()
         }

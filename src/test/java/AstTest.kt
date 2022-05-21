@@ -693,4 +693,59 @@ class AstTest {
 
         Assertions.assertEquals(expected, actual)
     }
+
+    @Test
+    internal fun `lambda test 4`() {
+        val code = "set sayHello {{name} {puts \"hello \$name\"}}"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[BinOperationNode(operator=Token(type=SET, text='set', pos=0), whomAssign=VariableNode(variable=Token(type=VARIABLE, text='sayHello', pos=4)), whatAssign=LambdaExprNode(args=[VariableNode(variable=Token(type=VARIABLE, text='name', pos=15))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=22), operand=QuotationNodes(nodes=[StringNode(string='hello '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$name', pos=34))]))]), exprAsString=StringNode(string='{name} {puts \"hello \$name\"}')))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `lambda test 5`() {
+        val code = "apply {{a b} {expr \$a + \$b}} 1 2"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[ApplyNode(lambdaExpr=LambdaExprNode(args=[VariableNode(variable=Token(type=VARIABLE, text='a', pos=8)), VariableNode(variable=Token(type=VARIABLE, text='b', pos=10))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=14), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=19)), OperationNode(operation=Token(type=PLUS, text='+', pos=22)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=24))]))]), exprAsString=null), args=[ValueNode(value=Token(type=INTEGER, text='1', pos=29)), ValueNode(value=Token(type=INTEGER, text='2', pos=31))])])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `lambda test 6`() {
+        val code = "apply {{a b} {puts \"\$a \$b\"}} 1 2"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[ApplyNode(lambdaExpr=LambdaExprNode(args=[VariableNode(variable=Token(type=VARIABLE, text='a', pos=8)), VariableNode(variable=Token(type=VARIABLE, text='b', pos=10))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=14), operand=QuotationNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=20)), StringNode(string=' '), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=23))]))]), exprAsString=null), args=[ValueNode(value=Token(type=INTEGER, text='1', pos=29)), ValueNode(value=Token(type=INTEGER, text='2', pos=31))])])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `lambda test 7`() {
+        val code = "puts [apply {{a b} {expr \$a + \$b}} 1 2]"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=0), operand=SquareBracesNodes(nodes=[ApplyNode(lambdaExpr=LambdaExprNode(args=[VariableNode(variable=Token(type=VARIABLE, text='a', pos=14)), VariableNode(variable=Token(type=VARIABLE, text='b', pos=16))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=20), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=25)), OperationNode(operation=Token(type=PLUS, text='+', pos=28)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=30))]))]), exprAsString=null), args=[ValueNode(value=Token(type=INTEGER, text='1', pos=35)), ValueNode(value=Token(type=INTEGER, text='2', pos=37))])]))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `lambda test 8`() {
+        val code = "return [apply \$lambda \$a \$b]"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[ReturnNode(returnValue=SquareBracesNodes(nodes=[ApplyNode(lambdaExpr=VariableNode(variable=Token(type=LINK_VARIABLE, text='\$lambda', pos=14)), args=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=22)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=25))])]))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
 }
