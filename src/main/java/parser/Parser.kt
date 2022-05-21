@@ -345,17 +345,22 @@ class Parser(private val tokens: List<Token>) {
 
     private fun parseProcCallExpr(): ExpressionNode {
         val nameOfFun = match(TokenType.VARIABLE)!!.text
+        removeSpaces()
+
         val args: MutableList<ExpressionNode> = mutableListOf()
         if (proceduresScope.containsKey(nameOfFun)) {
             repeat(proceduresScope[nameOfFun]!!) {
                 when {
-                    isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR)) -> {
+                    isCurrentTokenTypeEqualTo(TokenType.LCUR) -> {
+                        args.add(parseCurlyBracesExpression())
+                    }
+                    isCurrentTokenTypeEqualTo(TokenType.QUOT) -> {
                         incCurrentPos()
                         val stringNode = StringNode()
-                        while (!isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.RCUR))) {
+                        while (!isCurrentTokenTypeEqualTo(TokenType.QUOT)) {
                             stringNode.join(getCurrentToken().text)
                         }
-                        match(listOf(TokenType.QUOT, TokenType.RCUR))!!
+                        match(TokenType.QUOT)!!
                         removeSpacesAndNewLines()
 
                         args.add(stringNode)
@@ -363,15 +368,25 @@ class Parser(private val tokens: List<Token>) {
                     isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
                         args.add(parseSquareBracesExpression())
                     }
+                    isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING)) -> {
+                        val arg = match(listOf(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING))!!
+                        args.add(ValueNode(arg))
+                    }
+                    isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                        val arg = match(TokenType.LINK_VARIABLE)!!
+                        args.add(VariableNode(arg))
+                    }
                 }
+
+                removeSpaces()
             }
 
+            // if there are 0 args
             if (proceduresScope[nameOfFun]!! == 0) {
                 incCurrentPos()
                 removeSpaces()
                 incCurrentPos()
             }
-
         } else {
             throw Exception("Unknown function name at ${tokens[pos].pos}")
         }

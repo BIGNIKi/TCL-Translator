@@ -643,7 +643,7 @@ class AstTest {
         val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
         val actual = asl.toString()
 
-        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[VariableNode(variable=Token(type=VARIABLE, text='a', pos=9)), VariableNode(variable=Token(type=VARIABLE, text='b', pos=11)), VariableNode(variable=Token(type=VARIABLE, text='c', pos=13))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=17), operand=ValueNode(value=Token(type=STRING, text='hello', pos=22)))])), ProcCallNode(functionName=StringNode(string='foo'), args=[StringNode(string='1'), StringNode(string='hello world'), SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=53), operand=MathExpNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='2', pos=58)), OperationNode(operation=Token(type=PLUS, text='+', pos=59)), ValueNode(value=Token(type=INTEGER, text='2', pos=60))]))])])])"
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo'), args=[VariableNode(variable=Token(type=VARIABLE, text='a', pos=9)), VariableNode(variable=Token(type=VARIABLE, text='b', pos=11)), VariableNode(variable=Token(type=VARIABLE, text='c', pos=13))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=17), operand=ValueNode(value=Token(type=STRING, text='hello', pos=22)))])), ProcCallNode(functionName=StringNode(string='foo'), args=[StringNode(string='1'), CurlyBracesNodes(nodes=[StringNode(string='hello world')]), SquareBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=53), operand=MathExpNodes(nodes=[ValueNode(value=Token(type=INTEGER, text='2', pos=58)), OperationNode(operation=Token(type=PLUS, text='+', pos=59)), ValueNode(value=Token(type=INTEGER, text='2', pos=60))]))])])])"
 
         Assertions.assertEquals(expected, actual)
     }
@@ -745,6 +745,20 @@ class AstTest {
         val actual = asl.toString()
 
         val expected = "StatementsNode(codeStrings=[ReturnNode(returnValue=SquareBracesNodes(nodes=[ApplyNode(lambdaExpr=VariableNode(variable=Token(type=LINK_VARIABLE, text='\$lambda', pos=14)), args=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=22)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=25))])]))])"
+
+        Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    internal fun `lambda test 9`() {
+        val code = "proc foo2 {lambda a b} {\n" +
+                "return [apply \$lambda \$a \$b]\n" +
+                "}\n" +
+                "puts [foo2 {{x y} {expr {\$x * 4 + \$y - 2}}} 2 4]"
+        val asl = Parser(Lexer(code).lexAnalysis()).parseCode()
+        val actual = asl.toString()
+
+        val expected = "StatementsNode(codeStrings=[ProcNode(functionName=StringNode(string='foo2'), args=[VariableNode(variable=Token(type=VARIABLE, text='lambda', pos=11)), VariableNode(variable=Token(type=VARIABLE, text='a', pos=18)), VariableNode(variable=Token(type=VARIABLE, text='b', pos=20))], body=CurlyBracesNodes(nodes=[ReturnNode(returnValue=SquareBracesNodes(nodes=[ApplyNode(lambdaExpr=VariableNode(variable=Token(type=LINK_VARIABLE, text='\$lambda', pos=39)), args=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$a', pos=47)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$b', pos=50))])]))])), UnarOperationNode(operator=Token(type=PUTS, text='puts', pos=56), operand=SquareBracesNodes(nodes=[ProcCallNode(functionName=StringNode(string='foo2'), args=[LambdaExprNode(args=[VariableNode(variable=Token(type=VARIABLE, text='x', pos=69)), VariableNode(variable=Token(type=VARIABLE, text='y', pos=71))], body=CurlyBracesNodes(nodes=[UnarOperationNode(operator=Token(type=EXPR, text='expr', pos=75), operand=MathExpNodes(nodes=[VariableNode(variable=Token(type=LINK_VARIABLE, text='\$x', pos=81)), OperationNode(operation=Token(type=MULTIPLICATION, text='*', pos=84)), ValueNode(value=Token(type=INTEGER, text='4', pos=86)), OperationNode(operation=Token(type=PLUS, text='+', pos=88)), VariableNode(variable=Token(type=LINK_VARIABLE, text='\$y', pos=90)), OperationNode(operation=Token(type=MINUS, text='-', pos=93)), ValueNode(value=Token(type=INTEGER, text='2', pos=95))]))]), exprAsString=StringNode(string='{x y} {expr {\$x * 4 + \$y - 2}}')), ValueNode(value=Token(type=INTEGER, text='2', pos=100)), ValueNode(value=Token(type=INTEGER, text='4', pos=102))])]))])"
 
         Assertions.assertEquals(expected, actual)
     }
