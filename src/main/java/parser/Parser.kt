@@ -865,6 +865,10 @@ class Parser(private val tokens: List<Token>) {
                 val stringToken = variable.convertTo(TokenType.STRING)
                 ValueNode(stringToken)
             }
+            isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                val variable = match(TokenType.LINK_VARIABLE)!!
+                VariableNode(variable)
+            }
             isCurrentTokenTypeEqualTo(TokenType.INTEGER) -> {
                 val integerToken = match(TokenType.INTEGER)!!
                 ValueNode(integerToken)

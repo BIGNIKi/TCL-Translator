@@ -152,6 +152,7 @@
 ## Commands
 **puts**
 * ValueNode
+* VariableNode
 * SquareBracesNodes
 * CurlyBracesNodes
 * QuotationNodes
