@@ -1,5 +1,7 @@
 import lexer.Lexer
 import parser.Parser
+import translator.TestFile
+import translator.Translator
 
 fun main() {
 
@@ -14,8 +16,13 @@ fun setupLexer() {
     val tokenList = lexer.lexAnalysis()
     println(tokenList)
 
-    val parser = Parser(tokenList)
+    val parser = Parser(tokenList) // вернули всю запарсенную штуку
+
     println(parser.parseCode())
+    //val transl = Translator()
+    //transl.generateClass(parser.parseCode());
+
+    TestFile.Go();
 }
 
 fun debugRegex() {
