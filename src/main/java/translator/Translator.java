@@ -118,7 +118,8 @@ public class Translator
                         else if(eN instanceof VariableNode)
                         {
                             VariableNode vN = (VariableNode)eN;
-                            sB.append(vN.getVariable().getText().substring(1));
+                            String toAdd = vN.getVariable().getText().substring(1);
+                            sB.append(toAdd);
                             sB.append(".toString() ");
                         }
                         isFirstIteration = false;
@@ -134,7 +135,7 @@ public class Translator
                         if(eN instanceof StringNode)
                         {
                             StringNode sN = (StringNode)eN;
-                            sB.append(sN.getString());
+                            sB.append(sN.getString().replace("\"", "\\\""));
                         }
                     }
                     lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
