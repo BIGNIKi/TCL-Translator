@@ -1,7 +1,10 @@
 import lexer.Lexer
 import parser.Parser
-import translator.TestFile
 import translator.Translator
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+
 
 fun main() {
 
@@ -10,7 +13,9 @@ fun main() {
 }
 
 fun setupLexer() {
-    val code = "puts \$a"
+    val code = Files.readString(Paths.get("src/main/resources/codeExample.tcl") , StandardCharsets.US_ASCII)
+
+    //val code = "puts \$a"
 
     val lexer = Lexer(code)
     val tokenList = lexer.lexAnalysis()
@@ -18,11 +23,10 @@ fun setupLexer() {
 
     val parser = Parser(tokenList) // вернули всю запарсенную штуку
 
-    println(parser.parseCode())
-    //val transl = Translator()
-    //transl.generateClass(parser.parseCode());
-
-    TestFile.Go();
+    //println(parser.parseCode())
+    val transl = Translator()
+    transl.generateClass(parser.parseCode())
+    transl.BuildAndRun()
 }
 
 fun debugRegex() {
