@@ -83,8 +83,6 @@ public class Translator
 
     private void ProcessBlock(ExpressionNode node) throws Exception
     {
-
-
         if(node instanceof UnarOperationNode) // нашли унарный оператор (напрмер puts)
         {
             UnarOperationNode uON = (UnarOperationNode) node;
@@ -215,7 +213,12 @@ public class Translator
         else if(bON.getWhatAssign() instanceof SquareBracesNodes)
         {
             SquareBracesNodes sBN = (SquareBracesNodes)bON.getWhatAssign();
-            return SolveSquareBraces(sBN, bON);
+            // приравнять переменную к TEMP_VAR
+            SolveSquareBraces(sBN, bON);
+            String varName = bON.getWhomAssign().getVariable().getText();
+            lMain.addLocalVariable(varName, pool.get("java.lang.Object"));
+            lMain.insertAfter(varName + "= TEMP_VAR;\n");
+            return null;
         }
         else if(bON.getWhatAssign() instanceof CurlyBracesNodes)
         {
@@ -257,6 +260,119 @@ public class Translator
                     String str = (String) ob;
                     lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"="+"\""+str+"\""+";\n");
                     return str;
+                }
+            }
+            else if(exN instanceof UnarOperationNode)
+            {
+                UnarOperationNode uON = (UnarOperationNode)exN;
+
+                if(uON.getOperator().getType().equals(TokenType.EXPR)) // expr
+                {
+                    if(uON.getOperand() instanceof MathExpNodes)
+                    {
+                        MathExpNodes mEN = (MathExpNodes)uON.getOperand();
+                        String firstParam = null; // имя первой переменной
+                        TokenType tokType = null;
+                        lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
+                        for(ExpressionNode eN : mEN.getNodes())
+                        {
+                            if(eN instanceof VariableNode)
+                            {
+                                VariableNode vN = (VariableNode)eN;
+                                if(firstParam == null)
+                                {
+                                    firstParam = vN.getVariable().getText().substring(1);
+                                }
+                                else
+                                {
+                                    //lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+                                    if(tokType.equals(TokenType.PLUS))
+                                    {
+                                        String str = "TEMP_VAR = add("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
+                                        lMain.insertAfter(str);
+                                        //lMain.insertAfter("Object TEMP_VAR = this.add(X, Y);\nSystem.out.println(TEMP_VAR);\n");
+                                        firstParam = "TEMP_VAR";
+                                        tokType = null;
+                                    }
+                                    else if(tokType.equals(TokenType.MINUS))
+                                    {
+                                        String str = "TEMP_VAR = sub("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
+                                        lMain.insertAfter(str);
+                                        //lMain.insertAfter("Object TEMP_VAR = this.add(X, Y);\nSystem.out.println(TEMP_VAR);\n");
+                                        firstParam = "TEMP_VAR";
+                                        tokType = null;
+                                    }
+                                }
+                            }
+                            else if(eN instanceof OperationNode)
+                            {
+                                OperationNode oN = (OperationNode)eN;
+                                if(oN.getOperation().getType().equals(TokenType.PLUS))
+                                {
+                                    tokType = TokenType.PLUS;
+                                    //lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+                                    //lMain.insertBefore("TEMP_VAR = add("+ Integer.toString(intulya) + ")"+";\n");
+                                }
+                                else if(oN.getOperation().getType().equals(TokenType.MINUS))
+                                {
+                                    tokType = TokenType.MINUS;
+                                }
+                            }
+                            else if(eN instanceof ValueNode) // чиселка
+                            {
+                                if(tokType != null && tokType.equals(TokenType.PLUS)) // уже есть знак до (и выражение соответсвенно)
+                                {
+                                    ValueNode vN = (ValueNode)eN;
+                                    if(vN.getValue().getType().equals(TokenType.FLOAT))
+                                    {
+                                        String newFloat = "new Float(" + vN.getValue().getText() +")";
+                                        lMain.insertAfter("TEMP_VAR = add("+ firstParam + "," + newFloat + ")"+";\n");
+                                    }
+                                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
+                                    {
+                                        String newInteger = "new Integer(" + vN.getValue().getText() +")";
+                                        lMain.insertAfter("TEMP_VAR = add("+ firstParam + "," + newInteger + ")"+";\n");
+                                    }
+
+                                    //firstParam = "TEMP_VAR";
+                                    tokType = null;
+                                }
+                                else if(tokType != null && tokType.equals(TokenType.MINUS))
+                                {
+                                    ValueNode vN = (ValueNode)eN;
+                                    if(vN.getValue().getType().equals(TokenType.FLOAT))
+                                    {
+                                        String newFloat = "new Float(" + vN.getValue().getText() +")";
+                                        lMain.insertAfter("TEMP_VAR = sub("+ firstParam + "," + newFloat + ")"+";\n");
+                                    }
+                                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
+                                    {
+                                        String newInteger = "new Integer(" + vN.getValue().getText() +")";
+                                        lMain.insertAfter("TEMP_VAR = sub("+ firstParam + "," + newInteger + ")"+";\n");
+                                    }
+
+                                    //firstParam = "TEMP_VAR";
+                                    tokType = null;
+                                }
+                                else if(tokType == null) // сработает, когда цифра стоит в выражении первой
+                                {
+                                    ValueNode vN = (ValueNode)eN;
+                                    firstParam = "TEMP_VAR";
+                                    if(vN.getValue().getType().equals(TokenType.FLOAT))
+                                    {
+                                        String newFloat = "new Float(" + vN.getValue().getText() +")";
+                                        lMain.insertAfter("TEMP_VAR = " + newFloat +";\n");
+                                    }
+                                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
+                                    {
+                                        String newInteger = "new Integer(" + vN.getValue().getText() +")";
+                                        lMain.insertAfter("TEMP_VAR = " + newInteger +";\n");
+                                    }
+
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
