@@ -85,7 +85,7 @@ public class Translator
     {
 
 
-        if(node instanceof UnarOperationNode) // нашли унарный оператор
+        if(node instanceof UnarOperationNode) // нашли унарный оператор (напрмер puts)
         {
             UnarOperationNode uON = (UnarOperationNode) node;
 
@@ -141,7 +141,7 @@ public class Translator
 
             System.out.println("Started");
         }
-        else if(node instanceof BinOperationNode)
+        else if(node instanceof BinOperationNode) // например set
         {
             BinOperationNode bON = (BinOperationNode) node;
 
@@ -166,6 +166,12 @@ public class Translator
                         float fl = Float.parseFloat(vN.getValue().getText());
                         lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Float"));
                         lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Float("+ Float.toString(fl) + ")"+";\n");
+                    }
+                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
+                    {
+                        int intulya = Integer.parseInt(vN.getValue().getText());
+                        lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Integer"));
+                        lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ Integer.toString(intulya) + ")"+";\n");
                     }
                 }
             }
