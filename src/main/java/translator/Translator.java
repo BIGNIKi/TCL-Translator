@@ -125,6 +125,15 @@ public class Translator
                     }
                     lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
                 }
+                else if(uON.getOperand() instanceof VariableNode) // puts $X
+                {
+                    VariableNode vN = (VariableNode)uON.getOperand();
+                    if(vN.getVariable().getType().equals(TokenType.LINK_VARIABLE))
+                    {
+                        //vN.getVariable().getText().substring(1);
+                        lMain.insertAfter("{System.out.println(" + vN.getVariable().getText().substring(1) + ");}\n");
+                    }
+                }
 
                 //lMain.addLocalVariable(uON.getOperand()., pool.get("java.lang.String")); // создается объект типа String
                 //lMain.insertBefore("varName"+"=" + "" + ";");
@@ -157,7 +166,6 @@ public class Translator
                         float fl = Float.parseFloat(vN.getValue().getText());
                         lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Float"));
                         lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Float("+ Float.toString(fl) + ")"+";\n");
-                        //lMain.insertAfter("{System.out.println(" + bON.getWhomAssign().getVariable().getText() + ");}\n");
                     }
                 }
             }
