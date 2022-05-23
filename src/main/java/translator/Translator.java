@@ -135,7 +135,7 @@ public class Translator
                         if(eN instanceof StringNode)
                         {
                             StringNode sN = (StringNode)eN;
-                            sB.append(sN.getString().replace("\"", "\\\""));
+                            sB.append(sN.getString().replace("\\", "\\\\").replace("\"", "\\\""));
                         }
                     }
                     lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
