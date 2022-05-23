@@ -138,7 +138,7 @@ public class Translator
 
             if(bON.getOperator().getType().equals(TokenType.SET)) // это SET
             {
-                if(bON.getWhatAssign() instanceof QuotationNodes)
+                if(bON.getWhatAssign() instanceof QuotationNodes) // set X "text"
                 {
                     QuotationNodes qN = (QuotationNodes)bON.getWhatAssign();
                     if(qN.getNodes().get(0) instanceof StringNode)
@@ -146,6 +146,18 @@ public class Translator
                         StringNode sN = (StringNode)qN.getNodes().get(0);
                         lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.String"));
                         lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString()+"\""+";\n");
+                    }
+                }
+                else if(bON.getWhatAssign() instanceof ValueNode)
+                {
+
+                    ValueNode vN = (ValueNode)bON.getWhatAssign();
+                    if(vN.getValue().getType().equals(TokenType.FLOAT))
+                    {
+                        float fl = Float.parseFloat(vN.getValue().getText());
+                        lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Float"));
+                        lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Float("+ Float.toString(fl) + ")"+";\n");
+                        //lMain.insertAfter("{System.out.println(" + bON.getWhomAssign().getVariable().getText() + ");}\n");
                     }
                 }
             }
