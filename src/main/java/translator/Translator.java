@@ -1,9 +1,6 @@
 package translator;
 
-import ast.ExpressionNode;
-import ast.StatementsNode;
-import ast.UnarOperationNode;
-import ast.ValueNode;
+import ast.*;
 import javassist.*;
 import lexer.TokenType;
 
@@ -99,6 +96,34 @@ public class Translator
                     ValueNode vN = (ValueNode)uON.getOperand();
                     //lMain.addLocalVariable(vN.getValue()., pool.get("java.lang.String")); // создается объект типа String
                     lMain.insertAfter("{System.out.println(\"" + vN.getValue().getText() + "\");}\n");
+                }
+                else if(uON.getOperand() instanceof QuotationNodes) // кавычки
+                {
+                    QuotationNodes qN = (QuotationNodes)uON.getOperand();
+                    StringBuilder sB = new StringBuilder();
+                    for(ExpressionNode eN : qN.getNodes()) // все ноды в кавычках
+                    {
+                        if(eN instanceof StringNode)
+                        {
+                            StringNode sN = (StringNode)eN;
+                            sB.append(sN.getString());
+                        }
+                    }
+                    lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
+                }
+                else if(uON.getOperand() instanceof CurlyBracesNodes) // {bla bla}
+                {
+                    CurlyBracesNodes cBN = (CurlyBracesNodes)uON.getOperand();
+                    StringBuilder sB = new StringBuilder();
+                    for(ExpressionNode eN : cBN.getNodes()) // все ноды в кавычках
+                    {
+                        if(eN instanceof StringNode)
+                        {
+                            StringNode sN = (StringNode)eN;
+                            sB.append(sN.getString());
+                        }
+                    }
+                    lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
                 }
 
                 //lMain.addLocalVariable(uON.getOperand()., pool.get("java.lang.String")); // создается объект типа String
