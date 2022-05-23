@@ -101,15 +101,29 @@ public class Translator
                 {
                     QuotationNodes qN = (QuotationNodes)uON.getOperand();
                     StringBuilder sB = new StringBuilder();
+                    boolean isFirstIteration = true;
                     for(ExpressionNode eN : qN.getNodes()) // все ноды в кавычках
                     {
+                        if(!isFirstIteration)
+                        {
+                            sB.append("+");
+                        }
                         if(eN instanceof StringNode)
                         {
                             StringNode sN = (StringNode)eN;
+                            sB.append("\"");
                             sB.append(sN.getString());
+                            sB.append("\"");
                         }
+                        else if(eN instanceof VariableNode)
+                        {
+                            VariableNode vN = (VariableNode)eN;
+                            sB.append(vN.getVariable().getText().substring(1));
+                            sB.append(".toString() ");
+                        }
+                        isFirstIteration = false;
                     }
-                    lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
+                    lMain.insertAfter("{System.out.println(" + sB + ");}\n");
                 }
                 else if(uON.getOperand() instanceof CurlyBracesNodes) // {bla bla}
                 {
