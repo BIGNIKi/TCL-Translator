@@ -132,5 +132,23 @@ public class Translator
 
             System.out.println("Started");
         }
+        else if(node instanceof BinOperationNode)
+        {
+            BinOperationNode bON = (BinOperationNode) node;
+
+            if(bON.getOperator().getType().equals(TokenType.SET)) // это SET
+            {
+                if(bON.getWhatAssign() instanceof QuotationNodes)
+                {
+                    QuotationNodes qN = (QuotationNodes)bON.getWhatAssign();
+                    if(qN.getNodes().get(0) instanceof StringNode)
+                    {
+                        StringNode sN = (StringNode)qN.getNodes().get(0);
+                        lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.String"));
+                        lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString()+"\""+";\n");
+                    }
+                }
+            }
+        }
     }
 }
