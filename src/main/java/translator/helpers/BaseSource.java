@@ -131,5 +131,61 @@ public class BaseSource
         catch (Exception ignored){}
         throw new ClassCastException();
     }
+
+    protected Object div(Object a, Object b) throws ClassCastException {
+        try	{
+            Float a1 = ((Integer)a).floatValue();
+            Float b1 = ((Integer)b).floatValue();
+            return a1 / b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float)a;
+            Float b1 = ((Integer)b).floatValue();
+            return a1 / b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = ((Integer)a).floatValue();
+            Float b1 = (Float)b;
+            return a1 / b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float)a;
+            Float b1 = (Float)b;
+            return a1 / b1;
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
+    protected Object reminder(Object a, Object b) throws ClassCastException {
+        try	{
+            Float a1 = ((Integer)a).floatValue();
+            Float b1 = ((Integer)b).floatValue();
+            return a1 % b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float)a;
+            Float b1 = ((Integer)b).floatValue();
+            return a1 % b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = ((Integer)a).floatValue();
+            Float b1 = (Float)b;
+            return a1 % b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float)a;
+            Float b1 = (Float)b;
+            return a1 % b1;
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
 }
 

@@ -8,10 +8,8 @@ public class Test extends BaseSource
     }
 
     public void evaluate() throws Exception {
-        Object X = new Integer(256);
-        Object Y = new Integer(100);
-        Object TEMP_VAR = this.add(X, Y);
-        this.add(Y, X);
+        Integer a = 5;
+        Float b = a.floatValue();
     }
 
     public static void main(String[] var0) throws Exception

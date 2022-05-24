@@ -2,6 +2,7 @@ package translator;
 
 import ast.*;
 import javassist.*;
+import lexer.Token;
 import lexer.TokenType;
 
 import java.util.ArrayList;
@@ -211,14 +212,14 @@ public class Translator
                     lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
                     return str;
                 }
-                else if(ob == null)
+/*                else if(ob == null)
                 {
                     //lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
                     //String str = "TEMP_VAR";
                     //lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"="+ str +";\n");
                     //return str;
                     return null;
-                }
+                }*/
             }
             else if(exN instanceof UnarOperationNode) // напрмер expr
             {
@@ -249,7 +250,7 @@ public class Translator
     {
         // TODO: отсортировать ноды в порядке арифм операций
 
-        String firstParam = null; // имя первой переменной
+        /*String firstParam = null; // имя первой переменной
         TokenType tokType = null;
         lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
         for(ExpressionNode eN : nodes)
@@ -406,6 +407,232 @@ public class Translator
                 SolveBracesAndSquareArihmetic(nodesNew);
                 lMain.insertAfter("TEMP_VAR = TEMP_VAR;\n");
                 firstParam = "TEMP_VAR";
+            }
+        }*/
+        System.out.println("Press F");
+        Integer numOfUnicVar = 0;
+        List<ExpressionNode> dynamicNodes = new ArrayList<>();
+        for(ExpressionNode eN : nodes)
+        {
+            dynamicNodes.add(eN);
+        }
+        boolean canStop = false;
+        while(canStop == false)
+        {
+            for(int i = 0; i<dynamicNodes.size(); i++)
+            {
+                ExpressionNode eN = dynamicNodes.get(i);
+
+                if(eN instanceof OperationNode)
+                {
+                    OperationNode oN = (OperationNode)eN;
+                    if(oN.getOperation().getType().equals(TokenType.PLUS))
+                    {
+                        ExpressionNode firstNode = dynamicNodes.get(i-2);
+                        MakeArgumentForExpression(firstNode, "0");
+                        String nameFirstVar = "ARGUM_"+"0";
+                        ExpressionNode secondNode = dynamicNodes.get(i-1);
+                        MakeArgumentForExpression(secondNode, "1");
+                        String nameSecondVar = "ARGUM_"+"1";
+
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+
+
+                        String str = nameOfUniqVar + " = add("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.PLUS, nameOfUniqVar);
+                        break;
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.MINUS))
+                    {
+                        ExpressionNode firstNode = dynamicNodes.get(i-2);
+                        MakeArgumentForExpression(firstNode, "0");
+                        String nameFirstVar = "ARGUM_"+"0";
+                        ExpressionNode secondNode = dynamicNodes.get(i-1);
+                        MakeArgumentForExpression(secondNode, "1");
+                        String nameSecondVar = "ARGUM_"+"1";
+
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+
+                        String str = nameOfUniqVar + " = sub("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.MINUS, nameOfUniqVar);
+                        break;
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.MULTIPLICATION))
+                    {
+                        ExpressionNode firstNode = dynamicNodes.get(i-2);
+                        MakeArgumentForExpression(firstNode, "0");
+                        String nameFirstVar = "ARGUM_"+"0";
+                        ExpressionNode secondNode = dynamicNodes.get(i-1);
+                        MakeArgumentForExpression(secondNode, "1");
+                        String nameSecondVar = "ARGUM_"+"1";
+
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+
+                        String str = nameOfUniqVar + " = mul("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.MULTIPLICATION, nameOfUniqVar);
+                        break;
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.DIVISION))
+                    {
+                        ExpressionNode firstNode = dynamicNodes.get(i-2);
+                        MakeArgumentForExpression(firstNode, "0");
+                        String nameFirstVar = "ARGUM_"+"0";
+                        ExpressionNode secondNode = dynamicNodes.get(i-1);
+                        MakeArgumentForExpression(secondNode, "1");
+                        String nameSecondVar = "ARGUM_"+"1";
+
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+
+                        String str = nameOfUniqVar + " = div("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.DIVISION, nameOfUniqVar);
+                        break;
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.REMINDER))
+                    {
+                        ExpressionNode firstNode = dynamicNodes.get(i-2);
+                        MakeArgumentForExpression(firstNode, "0");
+                        String nameFirstVar = "ARGUM_"+"0";
+                        ExpressionNode secondNode = dynamicNodes.get(i-1);
+                        MakeArgumentForExpression(secondNode, "1");
+                        String nameSecondVar = "ARGUM_"+"1";
+
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+
+                        String str = nameOfUniqVar + " = reminder("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.REMINDER, nameOfUniqVar);
+                        break;
+                    }
+                }
+                else if(dynamicNodes.size() == 1 && eN instanceof ValueNode)
+                {
+                    ValueNode vN = (ValueNode)eN;
+                    String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                    numOfUnicVar++;
+
+                    String nameOfVar = "TEMP_VAR";
+                    lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
+                    if(vN.getValue().getType().equals(TokenType.FLOAT))
+                    {
+                        String newFloat = "new Float(" + vN.getValue().getText() +")";
+                        lMain.insertAfter(nameOfVar + " = " + newFloat +";\n");
+                    }
+                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
+                    {
+                        String newInteger = "new Integer(" + vN.getValue().getText() +")";
+                        lMain.insertAfter(nameOfVar + " = " + newInteger +";\n");
+                    }
+                    String str = nameOfUniqVar + " = "+ nameOfVar +";\n";
+                    lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                    lMain.insertAfter(str);
+
+                    Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
+                    VariableNode newNode = new VariableNode(newTok);
+                    dynamicNodes.add(1, newNode);
+                    dynamicNodes.remove(0);
+                    canStop = true;
+                    break;
+                }
+                else if(dynamicNodes.size() == 1 && eN instanceof VariableNode)
+                {
+                    canStop = true;
+                    break;
+                }
+                else if(dynamicNodes.size() == 1 && eN instanceof MathFunctionNode)
+                {
+                    MathFunctionNode mFN = (MathFunctionNode)eN;
+                    if(mFN.getMathFun().getType().equals(TokenType.SQRT))
+                    {
+                        SolveBracesAndSquareArihmetic(mFN.getArguments());
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+                        String nameOfVar = "TEMP_VAR";
+                        String str = nameOfUniqVar + " = sqrt("+ nameOfVar +");\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+
+                        Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
+                        VariableNode newNode = new VariableNode(newTok);
+                        dynamicNodes.add(1, newNode);
+                        dynamicNodes.remove(0);
+                        canStop = true;
+                        break;
+                    }
+                }
+            }
+        }
+        VariableNode vN = (VariableNode)dynamicNodes.get(0);
+        lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+        String str = "TEMP_VAR = " + vN.getVariable().getText().substring(1) + ";\n";
+        lMain.insertAfter(str);
+    }
+
+    private List<ExpressionNode> RemakeOperationList(List<ExpressionNode> dynamicNodes, int fromWhichPosition, TokenType operator, String nameOfVar)
+    {
+        if(operator.equals(TokenType.PLUS) || operator.equals(TokenType.MINUS)
+                || operator.equals(TokenType.MULTIPLICATION) || operator.equals(TokenType.DIVISION)
+                || operator.equals(TokenType.REMINDER))
+        {
+            Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfVar, 0);
+            VariableNode newNode = new VariableNode(newTok);
+            dynamicNodes.add(fromWhichPosition+1, newNode);
+            dynamicNodes.remove(fromWhichPosition);
+            dynamicNodes.remove(fromWhichPosition-1);
+            dynamicNodes.remove(fromWhichPosition-2);
+            return dynamicNodes;
+        }
+        return null;
+    }
+
+    private void MakeArgumentForExpression(ExpressionNode node, String argNum) throws Exception
+    {
+        if(node instanceof ValueNode) // число
+        {
+            ValueNode vN = (ValueNode)node;
+            String nameOfVar = "ARGUM_"+argNum;
+            lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
+            if(vN.getValue().getType().equals(TokenType.FLOAT))
+            {
+                String newFloat = "new Float(" + vN.getValue().getText() +")";
+                lMain.insertAfter(nameOfVar + " = " + newFloat +";\n");
+            }
+            else if(vN.getValue().getType().equals(TokenType.INTEGER))
+            {
+                String newInteger = "new Integer(" + vN.getValue().getText() +")";
+                lMain.insertAfter(nameOfVar + " = " + newInteger +";\n");
+            }
+        }
+        else if(node instanceof VariableNode)
+        {
+            VariableNode vN = (VariableNode)node;
+            String nameOfVar = "ARGUM_"+argNum;
+            lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
+            lMain.insertAfter(nameOfVar + " = " + vN.getVariable().getText().substring(1) +";\n");
+        }
+        else if(node instanceof MathFunctionNode)
+        {
+            MathFunctionNode mFN = (MathFunctionNode)node;
+            if(mFN.getMathFun().getType().equals(TokenType.SQRT))
+            {
+                String nameOfVar = "ARGUM_"+argNum;
+                SolveBracesAndSquareArihmetic(mFN.getArguments());
+                String str = nameOfVar + " = sqrt("+ "TEMP_VAR" +");\n";
+                lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
+                lMain.insertAfter(str);
             }
         }
     }
