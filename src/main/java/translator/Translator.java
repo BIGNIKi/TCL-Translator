@@ -4,6 +4,7 @@ import ast.*;
 import javassist.*;
 import lexer.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Translator
@@ -13,6 +14,10 @@ public class Translator
     private final ClassPool pool; // ClassPool - это хэш-таблица, в которой хранится CtClass
 
     private CtMethod lMain; // метод evaluate
+
+    private int localVars = 0; // номер следующей локальной переменной в методе evaluate
+    private List<String> _varNames = new ArrayList<>(); // имена переменных
+
 
     public Translator() throws Exception
     {
@@ -93,8 +98,6 @@ public class Translator
             {
                 SolvePUTS(uON);
             }
-
-            System.out.println("Started");
         }
         else if(node instanceof BinOperationNode) // например set
         {
@@ -117,11 +120,11 @@ public class Translator
         if(bON.getWhatAssign() instanceof QuotationNodes) // set X "text"
         {
             QuotationNodes qN = (QuotationNodes)bON.getWhatAssign();
-            var ob = SolveQuatationNode(qN);
-            lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
+            var ob = SolveQuatationNode(qN, bON.getWhomAssign().getVariable().getText());
+            AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
             String finall = bON.getWhomAssign().getVariable().getText()+"=" + ob + ";\n";
             lMain.insertAfter(finall);
-            return null;
+            return ob.toString();
         }
         else if(bON.getWhatAssign() instanceof ValueNode) // set X 10
         {
@@ -129,69 +132,92 @@ public class Translator
             if(vN.getValue().getType().equals(TokenType.FLOAT))
             {
                 float fl = Float.parseFloat(vN.getValue().getText());
-                lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
-                lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Float("+ Float.toString(fl) + ")"+";\n");
+                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
+                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Float("+ Float.toString(fl) + ")"+";\n");
                 return fl;
             }
             else if(vN.getValue().getType().equals(TokenType.INTEGER))
             {
                 int intulya = Integer.parseInt(vN.getValue().getText());
-                lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
-                lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ Integer.toString(intulya) + ")"+";\n");
+                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
+                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ Integer.toString(intulya) + ")"+";\n");
                 return intulya;
             }
         }
         else if(bON.getWhatAssign() instanceof SquareBracesNodes) // "[]"
         {
             SquareBracesNodes sBN = (SquareBracesNodes)bON.getWhatAssign();
-            SolveSquareBraces(sBN, bON);
-            // TODO: закомментил
-            //String varName = bON.getWhomAssign().getVariable().getText();
-            //lMain.addLocalVariable(varName, pool.get("java.lang.Object"));
-            //lMain.insertAfter(varName + "= TEMP_VAR;\n");
+            SolveSquareBraces(sBN, bON.getWhomAssign().getVariable().getText()); // BLABLA
+            String varName = bON.getWhomAssign().getVariable().getText();
+            AddLocalVarIfNeeded(varName);
+            lMain.insertAfter(varName + "= TEMP_VAR;\n");
             return null;
         }
-        else if(bON.getWhatAssign() instanceof CurlyBracesNodes)
+        else if(bON.getWhatAssign() instanceof CurlyBracesNodes) // {...}
         {
             CurlyBracesNodes cBN = (CurlyBracesNodes)bON.getWhatAssign();
             if(cBN.getNodes().get(0) instanceof StringNode)
             {
                 StringNode sN = (StringNode)cBN.getNodes().get(0);
-                lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
-                lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString().replace("\\", "\\\\").replace("\"", "\\\"") +"\""+";\n");
-                return sN.getString();
+                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
+                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString().replace("\\", "\\\\").replace("\"", "\\\"") +"\""+";\n");
+                return "\"" + sN.getString() + "\"";
             }
         }
         return null;
     }
 
-    // BinOperationNode - обычно на уровень выше от текущего BinOperationNode
-    private Object SolveSquareBraces(SquareBracesNodes sBN, BinOperationNode bON) throws Exception
+    private Object SolveSquareBraces(SquareBracesNodes sBN, String nameOfVar) throws Exception
     {
         for(ExpressionNode exN : sBN.getNodes())
         {
             if(exN instanceof BinOperationNode) // например set
             {
-                BinOperationNode bOON = (BinOperationNode)exN; // BLABLA
+                BinOperationNode bOON = (BinOperationNode)exN;
                 Object ob = DoBinOperationNode(bOON);
-                lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
+                if(nameOfVar != null)
+                {
+                    AddLocalVarIfNeeded(nameOfVar);
+                }
+                else if(bOON.getWhomAssign().getVariable().getType().equals(TokenType.VARIABLE))
+                {
+                    nameOfVar = bOON.getWhomAssign().getVariable().getText();
+                    AddLocalVarIfNeeded(nameOfVar);
+                }
+
                 if(ob instanceof Integer)
                 {
                     Integer intu = (Integer) ob;
-                    lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ Integer.toString(intu) + ")"+";\n");
+                    lMain.insertAfter(nameOfVar+"= new Integer("+ Integer.toString(intu) + ")"+";\n");
+                    lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+                    lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
                     return intu;
                 }
                 else if(ob instanceof Float)
                 {
                     Float floatik = (Float) ob;
-                    lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"= new Float("+ Float.toString(floatik) + ")"+";\n");
+                    lMain.insertAfter(nameOfVar+"= new Float("+ Float.toString(floatik) + ")"+";\n");
+                    lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+                    lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
                     return floatik;
                 }
                 else if(ob instanceof String)
                 {
                     String str = (String) ob;
-                    lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"="+"\""+str+"\""+";\n");
+                    //String forTest = bON.getWhomAssign().getVariable().getText()+"="+"\""+str+"\""+";\n";
+                    String forTest = nameOfVar+"="+str+";\n";
+                    lMain.insertAfter(forTest);
+                    lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+                    lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
                     return str;
+                }
+                else if(ob == null)
+                {
+                    //lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+                    //String str = "TEMP_VAR";
+                    //lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"="+ str +";\n");
+                    //return str;
+                    return null;
                 }
             }
             else if(exN instanceof UnarOperationNode) // напрмер expr
@@ -384,7 +410,7 @@ public class Translator
         }
     }
 
-    private StringBuilder SolveQuatationNode(QuotationNodes qN) throws Exception
+    private StringBuilder SolveQuatationNode(QuotationNodes qN, String nameOfVar) throws Exception
     {
         StringBuilder sB = new StringBuilder();
         boolean isFirstIteration = true;
@@ -411,7 +437,7 @@ public class Translator
             else if(eN instanceof SquareBracesNodes)
             {
                 SquareBracesNodes sBN = (SquareBracesNodes)eN;
-                SolveSquareBraces(sBN, null);
+                SolveSquareBraces(sBN, nameOfVar);
                 sB.append("TEMP_VAR.toString()");
             }
             isFirstIteration = false;
@@ -432,7 +458,7 @@ public class Translator
         else if(uON.getOperand() instanceof QuotationNodes) // кавычки ""
         {
             QuotationNodes qN = (QuotationNodes)uON.getOperand();
-            var sB = SolveQuatationNode(qN);
+            var sB = SolveQuatationNode(qN, null);
             lMain.insertAfter("{System.out.println(" + sB + ");}\n");
             return sB.toString();
         }
@@ -470,5 +496,18 @@ public class Translator
             return sB;
         }
         return null;
+    }
+
+    private void AddLocalVarIfNeeded(String nameOfVar) throws Exception
+    {
+        for(String str : _varNames)
+        {
+            if(str.equals(nameOfVar))
+            {
+                return;
+            }
+        }
+        _varNames.add(nameOfVar);
+        lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
     }
 }

@@ -10,6 +10,7 @@ puts "$z $x $y"
 set z {[set x "just a text"]}
 puts "$z"
 set a "[set x {text inside curly braces}]"
+
 puts "After exucution of a we got: $a"
 puts "value \$x : $x"
 set b "\[set y {text inside it}]"
