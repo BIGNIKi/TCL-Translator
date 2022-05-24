@@ -1,12 +1,6 @@
 package ast
 
-class MathExpNodes : ExpressionNode() {
-    val nodes: MutableList<ExpressionNode> = mutableListOf()
-
-    fun addNode(node: ExpressionNode) {
-        nodes.add(node)
-    }
-
+class MathExpNodes(val nodes: MutableList<ExpressionNode>) : ExpressionNode() {
     override fun toString(): String {
         return "MathExpNodes(nodes=$nodes)"
     }
