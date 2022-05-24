@@ -96,6 +96,43 @@ public class BaseSource
         throw new ClassCastException();
     }
 
+    private Float pow(Integer a, Integer b){
+        return (float)Math.pow(a.doubleValue(), b.doubleValue());
+    }
+
+    private Float pow(Integer a, Float b){
+        return (float)Math.pow(a.doubleValue(), b.doubleValue());
+    }
+
+    private Float pow(Float a, Integer b){
+        return (float)Math.pow(a.doubleValue(), b.doubleValue());
+    }
+
+    private Float pow(Float a, Float b){
+        return (float)Math.pow(a.doubleValue(), b.doubleValue());
+    }
+
+    protected Object pow(Object a, Object b) throws ClassCastException
+    {
+        try	{
+            return pow((Integer)a, (Integer)b);
+        }
+        catch (Exception ignored){}
+        try	{
+            return pow((Integer)a, (Float)b);
+        }
+        catch (Exception ignored){}
+        try	{
+            return pow((Float)a, (Integer)b);
+        }
+        catch (Exception ignored){}
+        try	{
+            return pow((Float)a, (Float)b);
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
     private Float mul(Float a, Float b){
         return a * b;
     }

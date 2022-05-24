@@ -409,7 +409,6 @@ public class Translator
                 firstParam = "TEMP_VAR";
             }
         }*/
-        System.out.println("Press F");
         Integer numOfUnicVar = 0;
         List<ExpressionNode> dynamicNodes = new ArrayList<>();
         for(ExpressionNode eN : nodes)
@@ -557,11 +556,31 @@ public class Translator
                     MathFunctionNode mFN = (MathFunctionNode)eN;
                     if(mFN.getMathFun().getType().equals(TokenType.SQRT))
                     {
-                        SolveBracesAndSquareArihmetic(mFN.getArguments());
+                        MakeArguments(mFN.getArguments());
+                        //SolveBracesAndSquareArihmetic(mFN.getArguments());
                         String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
                         numOfUnicVar++;
-                        String nameOfVar = "TEMP_VAR";
+                        String nameOfVar = "ARG_0";
                         String str = nameOfUniqVar + " = sqrt("+ nameOfVar +");\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+
+                        Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
+                        VariableNode newNode = new VariableNode(newTok);
+                        dynamicNodes.add(1, newNode);
+                        dynamicNodes.remove(0);
+                        canStop = true;
+                        break;
+                    }
+                    else if(mFN.getMathFun().getType().equals(TokenType.POW))
+                    {
+                        MakeArguments(mFN.getArguments());
+                        //SolveBracesAndSquareArihmetic(mFN.getArguments());
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+                        String nameOfVar = "ARG_0";
+                        String nameOfVar1 = "ARG_1";
+                        String str = nameOfUniqVar + " = pow("+ nameOfVar +","+ nameOfVar1 +");\n";
                         lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
                         lMain.insertAfter(str);
 
@@ -579,6 +598,36 @@ public class Translator
         lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
         String str = "TEMP_VAR = " + vN.getVariable().getText().substring(1) + ";\n";
         lMain.insertAfter(str);
+    }
+
+    // создает переменные для аргументов в вызове функций
+    private void MakeArguments(List<ExpressionNode> nodes) throws Exception
+    {
+        for(int i = 0; i<nodes.size(); i++)
+        {
+            String nameOfVar = "ARG_" + Integer.toString(i);
+            lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
+            ExpressionNode eN = nodes.get(i);
+            if(eN instanceof ValueNode)
+            {
+                ValueNode vN = (ValueNode)eN;
+                if(vN.getValue().getType().equals(TokenType.FLOAT))
+                {
+                    String newFloat = "new Float(" + vN.getValue().getText() +")";
+                    lMain.insertAfter(nameOfVar + " = " + newFloat +";\n");
+                }
+                else if(vN.getValue().getType().equals(TokenType.INTEGER))
+                {
+                    String newInteger = "new Integer(" + vN.getValue().getText() +")";
+                    lMain.insertAfter(nameOfVar + " = " + newInteger +";\n");
+                }
+            }
+            else if(eN instanceof VariableNode)
+            {
+                VariableNode vN = (VariableNode)eN;
+                lMain.insertAfter(nameOfVar + " = " + vN.getVariable().getText().substring(1) +";\n");
+            }
+        }
     }
 
     private List<ExpressionNode> RemakeOperationList(List<ExpressionNode> dynamicNodes, int fromWhichPosition, TokenType operator, String nameOfVar)
@@ -629,8 +678,18 @@ public class Translator
             if(mFN.getMathFun().getType().equals(TokenType.SQRT))
             {
                 String nameOfVar = "ARGUM_"+argNum;
-                SolveBracesAndSquareArihmetic(mFN.getArguments());
-                String str = nameOfVar + " = sqrt("+ "TEMP_VAR" +");\n";
+                //SolveBracesAndSquareArihmetic(mFN.getArguments());
+                MakeArguments(mFN.getArguments());
+                String str = nameOfVar + " = sqrt("+ "ARG_0" +");\n";
+                lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
+                lMain.insertAfter(str);
+            }
+            else if(mFN.getMathFun().getType().equals(TokenType.POW))
+            {
+                String nameOfVar = "ARGUM_"+argNum;
+                //SolveBracesAndSquareArihmetic(mFN.getArguments());
+                MakeArguments(mFN.getArguments());
+                String str = nameOfVar + " = pow("+ "ARG_0" + "," + "ARG_1d" +");\n";
                 lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
                 lMain.insertAfter(str);
             }
