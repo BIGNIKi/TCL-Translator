@@ -100,36 +100,7 @@ public class Translator
                 else if(uON.getOperand() instanceof QuotationNodes) // кавычки ""
                 {
                     QuotationNodes qN = (QuotationNodes)uON.getOperand();
-                    StringBuilder sB = new StringBuilder();
-                    boolean isFirstIteration = true;
-                    for(ExpressionNode eN : qN.getNodes()) // все ноды в кавычках
-                    {
-                        if(!isFirstIteration)
-                        {
-                            sB.append("+");
-                        }
-                        if(eN instanceof StringNode)
-                        {
-                            StringNode sN = (StringNode)eN;
-                            sB.append("\"");
-                            sB.append(sN.getString());
-                            sB.append("\"");
-                        }
-                        else if(eN instanceof VariableNode)
-                        {
-                            VariableNode vN = (VariableNode)eN;
-                            String toAdd = vN.getVariable().getText().substring(1);
-                            sB.append(toAdd);
-                            sB.append(".toString() ");
-                        }
-                        else if(eN instanceof SquareBracesNodes)
-                        {
-                            SquareBracesNodes sBN = (SquareBracesNodes)eN;
-                            SolveSquareBraces(sBN, null);
-                            sB.append("TEMP_VAR.toString()");
-                        }
-                        isFirstIteration = false;
-                    }
+                    var sB = SolveQuatationNode(qN);
                     lMain.insertAfter("{System.out.println(" + sB + ");}\n");
                 }
                 else if(uON.getOperand() instanceof CurlyBracesNodes) // {bla bla}
@@ -183,21 +154,10 @@ public class Translator
         if(bON.getWhatAssign() instanceof QuotationNodes) // set X "text"
         {
             QuotationNodes qN = (QuotationNodes)bON.getWhatAssign();
-            if(qN.getNodes().get(0) instanceof StringNode)
-            {
-                StringNode sN = (StringNode)qN.getNodes().get(0);
-                lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
-                lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString()+"\""+";\n");
-                return sN.getString();
-            }
-            else if(qN.getNodes().get(0) instanceof SquareBracesNodes)
-            {
-                SquareBracesNodes sBN = (SquareBracesNodes)qN.getNodes().get(0);
-                lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
-                Object ob = SolveSquareBraces(sBN, bON);
-                lMain.insertBefore(bON.getWhomAssign().getVariable().getText()+"="+"\""+ob.toString()+"\""+";\n");
-                return ob.toString();
-            }
+            var ob = SolveQuatationNode(qN);
+            lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
+            String finall = bON.getWhomAssign().getVariable().getText()+"=" + ob + ";\n";
+            lMain.insertAfter(finall);
             return null;
         }
         else if(bON.getWhatAssign() instanceof ValueNode) // set X 10
@@ -446,5 +406,40 @@ public class Translator
                 firstParam = "TEMP_VAR";
             }
         }
+    }
+
+    private StringBuilder SolveQuatationNode(QuotationNodes qN) throws Exception
+    {
+        StringBuilder sB = new StringBuilder();
+        boolean isFirstIteration = true;
+        for(ExpressionNode eN : qN.getNodes()) // все ноды в кавычках
+        {
+            if(!isFirstIteration)
+            {
+                sB.append("+");
+            }
+            if(eN instanceof StringNode)
+            {
+                StringNode sN = (StringNode)eN;
+                sB.append("\"");
+                sB.append(sN.getString());
+                sB.append("\"");
+            }
+            else if(eN instanceof VariableNode)
+            {
+                VariableNode vN = (VariableNode)eN;
+                String toAdd = vN.getVariable().getText().substring(1);
+                sB.append(toAdd);
+                sB.append(".toString() ");
+            }
+            else if(eN instanceof SquareBracesNodes)
+            {
+                SquareBracesNodes sBN = (SquareBracesNodes)eN;
+                SolveSquareBraces(sBN, null);
+                sB.append("TEMP_VAR.toString()");
+            }
+            isFirstIteration = false;
+        }
+        return sB;
     }
 }
