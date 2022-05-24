@@ -133,6 +133,15 @@ public class BaseSource
         throw new ClassCastException();
     }
 
+    protected Object rand()
+    {
+        try	{
+            return new Float(Math.random());
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
     private Float mul(Float a, Float b){
         return a * b;
     }

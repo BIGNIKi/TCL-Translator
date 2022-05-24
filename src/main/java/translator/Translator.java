@@ -591,6 +591,21 @@ public class Translator
                         canStop = true;
                         break;
                     }
+                    else if(mFN.getMathFun().getType().equals(TokenType.RAND))
+                    {
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                        numOfUnicVar++;
+                        String str = nameOfUniqVar + " = rand();\n";
+                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+                        lMain.insertAfter(str);
+
+                        Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
+                        VariableNode newNode = new VariableNode(newTok);
+                        dynamicNodes.add(1, newNode);
+                        dynamicNodes.remove(0);
+                        canStop = true;
+                        break;
+                    }
                 }
             }
         }
@@ -689,7 +704,14 @@ public class Translator
                 String nameOfVar = "ARGUM_"+argNum;
                 //SolveBracesAndSquareArihmetic(mFN.getArguments());
                 MakeArguments(mFN.getArguments());
-                String str = nameOfVar + " = pow("+ "ARG_0" + "," + "ARG_1d" +");\n";
+                String str = nameOfVar + " = pow("+ "ARG_0" + "," + "ARG_1" +");\n";
+                lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
+                lMain.insertAfter(str);
+            }
+            else if(mFN.getMathFun().getType().equals(TokenType.RAND))
+            {
+                String nameOfVar = "ARGUM_"+argNum;
+                String str = nameOfVar + " = rand();\n";
                 lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
                 lMain.insertAfter(str);
             }

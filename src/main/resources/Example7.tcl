@@ -11,3 +11,5 @@ puts "[expr pow($X, 2)]"
 puts "[expr 1 + sqrt(16)]"
 puts "[expr 1 + sqrt($X)]"
 puts "[expr pow($X, 2) + 5.0]"
+set Y 3
+puts "[expr rand() + pow(2,$Y) * sqrt(4)]"
