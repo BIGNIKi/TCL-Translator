@@ -26,7 +26,7 @@ fun setupLexer() {
     //println(parser.parseCode())
     val transl = Translator()
     transl.generateClass(parser.parseCode())
-    transl.BuildAndRun()
+    //transl.BuildAndRun()
 }
 
 fun debugRegex() {

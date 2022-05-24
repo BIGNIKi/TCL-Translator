@@ -91,44 +91,7 @@ public class Translator
 
             if(uON.getOperator().getType().equals(TokenType.PUTS)) // это PUTS
             {
-                if(uON.getOperand() instanceof ValueNode) // например, string
-                {
-                    ValueNode vN = (ValueNode)uON.getOperand();
-                    //lMain.addLocalVariable(vN.getValue()., pool.get("java.lang.String")); // создается объект типа String
-                    lMain.insertAfter("{System.out.println(\"" + vN.getValue().getText() + "\");}\n");
-                }
-                else if(uON.getOperand() instanceof QuotationNodes) // кавычки ""
-                {
-                    QuotationNodes qN = (QuotationNodes)uON.getOperand();
-                    var sB = SolveQuatationNode(qN);
-                    lMain.insertAfter("{System.out.println(" + sB + ");}\n");
-                }
-                else if(uON.getOperand() instanceof CurlyBracesNodes) // {bla bla}
-                {
-                    CurlyBracesNodes cBN = (CurlyBracesNodes)uON.getOperand();
-                    StringBuilder sB = new StringBuilder();
-                    for(ExpressionNode eN : cBN.getNodes()) // все ноды в кавычках
-                    {
-                        if(eN instanceof StringNode)
-                        {
-                            StringNode sN = (StringNode)eN;
-                            sB.append(sN.getString().replace("\\", "\\\\").replace("\"", "\\\""));
-                        }
-                    }
-                    lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
-                }
-                else if(uON.getOperand() instanceof VariableNode) // puts $X
-                {
-                    VariableNode vN = (VariableNode)uON.getOperand();
-                    if(vN.getVariable().getType().equals(TokenType.LINK_VARIABLE))
-                    {
-                        //vN.getVariable().getText().substring(1);
-                        lMain.insertAfter("{System.out.println(" + vN.getVariable().getText().substring(1) + ");}\n");
-                    }
-                }
-
-                //lMain.addLocalVariable(uON.getOperand()., pool.get("java.lang.String")); // создается объект типа String
-                //lMain.insertBefore("varName"+"=" + "" + ";");
+                SolvePUTS(uON);
             }
 
             System.out.println("Started");
@@ -182,9 +145,10 @@ public class Translator
         {
             SquareBracesNodes sBN = (SquareBracesNodes)bON.getWhatAssign();
             SolveSquareBraces(sBN, bON);
-            String varName = bON.getWhomAssign().getVariable().getText();
-            lMain.addLocalVariable(varName, pool.get("java.lang.Object"));
-            lMain.insertAfter(varName + "= TEMP_VAR;\n");
+            // TODO: закомментил
+            //String varName = bON.getWhomAssign().getVariable().getText();
+            //lMain.addLocalVariable(varName, pool.get("java.lang.Object"));
+            //lMain.insertAfter(varName + "= TEMP_VAR;\n");
             return null;
         }
         else if(bON.getWhatAssign() instanceof CurlyBracesNodes)
@@ -201,13 +165,14 @@ public class Translator
         return null;
     }
 
+    // BinOperationNode - обычно на уровень выше от текущего BinOperationNode
     private Object SolveSquareBraces(SquareBracesNodes sBN, BinOperationNode bON) throws Exception
     {
         for(ExpressionNode exN : sBN.getNodes())
         {
             if(exN instanceof BinOperationNode) // например set
             {
-                BinOperationNode bOON = (BinOperationNode)exN;
+                BinOperationNode bOON = (BinOperationNode)exN; // BLABLA
                 Object ob = DoBinOperationNode(bOON);
                 lMain.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
                 if(ob instanceof Integer)
@@ -243,6 +208,12 @@ public class Translator
                         SolveBracesAndSquareArihmetic(nodes);
                     }
                 }
+                else if(uON.getOperator().getType().equals(TokenType.PUTS))
+                {
+                    String code = SolvePUTS(uON);
+                    lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
+                    lMain.insertAfter("TEMP_VAR = " + code +";\n");
+                }
             }
         }
         return null;
@@ -271,7 +242,6 @@ public class Translator
                     {
                         String str = "TEMP_VAR = add("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
                         lMain.insertAfter(str);
-                        //lMain.insertAfter("Object TEMP_VAR = this.add(X, Y);\nSystem.out.println(TEMP_VAR);\n");
                         firstParam = "TEMP_VAR";
                         tokType = null;
                     }
@@ -279,7 +249,13 @@ public class Translator
                     {
                         String str = "TEMP_VAR = sub("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
                         lMain.insertAfter(str);
-                        //lMain.insertAfter("Object TEMP_VAR = this.add(X, Y);\nSystem.out.println(TEMP_VAR);\n");
+                        firstParam = "TEMP_VAR";
+                        tokType = null;
+                    }
+                    else if(tokType.equals(TokenType.MULTIPLICATION))
+                    {
+                        String str = "TEMP_VAR = mul("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
+                        lMain.insertAfter(str);
                         firstParam = "TEMP_VAR";
                         tokType = null;
                     }
@@ -441,5 +417,58 @@ public class Translator
             isFirstIteration = false;
         }
         return sB;
+    }
+
+    private String SolvePUTS(UnarOperationNode uON) throws Exception
+    {
+        if(uON.getOperand() instanceof ValueNode) // например, string
+        {
+            ValueNode vN = (ValueNode)uON.getOperand();
+            //lMain.addLocalVariable(vN.getValue()., pool.get("java.lang.String")); // создается объект типа String
+            String sB = vN.getValue().getText();
+            lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
+            return sB;
+        }
+        else if(uON.getOperand() instanceof QuotationNodes) // кавычки ""
+        {
+            QuotationNodes qN = (QuotationNodes)uON.getOperand();
+            var sB = SolveQuatationNode(qN);
+            lMain.insertAfter("{System.out.println(" + sB + ");}\n");
+            return sB.toString();
+        }
+        else if(uON.getOperand() instanceof CurlyBracesNodes) // {bla bla}
+        {
+            CurlyBracesNodes cBN = (CurlyBracesNodes)uON.getOperand();
+            StringBuilder sB = new StringBuilder();
+            for(ExpressionNode eN : cBN.getNodes()) // все ноды в кавычках
+            {
+                if(eN instanceof StringNode)
+                {
+                    StringNode sN = (StringNode)eN;
+                    sB.append(sN.getString().replace("\\", "\\\\").replace("\"", "\\\""));
+                }
+            }
+            lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
+            return sB.toString();
+        }
+        else if(uON.getOperand() instanceof VariableNode) // puts $X
+        {
+            VariableNode vN = (VariableNode)uON.getOperand();
+            if(vN.getVariable().getType().equals(TokenType.LINK_VARIABLE))
+            {
+                String sB = vN.getVariable().getText().substring(1);
+                lMain.insertAfter("{System.out.println(" + sB + ");}\n");
+                return sB;
+            }
+        }
+        else if(uON.getOperand() instanceof SquareBracesNodes)
+        {
+            SquareBracesNodes sBN = (SquareBracesNodes)uON.getOperand();
+            SolveSquareBraces(sBN, null);
+            String sB = "TEMP_VAR";
+            lMain.insertAfter("{System.out.println(" + "TEMP_VAR" + ");}\n");
+            return sB;
+        }
+        return null;
     }
 }

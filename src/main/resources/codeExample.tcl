@@ -1,6 +1,5 @@
-puts "[expr ((2 + 2) + 5) * 4]"
-set X 100
-set Y 256
-set Z_LABEL "$Y plus $X equals "
-puts {$Z_LABEL [expr $Y + $X]}
-puts "Command for sum two numbers: \[expr \$a + \$b]"
+set x "abc"
+puts "Simple replacement: $x"
+set y [set x [set z 124]]
+set x "asldfjlk"
+puts "$z $x $y"
