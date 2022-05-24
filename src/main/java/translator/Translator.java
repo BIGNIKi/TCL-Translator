@@ -95,7 +95,7 @@ public class Translator
                     //lMain.addLocalVariable(vN.getValue()., pool.get("java.lang.String")); // создается объект типа String
                     lMain.insertAfter("{System.out.println(\"" + vN.getValue().getText() + "\");}\n");
                 }
-                else if(uON.getOperand() instanceof QuotationNodes) // кавычки
+                else if(uON.getOperand() instanceof QuotationNodes) // кавычки ""
                 {
                     QuotationNodes qN = (QuotationNodes)uON.getOperand();
                     StringBuilder sB = new StringBuilder();
@@ -119,6 +119,12 @@ public class Translator
                             String toAdd = vN.getVariable().getText().substring(1);
                             sB.append(toAdd);
                             sB.append(".toString() ");
+                        }
+                        else if(eN instanceof SquareBracesNodes)
+                        {
+                            SquareBracesNodes sBN = (SquareBracesNodes)eN;
+                            SolveSquareBraces(sBN, null);
+                            sB.append("TEMP_VAR.toString()");
                         }
                         isFirstIteration = false;
                     }
@@ -210,10 +216,9 @@ public class Translator
                 return intulya;
             }
         }
-        else if(bON.getWhatAssign() instanceof SquareBracesNodes)
+        else if(bON.getWhatAssign() instanceof SquareBracesNodes) // "[]"
         {
             SquareBracesNodes sBN = (SquareBracesNodes)bON.getWhatAssign();
-            // приравнять переменную к TEMP_VAR
             SolveSquareBraces(sBN, bON);
             String varName = bON.getWhomAssign().getVariable().getText();
             lMain.addLocalVariable(varName, pool.get("java.lang.Object"));
@@ -238,7 +243,7 @@ public class Translator
     {
         for(ExpressionNode exN : sBN.getNodes())
         {
-            if(exN instanceof BinOperationNode)
+            if(exN instanceof BinOperationNode) // например set
             {
                 BinOperationNode bOON = (BinOperationNode)exN;
                 Object ob = DoBinOperationNode(bOON);
@@ -262,7 +267,7 @@ public class Translator
                     return str;
                 }
             }
-            else if(exN instanceof UnarOperationNode)
+            else if(exN instanceof UnarOperationNode) // напрмер expr
             {
                 UnarOperationNode uON = (UnarOperationNode)exN;
 
@@ -369,6 +374,33 @@ public class Translator
                                         lMain.insertAfter("TEMP_VAR = " + newInteger +";\n");
                                     }
 
+                                }
+                            }
+                            else if(eN instanceof MathFunctionNode)
+                            {
+                                MathFunctionNode mFN = (MathFunctionNode)eN;
+                                if(mFN.getMathFun().getType().equals(TokenType.SQRT)) //SQRT
+                                {
+                                    // TODO: SQRT
+                                    if(mFN.getArguments().get(0) instanceof VariableNode)
+                                    {
+                                        VariableNode vN = (VariableNode)mFN.getArguments().get(0);
+                                        lMain.insertAfter("TEMP_VAR = sqrt(" + vN.getVariable().getText().substring(1) +");\n");
+                                    }
+                                    else if(mFN.getArguments().get(0) instanceof ValueNode)
+                                    {
+                                        ValueNode vN = (ValueNode)mFN.getArguments().get(0);
+                                        if(vN.getValue().getType().equals(TokenType.INTEGER))
+                                        {
+                                            String to = "(Object) new Integer(" + vN.getValue().getText() + ")";
+                                            lMain.insertAfter("TEMP_VAR = sqrt(" + to +");\n");
+                                        }
+                                        else if(vN.getValue().getType().equals(TokenType.FLOAT))
+                                        {
+                                            String to = "(Object) new Float(" + vN.getValue().getText() + ")";
+                                            lMain.insertAfter("TEMP_VAR = sqrt(" + to +");\n");
+                                        }
+                                    }
                                 }
                             }
                         }

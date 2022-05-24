@@ -839,6 +839,11 @@ class Parser(private val tokens: List<Token>) {
                 isCurrentTokenTypeEqualTo(TokenType.LSQU) -> {
                     parseSquareBracesExpression()
                 }
+                isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) ->
+                {
+                    val token = match(TokenType.LINK_VARIABLE)!!
+                    VariableNode(token)
+                }
                 else -> {
                     throw Exception("Unknown math function arg type at ${tokens[pos].pos}")
                 }

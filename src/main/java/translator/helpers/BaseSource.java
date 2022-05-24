@@ -73,5 +73,27 @@ public class BaseSource
         catch (Exception ignored){}
         throw new ClassCastException();
     }
+
+
+    private Float sqrt(Float a){
+        return (float)Math.sqrt(a);
+    }
+
+    private Float sqrt(Integer a){
+        return (float)Math.sqrt(a);
+    }
+
+    protected Object sqrt(Object a) throws ClassCastException
+    {
+        try	{
+            return sqrt((Integer)a);
+        }
+        catch (Exception ignored){}
+        try	{
+            return sqrt((Float)a);
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
 }
 
