@@ -248,8 +248,6 @@ public class Translator
 
     private void SolveBracesAndSquareArihmetic(List<ExpressionNode> nodes) throws Exception // решает арифметические приколы
     {
-        // TODO: отсортировать ноды в порядке арифм операций
-
         /*String firstParam = null; // имя первой переменной
         TokenType tokType = null;
         lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
@@ -427,100 +425,34 @@ public class Translator
                     OperationNode oN = (OperationNode)eN;
                     if(oN.getOperation().getType().equals(TokenType.PLUS))
                     {
-                        ExpressionNode firstNode = dynamicNodes.get(i-2);
-                        MakeArgumentForExpression(firstNode, "0");
-                        String nameFirstVar = "ARGUM_"+"0";
-                        ExpressionNode secondNode = dynamicNodes.get(i-1);
-                        MakeArgumentForExpression(secondNode, "1");
-                        String nameSecondVar = "ARGUM_"+"1";
-
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
-
-
-                        String str = nameOfUniqVar + " = add("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
-                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.PLUS, nameOfUniqVar);
+                        dynamicNodes = SolveSign(TokenType.PLUS, dynamicNodes, i, numOfUnicVar, "add");
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.MINUS))
                     {
-                        ExpressionNode firstNode = dynamicNodes.get(i-2);
-                        MakeArgumentForExpression(firstNode, "0");
-                        String nameFirstVar = "ARGUM_"+"0";
-                        ExpressionNode secondNode = dynamicNodes.get(i-1);
-                        MakeArgumentForExpression(secondNode, "1");
-                        String nameSecondVar = "ARGUM_"+"1";
-
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
-
-                        String str = nameOfUniqVar + " = sub("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
-                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.MINUS, nameOfUniqVar);
+                        dynamicNodes = SolveSign(TokenType.MINUS, dynamicNodes, i, numOfUnicVar, "sub");
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.MULTIPLICATION))
                     {
-                        ExpressionNode firstNode = dynamicNodes.get(i-2);
-                        MakeArgumentForExpression(firstNode, "0");
-                        String nameFirstVar = "ARGUM_"+"0";
-                        ExpressionNode secondNode = dynamicNodes.get(i-1);
-                        MakeArgumentForExpression(secondNode, "1");
-                        String nameSecondVar = "ARGUM_"+"1";
-
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
-
-                        String str = nameOfUniqVar + " = mul("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
-                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.MULTIPLICATION, nameOfUniqVar);
+                        dynamicNodes = SolveSign(TokenType.MULTIPLICATION, dynamicNodes, i, numOfUnicVar, "mul");
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.DIVISION))
                     {
-                        ExpressionNode firstNode = dynamicNodes.get(i-2);
-                        MakeArgumentForExpression(firstNode, "0");
-                        String nameFirstVar = "ARGUM_"+"0";
-                        ExpressionNode secondNode = dynamicNodes.get(i-1);
-                        MakeArgumentForExpression(secondNode, "1");
-                        String nameSecondVar = "ARGUM_"+"1";
-
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
-
-                        String str = nameOfUniqVar + " = div("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
-                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.DIVISION, nameOfUniqVar);
+                        dynamicNodes = SolveSign(TokenType.DIVISION, dynamicNodes, i, numOfUnicVar, "div");
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.REMINDER))
                     {
-                        ExpressionNode firstNode = dynamicNodes.get(i-2);
-                        MakeArgumentForExpression(firstNode, "0");
-                        String nameFirstVar = "ARGUM_"+"0";
-                        ExpressionNode secondNode = dynamicNodes.get(i-1);
-                        MakeArgumentForExpression(secondNode, "1");
-                        String nameSecondVar = "ARGUM_"+"1";
-
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
-
-                        String str = nameOfUniqVar + " = reminder("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
-                        dynamicNodes = RemakeOperationList(dynamicNodes, i, TokenType.REMINDER, nameOfUniqVar);
+                        dynamicNodes = SolveSign(TokenType.REMINDER, dynamicNodes, i, numOfUnicVar, "reminder");
                         break;
                     }
                 }
                 else if(dynamicNodes.size() == 1 && eN instanceof ValueNode)
                 {
                     ValueNode vN = (ValueNode)eN;
-                    String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+                    String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar;
                     numOfUnicVar++;
 
                     String nameOfVar = "TEMP_VAR";
@@ -613,6 +545,27 @@ public class Translator
         lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
         String str = "TEMP_VAR = " + vN.getVariable().getText().substring(1) + ";\n";
         lMain.insertAfter(str);
+    }
+
+    // для выбранного знака подставляет переменные
+    private List<ExpressionNode> SolveSign(TokenType tT, List<ExpressionNode> dynamicNodes, int id, Integer numOfUnicVar, String nameOfFunc) throws Exception
+    {
+        ExpressionNode firstNode = dynamicNodes.get(id-2);
+        MakeArgumentForExpression(firstNode, "0");
+        String nameFirstVar = "ARGUM_"+"0";
+        ExpressionNode secondNode = dynamicNodes.get(id-1);
+        MakeArgumentForExpression(secondNode, "1");
+        String nameSecondVar = "ARGUM_"+"1";
+
+        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
+        numOfUnicVar++;
+
+        //String str = nameOfUniqVar + " = add("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
+        String str = nameOfUniqVar + " = " + nameOfFunc + "("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
+        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+        lMain.insertAfter(str);
+        dynamicNodes = RemakeOperationList(dynamicNodes, id, tT, nameOfUniqVar);
+        return dynamicNodes;
     }
 
     // создает переменные для аргументов в вызове функций
