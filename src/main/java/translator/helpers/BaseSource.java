@@ -95,5 +95,41 @@ public class BaseSource
         catch (Exception ignored){}
         throw new ClassCastException();
     }
+
+    private Float mul(Float a, Float b){
+        return a * b;
+    }
+
+    private Float mul(Integer a, Float b){
+        return a * b;
+    }
+
+    private Float mul(Float a, Integer b){
+        return a * b;
+    }
+
+    private Integer mul(Integer a, Integer b){
+        return a * b;
+    }
+
+    protected Object mul(Object a, Object b) throws ClassCastException {
+        try	{
+            return mul((Integer)a, (Integer)b);
+        }
+        catch (Exception ignored){}
+        try	{
+            return mul((Float)a, (Integer)b);
+        }
+        catch (Exception ignored){}
+        try	{
+            return mul((Integer)a, (Float)b);
+        }
+        catch (Exception ignored){}
+        try	{
+            return mul((Float)a, (Float)b);
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
 }
 
