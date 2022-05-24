@@ -4,6 +4,8 @@ import ast.*
 import lexer.Token
 import lexer.TokenType
 import lexer.convertTo
+import java.util.*
+import kotlin.collections.HashMap
 
 class Parser(private val tokens: List<Token>) {
     var pos: Int = 0
@@ -736,7 +738,9 @@ class Parser(private val tokens: List<Token>) {
         val exprOperator = match(TokenType.EXPR)!!
         removeSpaces()
 
-        val mathExpNode = MathExpNodes()
+        val stack: Stack<OperationNode> = Stack()
+        val output: MutableList<ExpressionNode> = mutableListOf()
+
         var bracesCounter = 1
         while (bracesCounter != 0) {
             if (isCurrentTokenTypeEqualTo(TokenType.SEMICOLON)) {
@@ -752,16 +756,67 @@ class Parser(private val tokens: List<Token>) {
                 throw Exception("Missing closing ] of math expression")
             }
 
-            val node = parseExprFormula()
-            node?.let { mathExpNode.addNode(it) }
+            when {
+                isCurrentTokenTypeEqualTo(listOf(TokenType.INTEGER, TokenType.FLOAT)) -> {
+                    output.add(ValueNode(getCurrentToken()))
+                }
+                isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE) -> {
+                    output.add(VariableNode(getCurrentToken()))
+                }
+                isCurrentTokenTypeEqualTo(mathFunctionsList) -> {
+                    val mathFun = getCurrentToken()
+                    removeSpaces()
+
+                    val args = when (mathFun.type) {
+                        TokenType.SQRT -> { parseMathFunArgs(1) }
+                        TokenType.RAND -> { parseMathFunArgs(0) }
+                        TokenType.POW -> { parseMathFunArgs(2) }
+                        else -> { throw Exception("Unknown function at ${tokens[pos].pos}") }
+                    }
+
+                    removeSpaces()
+                    output.add(MathFunctionNode(mathFun = mathFun, arguments = args))
+                }
+                isCurrentTokenTypeEqualTo(TokenType.LPAR) -> {
+                    stack.push(OperationNode(getCurrentToken()))
+                }
+                isCurrentTokenTypeEqualTo(TokenType.RPAR) -> {
+                    while (stack.isNotEmpty() && stack.peek().operation.type != TokenType.LPAR) {
+                        output.add(stack.pop())
+                    }
+                    stack.pop()
+                    incCurrentPos()
+                }
+                isCurrentTokenTypeEqualTo(listOf(TokenType.QUOT, TokenType.LCUR, TokenType.RCUR, TokenType.SPACE, TokenType.RSQU)) -> { incCurrentPos() }
+                else -> {
+                    while (stack.isNotEmpty() && getPrecedence(peekCurrentToken()) <= getPrecedence(stack.peek().operation)) {
+                        output.add(stack.pop())
+                    }
+                    stack.push(OperationNode(getCurrentToken()))
+                }
+            }
+            removeSpaces()
         }
         pos--
 
-        if (mathExpNode.nodes.isEmpty()) {
+        while (stack.isNotEmpty()) {
+            if (stack.peek().operation.type == TokenType.LPAR) throw Exception("Expression is not valid")
+            output.add(stack.pop())
+        }
+
+        if (output.isEmpty()) {
             throw Exception("Missing expression body")
         }
 
-        return UnarOperationNode(exprOperator, mathExpNode)
+        return UnarOperationNode(exprOperator, MathExpNodes(output))
+    }
+
+    private fun getPrecedence(token: Token): Int {
+        return when (token.type) {
+            TokenType.PLUS, TokenType.MINUS -> { 1 }
+            TokenType.MULTIPLICATION, TokenType.DIVISION, TokenType.REMINDER -> { 2 }
+            else -> -1
+        }
     }
 
     /**
