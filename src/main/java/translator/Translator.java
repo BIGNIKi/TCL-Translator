@@ -119,11 +119,19 @@ public class Translator
 
     private void SolveSwitch(SwitchNode sN) throws Exception
     {
+        // TODO: добавить возвращаемый результат
+        // Если default нет и все остальные case'ы в пролете, то вернет пустую строку
         if(sN.getString().getType().equals(TokenType.LINK_VARIABLE)) // switch по ссылочной переменной
         {
             String nameOfVar = "TEMP_STRING"; // здесь будет лежать переменная, по которой мы switch'каемся
             lMain.addLocalVariable(nameOfVar, pool.get("java.lang.String"));
             lMain.insertAfter(nameOfVar + " = " + sN.getString().getText().substring(1) + ".toString()" + ";\n");
+
+            for(int i = 0; i<sN.getCases().size(); i++)
+            {
+                SwitchCase sC = sN.getCases().get(i);
+                AddVarsForSwitch(sC);
+            }
 
             StringBuilder result = new StringBuilder();
             for(int i = 0; i<sN.getCases().size(); i++)
@@ -133,6 +141,27 @@ public class Translator
             }
 
             lMain.insertAfter(result.toString());
+        }
+    }
+
+    // заранее объявляем переменные для switch'а, так как его поведение сложно предсказуемо
+    private void AddVarsForSwitch(SwitchCase sC) throws Exception
+    {
+        if(sC.getBody() instanceof CurlyBracesNodes)
+        {
+            CurlyBracesNodes cBN = (CurlyBracesNodes)sC.getBody();
+            for(int i = 0; i<cBN.getNodes().size(); i++)
+            {
+                ExpressionNode eN = cBN.getNodes().get(i);
+                if(eN instanceof BinOperationNode)
+                {
+                    BinOperationNode bON = (BinOperationNode)eN;
+                    if(bON.getOperator().getType().equals(TokenType.SET))
+                    {
+                        AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
+                    }
+                }
+            }
         }
     }
 
@@ -182,6 +211,14 @@ public class Translator
                     {
                         String var2print = SolvePUTS(uON);
                         result.append("System.out.println(").append(var2print).append(");\n");
+                    }
+                }
+                else if(eN instanceof BinOperationNode)
+                {
+                    BinOperationNode bON = (BinOperationNode)eN;
+                    if(bON.getOperator().getType().equals(TokenType.SET))
+                    {
+                        DoSet(bON);
                     }
                 }
             }
