@@ -349,6 +349,8 @@ public class Translator
         lMain.insertAfter(str);
     }
 
+    // добавление последнего токена в выражение (арифметическое)
+    // dynamicNodes - здесь должна оставаться последняя нода с сылочной перменной с именем nameOfUniqVar
     private void MakeFinalToken(String nameOfUniqVar, List<ExpressionNode> dynamicNodes)
     {
         Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
@@ -403,6 +405,7 @@ public class Translator
     }
 
     // создает переменные для аргументов в вызове функций
+    // ARG_0, ARG_1 и тд
     private void MakeArguments(List<ExpressionNode> nodes) throws Exception
     {
         for(int i = 0; i<nodes.size(); i++)
@@ -449,6 +452,8 @@ public class Translator
         return null;
     }
 
+    // создает промежуточную переменную для вычисления арифм выражения
+    // возвращает имя переменной
     private void MakeArgumentForExpression(ExpressionNode node, String argNum) throws Exception
     {
         if(node instanceof ValueNode) // число
@@ -480,7 +485,6 @@ public class Translator
             if(mFN.getMathFun().getType().equals(TokenType.SQRT))
             {
                 String nameOfVar = "ARGUM_"+argNum;
-                //SolveBracesAndSquareArihmetic(mFN.getArguments());
                 MakeArguments(mFN.getArguments());
                 String str = nameOfVar + " = sqrt("+ "ARG_0" +");\n";
                 lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
@@ -489,7 +493,6 @@ public class Translator
             else if(mFN.getMathFun().getType().equals(TokenType.POW))
             {
                 String nameOfVar = "ARGUM_"+argNum;
-                //SolveBracesAndSquareArihmetic(mFN.getArguments());
                 MakeArguments(mFN.getArguments());
                 String str = nameOfVar + " = pow("+ "ARG_0" + "," + "ARG_1" +");\n";
                 lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
