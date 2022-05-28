@@ -108,7 +108,8 @@ public class Translator
         else if(node instanceof BinOperationNode) // например set
         {
             BinOperationNode bON = (BinOperationNode) node;
-            DoBinOperationNode(bON);
+            VarAndCode vAC = DoBinOperationNode(bON);
+            lMain.insertAfter(vAC._allCode);
         }
         else if(node instanceof SwitchNode) // switch
         {
@@ -218,7 +219,9 @@ public class Translator
                     BinOperationNode bON = (BinOperationNode)eN;
                     if(bON.getOperator().getType().equals(TokenType.SET))
                     {
-                        DoSet(bON);
+                        VarAndCode vAC = DoSet(bON);
+
+                        result.append(vAC._allCode);
                     }
                 }
             }
@@ -229,7 +232,7 @@ public class Translator
         result.append("}\n");
     }
 
-    private Object DoBinOperationNode(BinOperationNode bON) throws Exception
+    private VarAndCode DoBinOperationNode(BinOperationNode bON) throws Exception
     {
         if(bON.getOperator().getType().equals(TokenType.SET)) // это SET
         {
@@ -238,16 +241,22 @@ public class Translator
         return null;
     }
 
-    private Object DoSet(BinOperationNode bON) throws Exception
+    private VarAndCode DoSet(BinOperationNode bON) throws Exception
     {
+        VarAndCode vAC = new VarAndCode();
         if(bON.getWhatAssign() instanceof QuotationNodes) // set X "text"
         {
             QuotationNodes qN = (QuotationNodes)bON.getWhatAssign();
-            var ob = SolveQuatationNode(qN, bON.getWhomAssign().getVariable().getText());
+            BeforeAndToString ob = SolveQuatationNode(qN, bON.getWhomAssign().getVariable().getText());
+            String finall = ob.codeBefore;
+
             AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
-            String finall = bON.getWhomAssign().getVariable().getText()+"=" + ob + ";\n";
-            lMain.insertAfter(finall);
-            return ob.toString();
+            finall += bON.getWhomAssign().getVariable().getText()+"=" + ob.textToString + ";\n";
+            //lMain.insertAfter(finall);
+
+            vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
+            vAC._allCode = finall;
+            return vAC;
         }
         else if(bON.getWhatAssign() instanceof ValueNode) // set X 10
         {
@@ -256,25 +265,45 @@ public class Translator
             {
                 float fl = Float.parseFloat(vN.getValue().getText());
                 AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
-                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Float("+ fl + ")"+";\n");
-                return fl;
+                //lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Float("+ fl + ")"+";\n");
+
+                vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
+                vAC._allCode = bON.getWhomAssign().getVariable().getText()+"= new Float("+ fl + ")"+";\n";
+                return vAC;
+                //return fl;
             }
             else if(vN.getValue().getType().equals(TokenType.INTEGER))
             {
                 int intulya = Integer.parseInt(vN.getValue().getText());
                 AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
-                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ intulya + ")"+";\n");
-                return intulya;
+                //lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ intulya + ")"+";\n");
+
+                vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
+                vAC._allCode = bON.getWhomAssign().getVariable().getText()+"= new Integer("+ intulya + ")"+";\n";
+                return vAC;
+                //return intulya;
             }
         }
         else if(bON.getWhatAssign() instanceof SquareBracesNodes) // "[]"
         {
             SquareBracesNodes sBN = (SquareBracesNodes)bON.getWhatAssign();
-            SolveSquareBraces(sBN, bON.getWhomAssign().getVariable().getText()); // BLABLA
+
+            VarAndCode bla = SolveSquareBraces(sBN, bON.getWhomAssign().getVariable().getText()); // BLABLA
+
+            StringBuilder codeText = new StringBuilder(bla._allCode);
+            // TODO: возможно не стоит убирать
+            //lMain.insertAfter(bla._allCode);
+
+
             String varName = bON.getWhomAssign().getVariable().getText();
             AddLocalVarIfNeeded(varName);
-            lMain.insertAfter(varName + "= TEMP_VAR;\n");
-            return null;
+            //lMain.insertAfter(varName + "= TEMP_VAR;\n");
+
+            vAC._nameOfVar = varName;
+            codeText.append(varName + "= TEMP_VAR;\n");
+            vAC._allCode = codeText.toString();
+            return vAC;
+            //return null;
         }
         else if(bON.getWhatAssign() instanceof CurlyBracesNodes) // {...}
         {
@@ -283,21 +312,34 @@ public class Translator
             {
                 StringNode sN = (StringNode)cBN.getNodes().get(0);
                 AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
-                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString().replace("\\", "\\\\").replace("\"", "\\\"") +"\""+";\n");
-                return "\"" + sN.getString() + "\"";
+                //lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString().replace("\\", "\\\\").replace("\"", "\\\"") +"\""+";\n");
+                //return "\"" + sN.getString() + "\"";
+
+                vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
+                vAC._allCode = bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString().replace("\\", "\\\\").replace("\"", "\\\"") +"\""+";\n";
+                return vAC;
             }
         }
         return null;
     }
 
-    private void SolveSquareBraces(SquareBracesNodes sBN, String nameOfVar) throws Exception
+    // []
+    // nameOfVar - кому назначить возвращаемое от [] значение
+    // возвращает код для [...]
+    // хранит свой результат в TEMP_VAR
+    private VarAndCode SolveSquareBraces(SquareBracesNodes sBN, String nameOfVar) throws Exception
     {
+        VarAndCode vACResult = new VarAndCode();
+        vACResult._nameOfVar = "TEMP_VAR";
+
+        StringBuilder codeText = new StringBuilder();
+
         for(ExpressionNode exN : sBN.getNodes())
         {
             if(exN instanceof BinOperationNode) // например set
             {
                 BinOperationNode bOON = (BinOperationNode)exN;
-                Object ob = DoBinOperationNode(bOON);
+                VarAndCode vAC = DoBinOperationNode(bOON);
                 if(nameOfVar != null)
                 {
                     AddLocalVarIfNeeded(nameOfVar);
@@ -308,31 +350,12 @@ public class Translator
                     AddLocalVarIfNeeded(nameOfVar);
                 }
 
-                if(ob instanceof Integer)
-                {
-                    Integer intu = (Integer) ob;
-                    lMain.insertAfter(nameOfVar+"= new Integer("+ intu + ")"+";\n");
-                    lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-                    lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
-                    return;
-                }
-                else if(ob instanceof Float)
-                {
-                    Float floatik = (Float) ob;
-                    lMain.insertAfter(nameOfVar+"= new Float("+ floatik + ")"+";\n");
-                    lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-                    lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
-                    return;
-                }
-                else if(ob instanceof String)
-                {
-                    String str = (String) ob;
-                    String forTest = nameOfVar+"="+str+";\n";
-                    lMain.insertAfter(forTest);
-                    lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-                    lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
-                    return;
-                }
+                //lMain.insertAfter(vAC._allCode);
+                codeText.append(vAC._allCode);
+
+                lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
+                //lMain.insertAfter("TEMP_VAR = " + vAC._nameOfVar + ";\n");
+                codeText.append("TEMP_VAR = " + vAC._nameOfVar + ";\n");
             }
             else if(exN instanceof UnarOperationNode) // напрмер expr или puts
             {
@@ -345,22 +368,31 @@ public class Translator
                         MathExpNodes mEN = (MathExpNodes)uON.getOperand();
 
                         var nodes = mEN.getNodes();
-                        SolveBracesAndSquareArihmetic(nodes);
+                        VarAndCode vAC = SolveBracesAndSquareArihmetic(nodes);
+                        //lMain.insertAfter(vAC._allCode);
+                        codeText.append(vAC._allCode);
                     }
                 }
                 else if(uON.getOperator().getType().equals(TokenType.PUTS))
                 {
                     String code = SolvePUTS(uON);
-                    lMain.insertAfter("System.out.println(" + code + ");\n");
+                    //lMain.insertAfter("System.out.println(" + code + ");\n");
+                    codeText.append("System.out.println(" + code + ");\n");
                     lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
-                    lMain.insertAfter("TEMP_VAR = " + code +";\n");
+                    //lMain.insertAfter("TEMP_VAR = " + code +";\n");
+                    codeText.append("TEMP_VAR = " + code +";\n");
                 }
             }
         }
+        vACResult._allCode = codeText.toString();
+        return vACResult;
     }
 
-    private void SolveBracesAndSquareArihmetic(List<ExpressionNode> nodes) throws Exception // решает арифметические приколы
+    private VarAndCode SolveBracesAndSquareArihmetic(List<ExpressionNode> nodes) throws Exception // решает арифметические приколы
     {
+        VarAndCode vACResult = new VarAndCode();
+        StringBuilder allCodeText = new StringBuilder();
+
         IntRef numOfUnicVar = new IntRef();
         numOfUnicVar._val = 0;
         List<ExpressionNode> dynamicNodes = new ArrayList<>(nodes);
@@ -376,27 +408,27 @@ public class Translator
                     OperationNode oN = (OperationNode)eN;
                     if(oN.getOperation().getType().equals(TokenType.PLUS))
                     {
-                        dynamicNodes = SolveSign(TokenType.PLUS, dynamicNodes, i, numOfUnicVar, "add");
+                        dynamicNodes = SolveSign(TokenType.PLUS, dynamicNodes, i, numOfUnicVar, "add", allCodeText);
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.MINUS))
                     {
-                        dynamicNodes = SolveSign(TokenType.MINUS, dynamicNodes, i, numOfUnicVar, "sub");
+                        dynamicNodes = SolveSign(TokenType.MINUS, dynamicNodes, i, numOfUnicVar, "sub", allCodeText);
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.MULTIPLICATION))
                     {
-                        dynamicNodes = SolveSign(TokenType.MULTIPLICATION, dynamicNodes, i, numOfUnicVar, "mul");
+                        dynamicNodes = SolveSign(TokenType.MULTIPLICATION, dynamicNodes, i, numOfUnicVar, "mul", allCodeText);
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.DIVISION))
                     {
-                        dynamicNodes = SolveSign(TokenType.DIVISION, dynamicNodes, i, numOfUnicVar, "div");
+                        dynamicNodes = SolveSign(TokenType.DIVISION, dynamicNodes, i, numOfUnicVar, "div", allCodeText);
                         break;
                     }
                     else if(oN.getOperation().getType().equals(TokenType.REMINDER))
                     {
-                        dynamicNodes = SolveSign(TokenType.REMINDER, dynamicNodes, i, numOfUnicVar, "reminder");
+                        dynamicNodes = SolveSign(TokenType.REMINDER, dynamicNodes, i, numOfUnicVar, "reminder", allCodeText);
                         break;
                     }
                 }
@@ -412,16 +444,19 @@ public class Translator
                     if(vN.getValue().getType().equals(TokenType.FLOAT))
                     {
                         String newFloat = "new Float(" + vN.getValue().getText() +")";
-                        lMain.insertAfter(nameOfVar + " = " + newFloat +";\n");
+                        //lMain.insertAfter(nameOfVar + " = " + newFloat +";\n");
+                        allCodeText.append(nameOfVar + " = " + newFloat +";\n");
                     }
                     else if(vN.getValue().getType().equals(TokenType.INTEGER))
                     {
                         String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                        lMain.insertAfter(nameOfVar + " = " + newInteger +";\n");
+                        //lMain.insertAfter(nameOfVar + " = " + newInteger +";\n");
+                        allCodeText.append(nameOfVar + " = " + newInteger +";\n");
                     }
                     String str = nameOfUniqVar + " = "+ nameOfVar +";\n";
                     lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                    lMain.insertAfter(str);
+                    //lMain.insertAfter(str);
+                    allCodeText.append(str);
 
                     Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
                     VariableNode newNode = new VariableNode(newTok);
@@ -468,7 +503,13 @@ public class Translator
         VariableNode vN = (VariableNode)dynamicNodes.get(0);
         lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
         String str = "TEMP_VAR = " + vN.getVariable().getText().substring(1) + ";\n";
-        lMain.insertAfter(str);
+        allCodeText.append(str);
+        //lMain.insertAfter(str);
+
+        vACResult._nameOfVar = "TEMP_VAR";
+        vACResult._allCode = allCodeText.toString();
+
+        return vACResult;
     }
 
     // добавление последнего токена в выражение (арифметическое)
@@ -506,13 +547,14 @@ public class Translator
     }
 
     // для выбранного знака подставляет переменные
-    private List<ExpressionNode> SolveSign(TokenType tT, List<ExpressionNode> dynamicNodes, int id, IntRef numOfUnicVar, String nameOfFunc) throws Exception
+    private List<ExpressionNode> SolveSign(TokenType tT, List<ExpressionNode> dynamicNodes, int id,
+        IntRef numOfUnicVar, String nameOfFunc, StringBuilder CodeForExpr) throws Exception
     {
         ExpressionNode firstNode = dynamicNodes.get(id-2);
-        MakeArgumentForExpression(firstNode, "0");
+        MakeArgumentForExpression(firstNode, "0", CodeForExpr);
         String nameFirstVar = "ARGUM_"+"0";
         ExpressionNode secondNode = dynamicNodes.get(id-1);
-        MakeArgumentForExpression(secondNode, "1");
+        MakeArgumentForExpression(secondNode, "1", CodeForExpr);
         String nameSecondVar = "ARGUM_"+"1";
 
         String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
@@ -521,7 +563,8 @@ public class Translator
         //String str = nameOfUniqVar + " = add("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
         String str = nameOfUniqVar + " = " + nameOfFunc + "("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
         lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-        lMain.insertAfter(str);
+        CodeForExpr.append(str);
+        //lMain.insertAfter(str);
         dynamicNodes = RemakeOperationList(dynamicNodes, id, tT, nameOfUniqVar);
         return dynamicNodes;
     }
@@ -576,7 +619,7 @@ public class Translator
 
     // создает промежуточную переменную для вычисления арифм выражения
     // возвращает имя переменной
-    private void MakeArgumentForExpression(ExpressionNode node, String argNum) throws Exception
+    private void MakeArgumentForExpression(ExpressionNode node, String argNum, StringBuilder codeForExpr) throws Exception
     {
         if(node instanceof ValueNode) // число
         {
@@ -586,12 +629,14 @@ public class Translator
             if(vN.getValue().getType().equals(TokenType.FLOAT))
             {
                 String newFloat = "new Float(" + vN.getValue().getText() +")";
-                lMain.insertAfter(nameOfVar + " = " + newFloat +";\n");
+                //lMain.insertAfter(nameOfVar + " = " + newFloat +";\n");
+                codeForExpr.append(nameOfVar + " = " + newFloat +";\n");
             }
             else if(vN.getValue().getType().equals(TokenType.INTEGER))
             {
                 String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                lMain.insertAfter(nameOfVar + " = " + newInteger +";\n");
+                //lMain.insertAfter(nameOfVar + " = " + newInteger +";\n");
+                codeForExpr.append(nameOfVar + " = " + newInteger +";\n");
             }
         }
         else if(node instanceof VariableNode)
@@ -599,7 +644,8 @@ public class Translator
             VariableNode vN = (VariableNode)node;
             String nameOfVar = "ARGUM_"+argNum;
             lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
-            lMain.insertAfter(nameOfVar + " = " + vN.getVariable().getText().substring(1) +";\n");
+            //lMain.insertAfter(nameOfVar + " = " + vN.getVariable().getText().substring(1) +";\n");
+            codeForExpr.append(nameOfVar + " = " + vN.getVariable().getText().substring(1) +";\n");
         }
         else if(node instanceof MathFunctionNode)
         {
@@ -610,7 +656,8 @@ public class Translator
                 MakeArguments(mFN.getArguments());
                 String str = nameOfVar + " = sqrt("+ "ARG_0" +");\n";
                 lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
-                lMain.insertAfter(str);
+                //lMain.insertAfter(str);
+                codeForExpr.append(str);
             }
             else if(mFN.getMathFun().getType().equals(TokenType.POW))
             {
@@ -618,20 +665,25 @@ public class Translator
                 MakeArguments(mFN.getArguments());
                 String str = nameOfVar + " = pow("+ "ARG_0" + "," + "ARG_1" +");\n";
                 lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
-                lMain.insertAfter(str);
+                //lMain.insertAfter(str);
+                codeForExpr.append(str);
             }
             else if(mFN.getMathFun().getType().equals(TokenType.RAND))
             {
                 String nameOfVar = "ARGUM_"+argNum;
                 String str = nameOfVar + " = rand();\n";
                 lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
-                lMain.insertAfter(str);
+                //lMain.insertAfter(str);
+                codeForExpr.append(str);
             }
         }
     }
 
-    private StringBuilder SolveQuatationNode(QuotationNodes qN, String nameOfVar) throws Exception
+    private BeforeAndToString SolveQuatationNode(QuotationNodes qN, String nameOfVar) throws Exception
     {
+        BeforeAndToString result = new BeforeAndToString();
+        StringBuilder codeBefore = new StringBuilder();
+
         StringBuilder sB = new StringBuilder();
         boolean isFirstIteration = true;
         for(ExpressionNode eN : qN.getNodes()) // все ноды в кавычках
@@ -657,12 +709,18 @@ public class Translator
             else if(eN instanceof SquareBracesNodes)
             {
                 SquareBracesNodes sBN = (SquareBracesNodes)eN;
-                SolveSquareBraces(sBN, nameOfVar);
+
+                VarAndCode bla = SolveSquareBraces(sBN, nameOfVar);
+                //lMain.insertAfter(bla._allCode);
+                codeBefore.append(bla._allCode);
+
                 sB.append("TEMP_VAR.toString()");
             }
             isFirstIteration = false;
         }
-        return sB;
+        result.codeBefore = codeBefore.toString();
+        result.textToString = sB.toString();
+        return result;
     }
 
     // возвращает то, что нужно вывести
@@ -679,9 +737,11 @@ public class Translator
         else if(uON.getOperand() instanceof QuotationNodes) // кавычки ""
         {
             QuotationNodes qN = (QuotationNodes)uON.getOperand();
-            var sB = SolveQuatationNode(qN, null);
+            BeforeAndToString sB = SolveQuatationNode(qN, null);
+            // TODO: убрать insertAfter
+            lMain.insertAfter(sB.codeBefore);
             //lMain.insertAfter("System.out.println(" + sB + ");\n");
-            return sB.toString();
+            return sB.textToString;
         }
         else if(uON.getOperand() instanceof CurlyBracesNodes) // {bla bla}
         {
@@ -713,7 +773,9 @@ public class Translator
         else if(uON.getOperand() instanceof SquareBracesNodes)
         {
             SquareBracesNodes sBN = (SquareBracesNodes)uON.getOperand();
-            SolveSquareBraces(sBN, null);
+            VarAndCode bla = SolveSquareBraces(sBN, null);
+            // TODO: убрать insertAfter
+            lMain.insertAfter(bla._allCode);
             String sB = "TEMP_VAR";
             //lMain.insertAfter("System.out.println(" + "TEMP_VAR" + ");\n");
             return sB;
