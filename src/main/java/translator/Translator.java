@@ -278,6 +278,7 @@ public class Translator
                         break;
                     }
                 }
+                // все кейсы ниже рассматриваются не только здесь, но и в MakeArgumentForExpression
                 else if(dynamicNodes.size() == 1 && eN instanceof ValueNode)
                 {
                     ValueNode vN = (ValueNode)eN;
@@ -317,51 +318,25 @@ public class Translator
                     MathFunctionNode mFN = (MathFunctionNode)eN;
                     if(mFN.getMathFun().getType().equals(TokenType.SQRT))
                     {
-                        MakeArguments(mFN.getArguments());
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
-                        numOfUnicVar._val++;
-                        String nameOfVar = "ARG_0";
-                        String str = nameOfUniqVar + " = sqrt("+ nameOfVar +");\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
+                        String nameOfUniqVar = AddSolveForMathFunc(mFN, numOfUnicVar, "sqrt", 1);
 
-                        Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
-                        VariableNode newNode = new VariableNode(newTok);
-                        dynamicNodes.add(1, newNode);
-                        dynamicNodes.remove(0);
+                        MakeFinalToken(nameOfUniqVar, dynamicNodes);
                         canStop = true;
                         break;
                     }
                     else if(mFN.getMathFun().getType().equals(TokenType.POW))
                     {
-                        MakeArguments(mFN.getArguments());
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
-                        numOfUnicVar._val++;
-                        String nameOfVar = "ARG_0";
-                        String nameOfVar1 = "ARG_1";
-                        String str = nameOfUniqVar + " = pow("+ nameOfVar +","+ nameOfVar1 +");\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
+                        String nameOfUniqVar = AddSolveForMathFunc(mFN, numOfUnicVar, "pow", 2);
 
-                        Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
-                        VariableNode newNode = new VariableNode(newTok);
-                        dynamicNodes.add(1, newNode);
-                        dynamicNodes.remove(0);
+                        MakeFinalToken(nameOfUniqVar, dynamicNodes);
                         canStop = true;
                         break;
                     }
                     else if(mFN.getMathFun().getType().equals(TokenType.RAND))
                     {
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
-                        numOfUnicVar._val++;
-                        String str = nameOfUniqVar + " = rand();\n";
-                        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
-                        lMain.insertAfter(str);
+                        String nameOfUniqVar = AddSolveForMathFunc(mFN, numOfUnicVar, "rand", 0);
 
-                        Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
-                        VariableNode newNode = new VariableNode(newTok);
-                        dynamicNodes.add(1, newNode);
-                        dynamicNodes.remove(0);
+                        MakeFinalToken(nameOfUniqVar, dynamicNodes);
                         canStop = true;
                         break;
                     }
@@ -374,9 +349,36 @@ public class Translator
         lMain.insertAfter(str);
     }
 
-    private void AddSolveForMathFunc()
+    private void MakeFinalToken(String nameOfUniqVar, List<ExpressionNode> dynamicNodes)
     {
-        
+        Token newTok = new Token(TokenType.LINK_VARIABLE, "$"+nameOfUniqVar, 0);
+        VariableNode newNode = new VariableNode(newTok);
+        dynamicNodes.add(1, newNode);
+        dynamicNodes.remove(0);
+    }
+
+    private String AddSolveForMathFunc(MathFunctionNode mFN, IntRef numOfUnicVar, String nameOfFunc, int numOfArgs) throws Exception
+    {
+        MakeArguments(mFN.getArguments());
+
+        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
+        numOfUnicVar._val++;
+        StringBuilder str = new StringBuilder(nameOfUniqVar);
+        str.append(" = ").append(nameOfFunc).append("(");
+
+        for(int i = 0; i<numOfArgs; i++)
+        {
+            String nameOfVar = "ARG_" + i;
+            str.append(nameOfVar);
+            if(i != numOfArgs-1)
+                str.append(",");
+        }
+
+        str.append(");\n");
+        lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+        lMain.insertAfter(str.toString());
+
+        return nameOfUniqVar;
     }
 
     // для выбранного знака подставляет переменные
