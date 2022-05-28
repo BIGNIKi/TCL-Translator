@@ -4,6 +4,7 @@ import ast.*;
 import javassist.*;
 import lexer.Token;
 import lexer.TokenType;
+import translator.helpers.IntRef;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +17,8 @@ public class Translator
 
     private CtMethod lMain; // метод evaluate
 
-    private int localVars = 0; // номер следующей локальной переменной в методе evaluate
-    private List<String> _varNames = new ArrayList<>(); // имена переменных
+    //private int localVars = 0; // номер следующей локальной переменной в методе evaluate
+    private final List<String> _varNames = new ArrayList<>(); // имена переменных
 
 
     public Translator() throws Exception
@@ -27,7 +28,7 @@ public class Translator
         cc.setName("TCLSource");
     }
 
-    public void generateClass(ExpressionNode eN) throws CannotCompileException, NotFoundException
+    public void generateClass(ExpressionNode eN)
     {
         try
         {
@@ -134,14 +135,14 @@ public class Translator
             {
                 float fl = Float.parseFloat(vN.getValue().getText());
                 AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
-                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Float("+ Float.toString(fl) + ")"+";\n");
+                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Float("+ fl + ")"+";\n");
                 return fl;
             }
             else if(vN.getValue().getType().equals(TokenType.INTEGER))
             {
                 int intulya = Integer.parseInt(vN.getValue().getText());
                 AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
-                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ Integer.toString(intulya) + ")"+";\n");
+                lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"= new Integer("+ intulya + ")"+";\n");
                 return intulya;
             }
         }
@@ -168,7 +169,7 @@ public class Translator
         return null;
     }
 
-    private Object SolveSquareBraces(SquareBracesNodes sBN, String nameOfVar) throws Exception
+    private void SolveSquareBraces(SquareBracesNodes sBN, String nameOfVar) throws Exception
     {
         for(ExpressionNode exN : sBN.getNodes())
         {
@@ -189,37 +190,28 @@ public class Translator
                 if(ob instanceof Integer)
                 {
                     Integer intu = (Integer) ob;
-                    lMain.insertAfter(nameOfVar+"= new Integer("+ Integer.toString(intu) + ")"+";\n");
+                    lMain.insertAfter(nameOfVar+"= new Integer("+ intu + ")"+";\n");
                     lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
                     lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
-                    return intu;
+                    return;
                 }
                 else if(ob instanceof Float)
                 {
                     Float floatik = (Float) ob;
-                    lMain.insertAfter(nameOfVar+"= new Float("+ Float.toString(floatik) + ")"+";\n");
+                    lMain.insertAfter(nameOfVar+"= new Float("+ floatik + ")"+";\n");
                     lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
                     lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
-                    return floatik;
+                    return;
                 }
                 else if(ob instanceof String)
                 {
                     String str = (String) ob;
-                    //String forTest = bON.getWhomAssign().getVariable().getText()+"="+"\""+str+"\""+";\n";
                     String forTest = nameOfVar+"="+str+";\n";
                     lMain.insertAfter(forTest);
                     lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
                     lMain.insertAfter("TEMP_VAR = " + nameOfVar + ";\n");
-                    return str;
+                    return;
                 }
-/*                else if(ob == null)
-                {
-                    //lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-                    //String str = "TEMP_VAR";
-                    //lMain.insertAfter(bON.getWhomAssign().getVariable().getText()+"="+ str +";\n");
-                    //return str;
-                    return null;
-                }*/
             }
             else if(exN instanceof UnarOperationNode) // напрмер expr
             {
@@ -243,178 +235,15 @@ public class Translator
                 }
             }
         }
-        return null;
     }
 
     private void SolveBracesAndSquareArihmetic(List<ExpressionNode> nodes) throws Exception // решает арифметические приколы
     {
-        /*String firstParam = null; // имя первой переменной
-        TokenType tokType = null;
-        lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
-        for(ExpressionNode eN : nodes)
-        {
-            if(eN instanceof VariableNode)
-            {
-                VariableNode vN = (VariableNode)eN;
-                if(firstParam == null)
-                {
-                    firstParam = vN.getVariable().getText().substring(1);
-                }
-                else
-                {
-                    //lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-                    if(tokType.equals(TokenType.PLUS))
-                    {
-                        String str = "TEMP_VAR = add("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
-                        lMain.insertAfter(str);
-                        firstParam = "TEMP_VAR";
-                        tokType = null;
-                    }
-                    else if(tokType.equals(TokenType.MINUS))
-                    {
-                        String str = "TEMP_VAR = sub("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
-                        lMain.insertAfter(str);
-                        firstParam = "TEMP_VAR";
-                        tokType = null;
-                    }
-                    else if(tokType.equals(TokenType.MULTIPLICATION))
-                    {
-                        String str = "TEMP_VAR = mul("+ firstParam + "," + vN.getVariable().getText().substring(1) + ")"+";\n";
-                        lMain.insertAfter(str);
-                        firstParam = "TEMP_VAR";
-                        tokType = null;
-                    }
-                }
-            }
-            else if(eN instanceof OperationNode)
-            {
-                OperationNode oN = (OperationNode)eN;
-                if(oN.getOperation().getType().equals(TokenType.PLUS))
-                {
-                    tokType = TokenType.PLUS;
-                    //lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-                    //lMain.insertBefore("TEMP_VAR = add("+ Integer.toString(intulya) + ")"+";\n");
-                }
-                else if(oN.getOperation().getType().equals(TokenType.MINUS))
-                {
-                    tokType = TokenType.MINUS;
-                }
-                else if(oN.getOperation().getType().equals(TokenType.MULTIPLICATION))
-                {
-                    tokType = TokenType.MULTIPLICATION;
-                }
-            }
-            else if(eN instanceof ValueNode) // чиселка
-            {
-                if(tokType != null && tokType.equals(TokenType.PLUS)) // уже есть знак до (и выражение соответсвенно)
-                {
-                    ValueNode vN = (ValueNode)eN;
-                    if(vN.getValue().getType().equals(TokenType.FLOAT))
-                    {
-                        String newFloat = "new Float(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = add("+ firstParam + "," + newFloat + ")"+";\n");
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
-                    {
-                        String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = add("+ firstParam + "," + newInteger + ")"+";\n");
-                    }
-
-                    //firstParam = "TEMP_VAR";
-                    tokType = null;
-                }
-                else if(tokType != null && tokType.equals(TokenType.MINUS))
-                {
-                    ValueNode vN = (ValueNode)eN;
-                    if(vN.getValue().getType().equals(TokenType.FLOAT))
-                    {
-                        String newFloat = "new Float(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = sub("+ firstParam + "," + newFloat + ")"+";\n");
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
-                    {
-                        String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = sub("+ firstParam + "," + newInteger + ")"+";\n");
-                    }
-
-                    tokType = null;
-                }
-                else if(tokType != null && tokType.equals(TokenType.MULTIPLICATION))
-                {
-                    ValueNode vN = (ValueNode)eN;
-                    if(vN.getValue().getType().equals(TokenType.FLOAT))
-                    {
-                        String newFloat = "(Object) new Float(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = mul("+ firstParam + "," + newFloat + ")"+";\n");
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
-                    {
-                        String newInteger = "(Object) new Integer(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = mul("+ firstParam + "," + newInteger + ")"+";\n");
-                    }
-
-                    tokType = null;
-                }
-                else if(tokType == null) // сработает, когда цифра стоит в выражении первой
-                {
-                    ValueNode vN = (ValueNode)eN;
-                    firstParam = "TEMP_VAR";
-                    if(vN.getValue().getType().equals(TokenType.FLOAT))
-                    {
-                        String newFloat = "new Float(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = " + newFloat +";\n");
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.INTEGER))
-                    {
-                        String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                        lMain.insertAfter("TEMP_VAR = " + newInteger +";\n");
-                    }
-
-                }
-            }
-            else if(eN instanceof MathFunctionNode)
-            {
-                MathFunctionNode mFN = (MathFunctionNode)eN;
-                if(mFN.getMathFun().getType().equals(TokenType.SQRT)) //SQRT
-                {
-                    if(mFN.getArguments().get(0) instanceof VariableNode)
-                    {
-                        VariableNode vN = (VariableNode)mFN.getArguments().get(0);
-                        lMain.insertAfter("TEMP_VAR = sqrt(" + vN.getVariable().getText().substring(1) +");\n");
-                    }
-                    else if(mFN.getArguments().get(0) instanceof ValueNode)
-                    {
-                        ValueNode vN = (ValueNode)mFN.getArguments().get(0);
-                        if(vN.getValue().getType().equals(TokenType.INTEGER))
-                        {
-                            String to = "(Object) new Integer(" + vN.getValue().getText() + ")";
-                            lMain.insertAfter("TEMP_VAR = sqrt(" + to +");\n");
-                        }
-                        else if(vN.getValue().getType().equals(TokenType.FLOAT))
-                        {
-                            String to = "(Object) new Float(" + vN.getValue().getText() + ")";
-                            lMain.insertAfter("TEMP_VAR = sqrt(" + to +");\n");
-                        }
-                    }
-                }
-            }
-            else if(eN instanceof BracesNodes) // (...)
-            {
-                BracesNodes bN = (BracesNodes)eN;
-                var nodesNew = bN.getNodes();
-                SolveBracesAndSquareArihmetic(nodesNew);
-                lMain.insertAfter("TEMP_VAR = TEMP_VAR;\n");
-                firstParam = "TEMP_VAR";
-            }
-        }*/
-        Integer numOfUnicVar = 0;
-        List<ExpressionNode> dynamicNodes = new ArrayList<>();
-        for(ExpressionNode eN : nodes)
-        {
-            dynamicNodes.add(eN);
-        }
+        IntRef numOfUnicVar = new IntRef();
+        numOfUnicVar._val = 0;
+        List<ExpressionNode> dynamicNodes = new ArrayList<>(nodes);
         boolean canStop = false;
-        while(canStop == false)
+        while(!canStop)
         {
             for(int i = 0; i<dynamicNodes.size(); i++)
             {
@@ -452,8 +281,8 @@ public class Translator
                 else if(dynamicNodes.size() == 1 && eN instanceof ValueNode)
                 {
                     ValueNode vN = (ValueNode)eN;
-                    String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar;
-                    numOfUnicVar++;
+                    String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
+                    numOfUnicVar._val++;
 
                     String nameOfVar = "TEMP_VAR";
                     lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
@@ -489,9 +318,8 @@ public class Translator
                     if(mFN.getMathFun().getType().equals(TokenType.SQRT))
                     {
                         MakeArguments(mFN.getArguments());
-                        //SolveBracesAndSquareArihmetic(mFN.getArguments());
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
+                        numOfUnicVar._val++;
                         String nameOfVar = "ARG_0";
                         String str = nameOfUniqVar + " = sqrt("+ nameOfVar +");\n";
                         lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
@@ -507,9 +335,8 @@ public class Translator
                     else if(mFN.getMathFun().getType().equals(TokenType.POW))
                     {
                         MakeArguments(mFN.getArguments());
-                        //SolveBracesAndSquareArihmetic(mFN.getArguments());
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
+                        numOfUnicVar._val++;
                         String nameOfVar = "ARG_0";
                         String nameOfVar1 = "ARG_1";
                         String str = nameOfUniqVar + " = pow("+ nameOfVar +","+ nameOfVar1 +");\n";
@@ -525,8 +352,8 @@ public class Translator
                     }
                     else if(mFN.getMathFun().getType().equals(TokenType.RAND))
                     {
-                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-                        numOfUnicVar++;
+                        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
+                        numOfUnicVar._val++;
                         String str = nameOfUniqVar + " = rand();\n";
                         lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
                         lMain.insertAfter(str);
@@ -547,8 +374,13 @@ public class Translator
         lMain.insertAfter(str);
     }
 
+    private void AddSolveForMathFunc()
+    {
+        
+    }
+
     // для выбранного знака подставляет переменные
-    private List<ExpressionNode> SolveSign(TokenType tT, List<ExpressionNode> dynamicNodes, int id, Integer numOfUnicVar, String nameOfFunc) throws Exception
+    private List<ExpressionNode> SolveSign(TokenType tT, List<ExpressionNode> dynamicNodes, int id, IntRef numOfUnicVar, String nameOfFunc) throws Exception
     {
         ExpressionNode firstNode = dynamicNodes.get(id-2);
         MakeArgumentForExpression(firstNode, "0");
@@ -557,8 +389,8 @@ public class Translator
         MakeArgumentForExpression(secondNode, "1");
         String nameSecondVar = "ARGUM_"+"1";
 
-        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar.toString();
-        numOfUnicVar++;
+        String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
+        numOfUnicVar._val++;
 
         //String str = nameOfUniqVar + " = add("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
         String str = nameOfUniqVar + " = " + nameOfFunc + "("+ nameFirstVar + "," + nameSecondVar + ")"+";\n";
@@ -573,7 +405,7 @@ public class Translator
     {
         for(int i = 0; i<nodes.size(); i++)
         {
-            String nameOfVar = "ARG_" + Integer.toString(i);
+            String nameOfVar = "ARG_" + i;
             lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
             ExpressionNode eN = nodes.get(i);
             if(eN instanceof ValueNode)
