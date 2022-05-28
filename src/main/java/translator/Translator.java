@@ -13,7 +13,9 @@ public class Translator
 {
     private final CtClass cc; // некий класс
 
-    private final ClassPool pool; // ClassPool - это хэш-таблица, в которой хранится CtClass
+    private final ClassPool pool; // ClassPool - это хэш-таблица CtClass'ов, в которой будут храниться все классы
+    // позволяет считывать файл класса по требованию, дабы составить обертку над java классом
+    // называемую CtClass, чтобы после иметь возможность его видоизменять
 
     private CtMethod lMain; // метод evaluate
 
@@ -23,9 +25,10 @@ public class Translator
 
     public Translator() throws Exception
     {
-        pool = ClassPool.getDefault();
-        cc = pool.get("translator.helpers.Source");
-        cc.setName("TCLSource");
+        pool = ClassPool.getDefault(); // подсасываем все классы из default директории
+        cc = pool.makeClass("TCLSource"); // создали класс
+        cc.setSuperclass(pool.get("translator.helpers.BaseSource")); // отнаследовали его от BaseSource
+        cc.addConstructor(CtNewConstructor.make("public TCLSource(){}", cc)); // бахнули публичный конструктор
     }
 
     public void generateClass(ExpressionNode eN)
@@ -82,7 +85,7 @@ public class Translator
     {
         try
         {
-            cc.writeFile();
+            cc.writeFile(); // запись .class файла на диск
         }
         catch (Exception e)
         {
@@ -98,7 +101,8 @@ public class Translator
 
             if(uON.getOperator().getType().equals(TokenType.PUTS)) // это PUTS
             {
-                SolvePUTS(uON);
+                String textToPrint = SolvePUTS(uON);
+                lMain.insertAfter("System.out.println(" + textToPrint + ");\n");
             }
         }
         else if(node instanceof BinOperationNode) // например set
@@ -106,6 +110,86 @@ public class Translator
             BinOperationNode bON = (BinOperationNode) node;
             DoBinOperationNode(bON);
         }
+        else if(node instanceof SwitchNode) // switch
+        {
+            SwitchNode sN = (SwitchNode)node;
+            SolveSwitch(sN);
+        }
+    }
+
+    private void SolveSwitch(SwitchNode sN) throws Exception
+    {
+        if(sN.getString().getType().equals(TokenType.LINK_VARIABLE)) // switch по ссылочной переменной
+        {
+            String nameOfVar = "TEMP_STRING"; // здесь будет лежать переменная, по которой мы switch'каемся
+            lMain.addLocalVariable(nameOfVar, pool.get("java.lang.String"));
+            lMain.insertAfter(nameOfVar + " = " + sN.getString().getText().substring(1) + ".toString()" + ";\n");
+
+            StringBuilder result = new StringBuilder();
+            for(int i = 0; i<sN.getCases().size(); i++)
+            {
+                SwitchCase sC = sN.getCases().get(i);
+                AddSwitchStatement(i == 0, nameOfVar, sC, result);
+            }
+
+            lMain.insertAfter(result.toString());
+        }
+    }
+
+    // isIf - true - первый if
+    // метод будет видоизменять result, формируя конструкцию if() else if...
+    private void AddSwitchStatement(boolean isIf, String nameOfVar, SwitchCase sC, StringBuilder result) throws Exception
+    {
+        if(sC.getValue().getType().equals(TokenType.DEFAULT) && isIf)
+            result.append("if(true)\n{");
+        else if (sC.getValue().getType().equals(TokenType.DEFAULT) && !isIf)
+            result.append("else\n{");
+        else if(isIf)
+        {
+            String str = "";
+            if(sC.getValue().getType().equals(TokenType.LINK_VARIABLE))
+                str = nameOfVar + ".equals(" + sC.getValue().getText().substring(1) + ".toString())";
+            else if(sC.getValue().getType().equals(TokenType.STRING))
+                str = nameOfVar + ".equals(\"" + sC.getValue().getText() + "\")";
+
+            result.append("if(").append(str).append(")\n{");
+        }
+        else
+        {
+            String str = "";
+            if(sC.getValue().getType().equals(TokenType.LINK_VARIABLE))
+                str = nameOfVar + ".equals(" + sC.getValue().getText().substring(1) + ".toString())";
+            else if(sC.getValue().getType().equals(TokenType.STRING))
+            {
+                str = nameOfVar + ".equals(\"" + sC.getValue().getText() + "\")";
+            }
+
+            result.append("else if(").append(str).append(")\n{");
+        }
+
+        // добавляем логику в подифные выражения
+
+        if(sC.getBody() instanceof CurlyBracesNodes)
+        {
+            CurlyBracesNodes cBN = (CurlyBracesNodes)sC.getBody();
+            for(int i = 0; i<cBN.getNodes().size(); i++)
+            {
+                ExpressionNode eN = cBN.getNodes().get(i);
+                if(eN instanceof UnarOperationNode)
+                {
+                    UnarOperationNode uON = (UnarOperationNode)eN;
+                    if(uON.getOperator().getType().equals(TokenType.PUTS))
+                    {
+                        String var2print = SolvePUTS(uON);
+                        result.append("System.out.println(").append(var2print).append(");\n");
+                    }
+                }
+            }
+        }
+
+        // добавляем логику в подифные выражения
+
+        result.append("}\n");
     }
 
     private Object DoBinOperationNode(BinOperationNode bON) throws Exception
@@ -213,7 +297,7 @@ public class Translator
                     return;
                 }
             }
-            else if(exN instanceof UnarOperationNode) // напрмер expr
+            else if(exN instanceof UnarOperationNode) // напрмер expr или puts
             {
                 UnarOperationNode uON = (UnarOperationNode)exN;
 
@@ -230,6 +314,7 @@ public class Translator
                 else if(uON.getOperator().getType().equals(TokenType.PUTS))
                 {
                     String code = SolvePUTS(uON);
+                    lMain.insertAfter("System.out.println(" + code + ");\n");
                     lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
                     lMain.insertAfter("TEMP_VAR = " + code +";\n");
                 }
@@ -543,27 +628,29 @@ public class Translator
         return sB;
     }
 
+    // возвращает то, что нужно вывести
     private String SolvePUTS(UnarOperationNode uON) throws Exception
     {
         if(uON.getOperand() instanceof ValueNode) // например, string
         {
             ValueNode vN = (ValueNode)uON.getOperand();
-            //lMain.addLocalVariable(vN.getValue()., pool.get("java.lang.String")); // создается объект типа String
-            String sB = vN.getValue().getText();
-            lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
+            String sB = "\"" + vN.getValue().getText() + "\"";
+
+            //lMain.insertAfter("System.out.println(\"" + sB + "\");\n");
             return sB;
         }
         else if(uON.getOperand() instanceof QuotationNodes) // кавычки ""
         {
             QuotationNodes qN = (QuotationNodes)uON.getOperand();
             var sB = SolveQuatationNode(qN, null);
-            lMain.insertAfter("{System.out.println(" + sB + ");}\n");
+            //lMain.insertAfter("System.out.println(" + sB + ");\n");
             return sB.toString();
         }
         else if(uON.getOperand() instanceof CurlyBracesNodes) // {bla bla}
         {
             CurlyBracesNodes cBN = (CurlyBracesNodes)uON.getOperand();
             StringBuilder sB = new StringBuilder();
+            sB.append("\"");
             for(ExpressionNode eN : cBN.getNodes()) // все ноды в кавычках
             {
                 if(eN instanceof StringNode)
@@ -572,7 +659,8 @@ public class Translator
                     sB.append(sN.getString().replace("\\", "\\\\").replace("\"", "\\\""));
                 }
             }
-            lMain.insertAfter("{System.out.println(\"" + sB + "\");}\n");
+            sB.append("\"");
+            //lMain.insertAfter("System.out.println(\"" + sB + "\");\n");
             return sB.toString();
         }
         else if(uON.getOperand() instanceof VariableNode) // puts $X
@@ -581,7 +669,7 @@ public class Translator
             if(vN.getVariable().getType().equals(TokenType.LINK_VARIABLE))
             {
                 String sB = vN.getVariable().getText().substring(1);
-                lMain.insertAfter("{System.out.println(" + sB + ");}\n");
+                //lMain.insertAfter("System.out.println(" + sB + ");\n");
                 return sB;
             }
         }
@@ -590,7 +678,7 @@ public class Translator
             SquareBracesNodes sBN = (SquareBracesNodes)uON.getOperand();
             SolveSquareBraces(sBN, null);
             String sB = "TEMP_VAR";
-            lMain.insertAfter("{System.out.println(" + "TEMP_VAR" + ");}\n");
+            //lMain.insertAfter("System.out.println(" + "TEMP_VAR" + ");\n");
             return sB;
         }
         return null;
