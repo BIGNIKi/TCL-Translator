@@ -153,7 +153,6 @@ public class Translator
         return codeResult.toString();
     }
 
-    // TODO: добавить реализацию инкремента в puts, set
     private String SolveIncr(IncrNode iN)
     {
         StringBuilder res = new StringBuilder();
@@ -691,6 +690,13 @@ public class Translator
                     lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
                     codeText.append("TEMP_VAR = ").append(code._nameOfVar).append(".toString();\n");
                 }
+            }
+            else if(exN instanceof IncrNode) // increment
+            {
+                IncrNode iN = (IncrNode)exN;
+                codeText.append(SolveIncr(iN));
+                lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
+                codeText.append("TEMP_VAR = ").append(iN.getVariable().getVariable().getText()).append(".toString();\n");
             }
         }
         vACResult._allCode = codeText.toString();

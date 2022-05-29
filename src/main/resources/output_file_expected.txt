@@ -7,7 +7,7 @@ Lets fuck it
 Quotation is not, so difficult.
 andrewChehen
 amogus
-Capital of Russia is nBlabla
+Capital of Russia is Blabla
 No Wash 100.0
 No Gami $a
 Yes Franc $100.0
@@ -73,3 +73,14 @@ value of x is 1
 value of x is 2
 value of x is 3
 The second one cycle has finished when X equaled 5
+Start
+Inside first loop: 0
+After command incr: 1
+Inside first loop: 1
+After command incr: 2
+124.0
+Start
+Inside first loop: 0
+After command incr: 1
+Inside first loop: 1
+After command incr: 2
