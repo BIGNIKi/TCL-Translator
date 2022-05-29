@@ -117,19 +117,24 @@ public class Translator
         else if(node instanceof SwitchNode) // switch
         {
             SwitchNode sN = (SwitchNode)node;
-            SolveSwitch(sN);
+            VarAndCode vAC = SolveSwitch(sN);
+            lMain.insertAfter(vAC._allCode);
         }
     }
 
-    private void SolveSwitch(SwitchNode sN) throws Exception
+    private VarAndCode SolveSwitch(SwitchNode sN) throws Exception
     {
-        // TODO: добавить возвращаемый результат
+        VarAndCode resultRET = new VarAndCode();
+        resultRET._nameOfVar = null; // нет возвращаемого значения
+
+        StringBuilder result = new StringBuilder();
+
         // Если default нет и все остальные case'ы в пролете, то вернет пустую строку
         if(sN.getString().getType().equals(TokenType.LINK_VARIABLE)) // switch по ссылочной переменной
         {
             String nameOfVar = "TEMP_STRING"; // здесь будет лежать переменная, по которой мы switch'каемся
             lMain.addLocalVariable(nameOfVar, pool.get("java.lang.String"));
-            lMain.insertAfter(nameOfVar + " = " + sN.getString().getText().substring(1) + ".toString()" + ";\n");
+            result.append(nameOfVar + " = " + sN.getString().getText().substring(1) + ".toString()" + ";\n");
 
             for(int i = 0; i<sN.getCases().size(); i++)
             {
@@ -137,15 +142,15 @@ public class Translator
                 AddVarsForSwitch(sC);
             }
 
-            StringBuilder result = new StringBuilder();
             for(int i = 0; i<sN.getCases().size(); i++)
             {
                 SwitchCase sC = sN.getCases().get(i);
                 AddSwitchStatement(i == 0, nameOfVar, sC, result);
             }
-
-            lMain.insertAfter(result.toString());
         }
+
+        resultRET._allCode = result.toString();
+        return resultRET;
     }
 
     // заранее объявляем переменные для switch'а, так как его поведение сложно предсказуемо
