@@ -180,6 +180,10 @@ class Parser(private val tokens: List<Token>) {
                     val string = match(TokenType.VARIABLE)!!
                     stringNode.join(string.text)
                 }
+                isCurrentTokenTypeEqualTo(mathOperationsList) -> {
+                    val string = match(mathOperationsList)!!
+                    stringNode.join(string.text)
+                }
                 isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
                     val space = match(TokenType.SPACE)!!
                     stringNode.join(space.text)

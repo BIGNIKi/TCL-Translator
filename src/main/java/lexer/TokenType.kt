@@ -7,11 +7,11 @@ enum class TokenType(val label: String, val regex: Regex?) {
 
     COMMENT("COMMENT", Regex("^#[ \\w]*")),
 
+    SEMICOLON("SEMICOLON", Regex("^(\\u005Cn|\n|;|\\u005Cr\\u005Cn|\r\n)")),
+    SPACE("SPACE", Regex("^(\\u005Ct|\\u005Cr| |\r|\t)")),
+
     SYMBOL("SYMBOL", Regex("^[.,_:#]*")),
     CANCEL_SYMBOL("CANCEL_SYMBOL", Regex("^\\u005C")),
-
-    SEMICOLON("SEMICOLON", Regex("^[;\n]")),
-    SPACE("SPACE", Regex("^[ \t\r]")),
 
     PLUS("PLUS", Regex("^[+]")),
     MINUS("MINUS", Regex("^[-]")),
@@ -66,6 +66,6 @@ enum class TokenType(val label: String, val regex: Regex?) {
 
     APPLY("APPLY", Regex("^apply")),
 
-    VARIABLE("VARIABLE", Regex("^[\\w]*")),
     LINK_VARIABLE("LINK_VARIABLE", Regex("^[\$][\\w]*")),
+    VARIABLE("VARIABLE", Regex("^[\\w'=!$]*")),
 }
