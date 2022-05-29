@@ -1,15 +1,22 @@
-set x 1;
-while {$x < 5} {puts "value x equals $x"; set x [expr $x + 1]}
-
-puts "The first one cycle has finished when X equaled $x"
-
-set x 0;
-while {$x < 5} {
-	set x [expr $x + 1];
-	if {$x > 6} {break};
- 	if "$x > 3" {continue};
-	puts "value of x is $x";
+for {puts "Start"; set i 0} {$i < 2 && 5 == 5} {incr i; puts "After command incr: $i"; } {
+	puts "Inside first loop: $i"
 }
 
-puts "The second one cycle has finished when X equaled $x"
+set Y 5
+for {set i 3} {$i >= 0} {incr i -1} {
+	if {$i == 3} {
+	    continue
+	} elseif {$i == 2} {
+	    puts "[expr (pow(2,$Y) + (1 + 2 + 3 * 7 + (3*2))) * sqrt(4)]"
+	} else {
+	    break
+	}
 
+}
+
+puts "Start"; set i 0;
+while {$i < 2} {
+	puts "Inside first loop: $i"
+	incr i;
+	puts "After command incr: $i";
+}

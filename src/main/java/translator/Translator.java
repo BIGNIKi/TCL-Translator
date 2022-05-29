@@ -139,8 +139,87 @@ public class Translator
             TCLKeywordsNode tclKN = (TCLKeywordsNode)node;
             codeResult.append(tclKN.getKeyword().getText()).append(";\n");
         }
+        else if(node instanceof ForLoopNode) // for'чик
+        {
+            ForLoopNode fLN = (ForLoopNode)node;
+            codeResult.append(SolveForLoop(fLN));
+        }
+        else if(node instanceof IncrNode)
+        {
+            IncrNode iN = (IncrNode)node;
+            codeResult.append(SolveIncr(iN));
+        }
 
         return codeResult.toString();
+    }
+
+    // TODO: добавить реализацию инкремента в puts, set
+    private String SolveIncr(IncrNode iN)
+    {
+        StringBuilder res = new StringBuilder();
+
+        res.append(iN.getVariable().getVariable().getText())
+                .append(" = add(").append(iN.getVariable().getVariable().getText()).append(", new Integer(").append(iN.getValue()).append("));\n");
+
+        return res.toString();
+    }
+
+    private String SolveForLoop(ForLoopNode fLN) throws Exception
+    {
+        StringBuilder code = new StringBuilder();
+
+        code.append("for(");
+        // БЛОК инициализации
+        StringBuilder temp = new StringBuilder();
+        for(int i = 0; i<fLN.getInitBlock().size(); i++)
+        {
+            ExpressionNode eN = fLN.getInitBlock().get(i);
+            String be = ProcessBlock(eN).replace(";\n", ",");
+            temp.append(be);
+        }
+        String codik =temp.toString();//.replace(";", ",");
+        if(codik.length() >= 1)
+            codik = codik.substring(0, codik.length()-1);
+        codik += ";";
+        code.append(codik);
+        // БЛОК инициализации
+
+        // БЛОК для условия
+        //get(0) - так как случайно туда добавили List, а по факту в листе всегда один элемент
+        if(fLN.getConditionsBlock().get(0) instanceof BracesNodes)
+        {
+            BracesNodes bN = (BracesNodes)fLN.getConditionsBlock().get(0);
+
+            code.append(MakeCondition(bN)); // добавляем условия
+        }
+        code.append(";");
+        // БЛОК для условия
+
+        // БЛОК счётчика
+        temp = new StringBuilder();
+        for(int i = 0; i<fLN.getCounterBlock().size(); i++)
+        {
+            ExpressionNode eN = fLN.getCounterBlock().get(i);
+            String be = ProcessBlock(eN).replace(";\n", ",");
+            temp.append(be);
+        }
+        codik = temp.toString();//.replace(";", ",");
+        if(codik.length() >= 1)
+            codik = codik.substring(0, codik.length()-1);
+        code.append(codik);
+        code.append(")\n{\n");
+        // БЛОК счётчика
+
+        // БЛОК body
+        for(int i = 0; i < fLN.getCommandBlock().size(); i++)
+        {
+            ExpressionNode eN = fLN.getCommandBlock().get(i);
+            code.append(ProcessBlock(eN));
+        }
+        // БЛОК body
+
+        code.append("}\n");
+        return code.toString();
     }
 
     private String SolveWhileCycle(WhileLoopNode wLN) throws Exception
@@ -154,6 +233,7 @@ public class Translator
             code.append(MakeCondition(bN));
             code.append("\n");
         }
+        // далее - тело цикла
         code.append("{\n");
         if(wLN.getBody() instanceof CurlyBracesNodes)
         {

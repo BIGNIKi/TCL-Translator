@@ -64,3 +64,12 @@ true
 Match three. 5 + three is 8
 Three
 2 equals 2
+value x equals 1
+value x equals 2
+value x equals 3
+value x equals 4
+The first one cycle has finished when X equaled 5
+value of x is 1
+value of x is 2
+value of x is 3
+The second one cycle has finished when X equaled 5

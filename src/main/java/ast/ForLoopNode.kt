@@ -1,10 +1,10 @@
 package ast
 
 class ForLoopNode: ExpressionNode() {
-    private val initBlock: MutableList<ExpressionNode> = mutableListOf()
-    private val conditionsBlock: MutableList<ExpressionNode> = mutableListOf()
-    private val counterBlock: MutableList<ExpressionNode> = mutableListOf()
-    private val commandBlock: MutableList<ExpressionNode> = mutableListOf()
+    val initBlock: MutableList<ExpressionNode> = mutableListOf()
+    val conditionsBlock: MutableList<ExpressionNode> = mutableListOf()
+    val counterBlock: MutableList<ExpressionNode> = mutableListOf()
+    val commandBlock: MutableList<ExpressionNode> = mutableListOf()
 
     fun addExpressionToInitBlock(node: ExpressionNode) {
         initBlock.add(node)
