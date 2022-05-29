@@ -163,6 +163,13 @@ public class Translator
                 codeResult.append("return ").append(vN.getVariable().getText().substring(1)).append(";\n");
             }
         }
+        else if(node instanceof ProcCallNode)
+        {
+            // TODO: aboba
+            ProcCallNode pCN = (ProcCallNode)node;
+            VarAndCode vAC = AddSolveForOurFunc(pCN, pCN.getFunctionName().getString(), pCN.getArgs().size(), method);
+            codeResult.append(vAC._allCode);
+        }
 
         return codeResult.toString();
     }
@@ -183,6 +190,14 @@ public class Translator
         CtMethod newMethod = CtNewMethod.make(code, cc); // создали метод
 
         StringBuilder resultCodeMethod = new StringBuilder();
+
+        for(int i = 0; i<pN.getArgs().size(); i++)
+        {
+            VariableNode vN = pN.getArgs().get(i);
+            newMethod.addLocalVariable(vN.getVariable().getText(), pool.get("java.lang.Object"));
+            resultCodeMethod.append(vN.getVariable().getText()).append(" = ").append("$").append(i+1).append(";\n");
+        }
+
         if(pN.getBody() instanceof CurlyBracesNodes)
         {
             CurlyBracesNodes cBN = (CurlyBracesNodes)pN.getBody();
@@ -196,10 +211,10 @@ public class Translator
         //newMethod.setBody(resultCodeMethod.toString());
 
         String finalCut = resultCodeMethod.toString();
-        for(int i = 0; i<pN.getArgs().size(); i++)
+/*        for(int i = 0; i<pN.getArgs().size(); i++)
         {
             finalCut = finalCut.replace(pN.getArgs().get(i).getVariable().getText(), "$" + Integer.toString(i+1));
-        }
+        }*/
 
         newMethod.insertBefore(finalCut);
 
@@ -754,7 +769,6 @@ public class Translator
             else if(exN instanceof ProcCallNode) // вызов своей функции
             {
                 ProcCallNode pCN = (ProcCallNode)exN;
-                // TODO: проверить работоспособность
                 VarAndCode vAC = AddSolveForOurFunc(pCN, pCN.getFunctionName().getString(), pCN.getArgs().size(), method);
                 codeText.append(vAC._allCode);
                 method.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
@@ -1006,6 +1020,16 @@ public class Translator
             {
                 VariableNode vN = (VariableNode)eN;
                 result.append(nameOfVar).append(" = ").append(vN.getVariable().getText().substring(1)).append(";\n");
+            }
+            else if(eN instanceof CurlyBracesNodes)
+            {
+                CurlyBracesNodes cBN = (CurlyBracesNodes)eN;
+                if(cBN.getNodes().get(0) instanceof StringNode)
+                {
+                    StringNode sN = (StringNode)cBN.getNodes().get(0);
+                    result.append(nameOfVar).append(" = \"").append(sN.getString()).append("\";\n");
+                }
+
             }
         }
         return result.toString();

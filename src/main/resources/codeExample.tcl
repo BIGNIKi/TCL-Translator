@@ -1,29 +1,6 @@
-proc sum {arg1 arg2} {
-for {puts "Start"; set i 0} {$i < 2 && 5 == 5} {incr i; puts "After command incr: $i"; } {
-	puts "Inside first loop: $i"
+proc FOR {a b c} {
+	puts "Command FOR was changed on puts";
+	puts "Args: $a $b $c"
 }
 
-set Y 5
-for {set i 3} {$i >= 0} {incr i -1} {
-	if {$i == 3} {
-	    continue
-	} elseif {$i == 2} {
-	    puts "[expr (pow(2,$Y) + (1 + 2 + 3 * 7 + (3*2))) * sqrt(4)]"
-	} else {
-	    break
-	}
-
-}
-
-puts "Start"; set i 0;
-while {$i < 2} {
-	puts "Inside first loop: $i"
-	incr i;
-	puts "After command incr: $i";
-}
-
-	set x [expr $arg1+$arg2];
-	return $x
-}
-
-puts " Sum 2 + 3 equals: [sum 2 3]"
+FOR {set i 1} {$i < 10} {incr i}
