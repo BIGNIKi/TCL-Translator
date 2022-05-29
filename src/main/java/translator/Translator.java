@@ -175,11 +175,35 @@ public class Translator
         {
             if(i != 0)
                 codik.append(",");
-            codik.append("Object arg_").append(i);
+            codik.append("Object ").append(pN.getArgs().get(i).getVariable().getText());
+            //pN.getArgs().get(i).getVariable().setText("$" + (i+1));
         }
         codik.append(")").append("throws Exception {return null;}");
         code += codik.toString();
         CtMethod newMethod = CtNewMethod.make(code, cc); // создали метод
+
+        StringBuilder resultCodeMethod = new StringBuilder();
+        if(pN.getBody() instanceof CurlyBracesNodes)
+        {
+            CurlyBracesNodes cBN = (CurlyBracesNodes)pN.getBody();
+            for(int i = 0; i<cBN.getNodes().size(); i++)
+            {
+                ExpressionNode eN = cBN.getNodes().get(i);
+                resultCodeMethod.append(ProcessBlock(eN, newMethod));
+            }
+        }
+        //resultCodeMethod.append("}");
+        //newMethod.setBody(resultCodeMethod.toString());
+
+        String finalCut = resultCodeMethod.toString();
+        for(int i = 0; i<pN.getArgs().size(); i++)
+        {
+            finalCut = finalCut.replace(pN.getArgs().get(i).getVariable().getText(), "$" + Integer.toString(i+1));
+        }
+
+        newMethod.insertBefore(finalCut);
+
+        cc.addMethod(newMethod);
     }
 
     private String SolveIncr(IncrNode iN)
@@ -899,10 +923,10 @@ public class Translator
         IntRef numOfUnicVar, String nameOfFunc, StringBuilder CodeForExpr, CtMethod method) throws Exception
     {
         ExpressionNode firstNode = dynamicNodes.get(id-2);
-        MakeArgumentForExpression(firstNode, "0", CodeForExpr,method);
+        MakeArgumentForExpression(firstNode, "0", CodeForExpr, method);
         String nameFirstVar = "ARGUM_"+"0";
         ExpressionNode secondNode = dynamicNodes.get(id-1);
-        MakeArgumentForExpression(secondNode, "1", CodeForExpr,method);
+        MakeArgumentForExpression(secondNode, "1", CodeForExpr, method);
         String nameSecondVar = "ARGUM_"+"1";
 
         String nameOfUniqVar = "UNIQ_VAR_" + numOfUnicVar._val;
