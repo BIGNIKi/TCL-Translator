@@ -180,6 +180,10 @@ class Parser(private val tokens: List<Token>) {
                     val string = match(TokenType.VARIABLE)!!
                     stringNode.join(string.text)
                 }
+                isCurrentTokenTypeEqualTo(mathOperationsList) -> {
+                    val string = match(mathOperationsList)!!
+                    stringNode.join(string.text)
+                }
                 isCurrentTokenTypeEqualTo(TokenType.SPACE) -> {
                     val space = match(TokenType.SPACE)!!
                     stringNode.join(space.text)
@@ -681,8 +685,8 @@ class Parser(private val tokens: List<Token>) {
         match(TokenType.QUOT)!!
         removeSpaces()
 
-        val value = if (isCurrentTokenTypeEqualTo(TokenType.VARIABLE)) {
-            val token = match(TokenType.VARIABLE)!!
+        val value = if (isCurrentTokenTypeEqualTo(listOf(TokenType.VARIABLE, TokenType.INTEGER, TokenType.FLOAT))) {
+            val token = match(listOf(TokenType.VARIABLE, TokenType.INTEGER, TokenType.FLOAT))!!
             token.convertTo(TokenType.STRING)
         } else if (isCurrentTokenTypeEqualTo(TokenType.LINK_VARIABLE)) {
             match(TokenType.LINK_VARIABLE)!!
@@ -720,13 +724,14 @@ class Parser(private val tokens: List<Token>) {
             throw Exception("Expected start of switch case at ${tokens[pos].pos}")
         }
 
-        if (isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)) {
-            incCurrentPos()
-        }
-
         removeSpacesAndNewLines()
 
         if (isCurrentTokenTypeEqualTo(TokenType.RCUR)) {
+            incCurrentPos()
+        }
+        removeSpacesAndNewLines()
+
+        if (isCurrentTokenTypeEqualTo(TokenType.CANCEL_SYMBOL)) {
             incCurrentPos()
         }
         removeSpacesAndNewLines()
