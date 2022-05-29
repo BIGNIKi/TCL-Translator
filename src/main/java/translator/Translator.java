@@ -108,7 +108,7 @@ public class Translator
                 {
                     codeResult.append(vAC._allCode);
                 }
-                codeResult.append("System.out.println(" + vAC._nameOfVar + ".toString());\n");
+                codeResult.append("System.out.println(").append(vAC._nameOfVar).append(".toString());\n");
             }
         }
         else if(node instanceof BinOperationNode) // например set
@@ -129,8 +129,44 @@ public class Translator
             String code = SolveIfElse(iN);
             codeResult.append(code);
         }
+        else if(node instanceof WhileLoopNode) // while
+        {
+            WhileLoopNode wLN = (WhileLoopNode)node;
+            codeResult.append(SolveWhileCycle(wLN));
+        }
+        else if(node instanceof TCLKeywordsNode) // break, continue
+        {
+            TCLKeywordsNode tclKN = (TCLKeywordsNode)node;
+            codeResult.append(tclKN.getKeyword().getText()).append(";\n");
+        }
 
         return codeResult.toString();
+    }
+
+    private String SolveWhileCycle(WhileLoopNode wLN) throws Exception
+    {
+        StringBuilder code = new StringBuilder();
+
+        code.append("while");
+        if(wLN.getCondition() instanceof BracesNodes)
+        {
+            BracesNodes bN = (BracesNodes)wLN.getCondition();
+            code.append(MakeCondition(bN));
+            code.append("\n");
+        }
+        code.append("{\n");
+        if(wLN.getBody() instanceof CurlyBracesNodes)
+        {
+            CurlyBracesNodes cBN = (CurlyBracesNodes)wLN.getBody();
+            for(int i = 0; i < cBN.getNodes().size(); i++)
+            {
+                ExpressionNode eN = cBN.getNodes().get(i);
+                code.append(ProcessBlock(eN));
+            }
+        }
+        code.append("}\n");
+
+        return code.toString();
     }
 
     private String SolveIfElse(IfNode iN) throws Exception
@@ -139,7 +175,7 @@ public class Translator
 
         for(int i = 0; i < iN.getBranches().size(); i++)
         {
-            IfBranch iB = (IfBranch)iN.getBranches().get(i);
+            IfBranch iB = iN.getBranches().get(i);
             code.append(AddCondition(iB, i));
             code.append("\n{\n");
 
@@ -166,129 +202,143 @@ public class Translator
         StringBuilder result = new StringBuilder();
 
         if(orderNum == 0) // самое первое
-            result.append("if(");
+            result.append("if");
         else if(iB.getCondition() == null) // когда без условия
             result.append("else");
         else
-            result.append("else if(");
+            result.append("else if");
 
-        // запись условия в скобках if(***)
         if(iB.getCondition() != null && iB.getCondition() instanceof BracesNodes)
         {
             BracesNodes bN = (BracesNodes)iB.getCondition();
-            int numOfArg = 0; // 0 - первый аргумент 1 - второй аргумент (для булевских функций)
-            String nameOfFirstArg = "";
-            for(int i = 0; i<bN.getNodes().size(); i++)
-            {
-                ExpressionNode eN = bN.getNodes().get(i);
-                if(eN instanceof VariableNode) // ссылочная перменная
-                {
-                    VariableNode vN = (VariableNode)eN;
-                    //result.append(vN.getVariable().getText().substring(1));
-                    String res = vN.getVariable().getText().substring(1);
-                    if(numOfArg == 0)
-                    {
-                        nameOfFirstArg = res;
-                        numOfArg = 1;
-                    }
-                    else if(numOfArg == 1)
-                    {
-                        result.append(res).append(")");
-                        nameOfFirstArg = "";
-                        numOfArg = 0;
-                    }
-                }
-                // операция всегда будет после первого аргумента и не факт, что вообще будет
-                else if(eN instanceof OperationNode) // операция == >= <= < > !=
-                {
-                    OperationNode oN = (OperationNode)eN;
-                    if(oN.getOperation().getType().equals(TokenType.IS_EQUAL)) // ==
-                    {
-                        result.append("IS_EQUAL(").append(nameOfFirstArg).append(",");
-                    }
-                    else if(oN.getOperation().getType().equals(TokenType.GREATER_OR_EQUAL))
-                    {
-                        result.append("GREATER_OR_EQUAL(").append(nameOfFirstArg).append(",");
-                    }
-                    else if(oN.getOperation().getType().equals(TokenType.IS_NOT_EQUAL))
-                    {
-                        result.append("IS_NOT_EQUAL(").append(nameOfFirstArg).append(",");
-                    }
-                    else if(oN.getOperation().getType().equals(TokenType.AND))
-                    {
-                        if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
-                            result.append(nameOfFirstArg);
-                        result.append(" && ");
-                        nameOfFirstArg = "";
-                        numOfArg = 0;
-                    }
-                    else if(oN.getOperation().getType().equals(TokenType.OR))
-                    {
-                        if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
-                            result.append(nameOfFirstArg);
-                        result.append(" || ");
-                        nameOfFirstArg = "";
-                        numOfArg = 0;
-                    }
-                    else if(oN.getOperation().getType().equals(TokenType.LESS_OR_EQUAL))
-                    {
-                        result.append("LESS_OR_EQUAL(").append(nameOfFirstArg).append(",");
-                    }
-                    else if(oN.getOperation().getType().equals(TokenType.GREATER))
-                    {
-                        result.append("GREATER(").append(nameOfFirstArg).append(",");
-                    }
-                    else if(oN.getOperation().getType().equals(TokenType.LESS))
-                    {
-                        result.append("LESS(").append(nameOfFirstArg).append(",");
-                    }
-                }
-                else if(eN instanceof ValueNode) // значение - Integer Float String true false
-                {
-                    ValueNode vN = (ValueNode)eN;
-                    String res = "";
-                    if(vN.getValue().getType().equals(TokenType.INTEGER)) // Integer
-                    {
-                        //result.append("new Integer(").append(vN.getValue().getText()).append(")");
-                        res = "new Integer(" + vN.getValue().getText() + ")";
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.FLOAT)) // Float
-                    {
-                        res = "new Float(" + vN.getValue().getText() + ")";
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.STRING))
-                    {
-                        res = "new String(\"" + vN.getValue().getText() + "\")";
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.TRUE))
-                    {
-                        res = "true";
-                    }
-                    else if(vN.getValue().getType().equals(TokenType.FALSE))
-                    {
-                        res = "false";
-                    }
-
-                    if(numOfArg == 0)
-                    {
-                        nameOfFirstArg = res;
-                        numOfArg = 1;
-                    }
-                    else if(numOfArg == 1)
-                    {
-                        result.append(res).append(")");
-                        nameOfFirstArg = "";
-                        numOfArg = 0;
-                    }
-                }
-            }
-
-            if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
-                result.append(nameOfFirstArg);
-            result.append(")");
+            result.append(MakeCondition(bN)); // добавляем условия для if или elseif
         }
+        // запись условия в скобках if(***)
 
         return result.toString();
+    }
+
+    // делает условия для if'ов, while'ов, for'ов и тп
+    // на выходе имеем "(***)"
+    private String MakeCondition(BracesNodes bN)
+    {
+        StringBuilder resultRET = new StringBuilder();
+
+        resultRET.append("(");
+
+        int numOfArg = 0; // 0 - первый аргумент 1 - второй аргумент (для булевских функций)
+        String nameOfFirstArg = "";
+        for(int i = 0; i<bN.getNodes().size(); i++)
+        {
+            ExpressionNode eN = bN.getNodes().get(i);
+            if(eN instanceof VariableNode) // ссылочная перменная
+            {
+                VariableNode vN = (VariableNode)eN;
+                //result.append(vN.getVariable().getText().substring(1));
+                String res = vN.getVariable().getText().substring(1);
+                if(numOfArg == 0)
+                {
+                    nameOfFirstArg = res;
+                    numOfArg = 1;
+                }
+                else if(numOfArg == 1)
+                {
+                    resultRET.append(res).append(")");
+                    nameOfFirstArg = "";
+                    numOfArg = 0;
+                }
+            }
+            // операция всегда будет после первого аргумента и не факт, что вообще будет
+            else if(eN instanceof OperationNode) // операция == >= <= < > !=
+            {
+                OperationNode oN = (OperationNode)eN;
+                if(oN.getOperation().getType().equals(TokenType.IS_EQUAL)) // ==
+                {
+                    resultRET.append("IS_EQUAL(").append(nameOfFirstArg).append(",");
+                }
+                else if(oN.getOperation().getType().equals(TokenType.GREATER_OR_EQUAL))
+                {
+                    resultRET.append("GREATER_OR_EQUAL(").append(nameOfFirstArg).append(",");
+                }
+                else if(oN.getOperation().getType().equals(TokenType.IS_NOT_EQUAL))
+                {
+                    resultRET.append("IS_NOT_EQUAL(").append(nameOfFirstArg).append(",");
+                }
+                else if(oN.getOperation().getType().equals(TokenType.AND))
+                {
+                    if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
+                        resultRET.append(nameOfFirstArg);
+                    resultRET.append(" && ");
+                    nameOfFirstArg = "";
+                    numOfArg = 0;
+                }
+                else if(oN.getOperation().getType().equals(TokenType.OR))
+                {
+                    if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
+                        resultRET.append(nameOfFirstArg);
+                    resultRET.append(" || ");
+                    nameOfFirstArg = "";
+                    numOfArg = 0;
+                }
+                else if(oN.getOperation().getType().equals(TokenType.LESS_OR_EQUAL))
+                {
+                    resultRET.append("LESS_OR_EQUAL(").append(nameOfFirstArg).append(",");
+                }
+                else if(oN.getOperation().getType().equals(TokenType.GREATER))
+                {
+                    resultRET.append("GREATER(").append(nameOfFirstArg).append(",");
+                }
+                else if(oN.getOperation().getType().equals(TokenType.LESS))
+                {
+                    resultRET.append("LESS(").append(nameOfFirstArg).append(",");
+                }
+            }
+            else if(eN instanceof ValueNode) // значение - Integer Float String true false
+            {
+                ValueNode vN = (ValueNode)eN;
+                String res = "";
+                if(vN.getValue().getType().equals(TokenType.INTEGER)) // Integer
+                {
+                    //result.append("new Integer(").append(vN.getValue().getText()).append(")");
+                    res = "new Integer(" + vN.getValue().getText() + ")";
+                }
+                else if(vN.getValue().getType().equals(TokenType.FLOAT)) // Float
+                {
+                    res = "new Float(" + vN.getValue().getText() + ")";
+                }
+                else if(vN.getValue().getType().equals(TokenType.STRING))
+                {
+                    res = "new String(\"" + vN.getValue().getText() + "\")";
+                }
+                else if(vN.getValue().getType().equals(TokenType.TRUE))
+                {
+                    res = "true";
+                }
+                else if(vN.getValue().getType().equals(TokenType.FALSE))
+                {
+                    res = "false";
+                }
+
+                if(numOfArg == 0)
+                {
+                    nameOfFirstArg = res;
+                    numOfArg = 1;
+                }
+                else if(numOfArg == 1)
+                {
+                    resultRET.append(res).append(")");
+                    nameOfFirstArg = "";
+                    numOfArg = 0;
+                }
+            }
+        }
+
+        if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
+            resultRET.append(nameOfFirstArg);
+
+        resultRET.append(")");
+
+        return resultRET.toString();
     }
 
     // Switch в TCL умеет сравнивать только строки
@@ -304,7 +354,7 @@ public class Translator
         {
             String nameOfVar = "TEMP_STRING"; // здесь будет лежать переменная, по которой мы switch'каемся
             lMain.addLocalVariable(nameOfVar, pool.get("java.lang.String"));
-            result.append(nameOfVar + " = " + sN.getString().getText().substring(1) + ".toString()" + ";\n");
+            result.append(nameOfVar).append(" = ").append(sN.getString().getText().substring(1)).append(".toString()").append(";\n");
 
             for(int i = 0; i<sN.getCases().size(); i++)
             {
@@ -483,7 +533,7 @@ public class Translator
             AddLocalVarIfNeeded(varName);
 
             vAC._nameOfVar = varName;
-            codeText.append(varName + "= TEMP_VAR;\n");
+            codeText.append(varName).append("= TEMP_VAR;\n");
             vAC._allCode = codeText.toString();
             return vAC;
         }
@@ -533,7 +583,7 @@ public class Translator
                 codeText.append(vAC._allCode);
 
                 lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-                codeText.append("TEMP_VAR = " + vAC._nameOfVar + ";\n");
+                codeText.append("TEMP_VAR = ").append(vAC._nameOfVar).append(";\n");
             }
             else if(exN instanceof UnarOperationNode) // напрмер expr или puts
             {
@@ -557,9 +607,9 @@ public class Translator
                     {
                         codeText.append(code._allCode);
                     }
-                    codeText.append("System.out.println(" + code._nameOfVar + ".toString());\n");
+                    codeText.append("System.out.println(").append(code._nameOfVar).append(".toString());\n");
                     lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
-                    codeText.append("TEMP_VAR = " + code._nameOfVar +".toString();\n");
+                    codeText.append("TEMP_VAR = ").append(code._nameOfVar).append(".toString();\n");
                 }
             }
         }
@@ -623,12 +673,12 @@ public class Translator
                     if(vN.getValue().getType().equals(TokenType.FLOAT))
                     {
                         String newFloat = "new Float(" + vN.getValue().getText() +")";
-                        allCodeText.append(nameOfVar + " = " + newFloat +";\n");
+                        allCodeText.append(nameOfVar).append(" = ").append(newFloat).append(";\n");
                     }
                     else if(vN.getValue().getType().equals(TokenType.INTEGER))
                     {
                         String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                        allCodeText.append(nameOfVar + " = " + newInteger +";\n");
+                        allCodeText.append(nameOfVar).append(" = ").append(newInteger).append(";\n");
                     }
                     String str = nameOfUniqVar + " = "+ nameOfVar +";\n";
                     lMain.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
@@ -768,18 +818,18 @@ public class Translator
                 if(vN.getValue().getType().equals(TokenType.FLOAT))
                 {
                     String newFloat = "new Float(" + vN.getValue().getText() +")";
-                    result.append(nameOfVar + " = " + newFloat +";\n");
+                    result.append(nameOfVar).append(" = ").append(newFloat).append(";\n");
                 }
                 else if(vN.getValue().getType().equals(TokenType.INTEGER))
                 {
                     String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                    result.append(nameOfVar + " = " + newInteger +";\n");
+                    result.append(nameOfVar).append(" = ").append(newInteger).append(";\n");
                 }
             }
             else if(eN instanceof VariableNode)
             {
                 VariableNode vN = (VariableNode)eN;
-                result.append(nameOfVar + " = " + vN.getVariable().getText().substring(1) +";\n");
+                result.append(nameOfVar).append(" = ").append(vN.getVariable().getText().substring(1)).append(";\n");
             }
         }
         return result.toString();
@@ -814,12 +864,12 @@ public class Translator
             if(vN.getValue().getType().equals(TokenType.FLOAT))
             {
                 String newFloat = "new Float(" + vN.getValue().getText() +")";
-                codeForExpr.append(nameOfVar + " = " + newFloat +";\n");
+                codeForExpr.append(nameOfVar).append(" = ").append(newFloat).append(";\n");
             }
             else if(vN.getValue().getType().equals(TokenType.INTEGER))
             {
                 String newInteger = "new Integer(" + vN.getValue().getText() +")";
-                codeForExpr.append(nameOfVar + " = " + newInteger +";\n");
+                codeForExpr.append(nameOfVar).append(" = ").append(newInteger).append(";\n");
             }
         }
         else if(node instanceof VariableNode)
@@ -827,7 +877,7 @@ public class Translator
             VariableNode vN = (VariableNode)node;
             String nameOfVar = "ARGUM_"+argNum;
             lMain.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
-            codeForExpr.append(nameOfVar + " = " + vN.getVariable().getText().substring(1) +";\n");
+            codeForExpr.append(nameOfVar).append(" = ").append(vN.getVariable().getText().substring(1)).append(";\n");
         }
         else if(node instanceof MathFunctionNode)
         {
@@ -947,7 +997,7 @@ public class Translator
             sB.append("\"");
 
             lMain.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object"));
-            result._allCode = "TEMP_VAR = " + sB.toString() + ";\n";
+            result._allCode = "TEMP_VAR = " + sB + ";\n";
             result._nameOfVar = "TEMP_VAR";
             return result;
         }

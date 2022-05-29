@@ -21,8 +21,39 @@ if {false || 2.1 > 2.2 || $temp == $krya} {
 } elseif {5.0 == 5 && $x == 1} {
     puts "One";
     set x 2
+    if{$x == 3} {
+        puts "kek"
+    } else
+    {
+        puts "TrueMan"
+    }
 } else {
     puts "false"
 }
 
 puts "$x"
+
+set x 2;
+
+if {$x == 2} {
+if {$x == 2} {
+if {$x == 2} {
+if {$x == 2} {
+if {$x == 2} {
+puts "$x equals 2"
+} else {
+puts "$x isnt equals 2"
+}
+} else {
+puts "$x isnt equals 2"
+}
+} else {
+puts "$x isnt equals 2"
+}
+} else {
+puts "$x isnt equals 2"
+}
+} else {
+puts "$x isnt equals 2"
+}
+
