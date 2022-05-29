@@ -84,3 +84,15 @@ Inside first loop: 0
 After command incr: 1
 Inside first loop: 1
 After command incr: 2
+Start
+Inside first loop: 0
+After command incr: 1
+Inside first loop: 1
+After command incr: 2
+124.0
+Start
+Inside first loop: 0
+After command incr: 1
+Inside first loop: 1
+After command incr: 2
+ Sum 2 + 3 equals: 5

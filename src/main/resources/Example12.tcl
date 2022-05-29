@@ -26,4 +26,4 @@ while {$i < 2} {
 	return $x
 }
 
-puts " Sum 2 + 3 equals: [sum 2 3]"
+puts " Sum 2 + 3 equals: [sum 2 3]\n\n"

@@ -519,7 +519,7 @@ public class Translator
                     BinOperationNode bON = (BinOperationNode)eN;
                     if(bON.getOperator().getType().equals(TokenType.SET))
                     {
-                        AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText(), method);
+                        method.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
                     }
                 }
             }
@@ -614,7 +614,7 @@ public class Translator
             BeforeAndToString ob = SolveQuatationNode(qN, bON.getWhomAssign().getVariable().getText(), method);
             String finall = ob.codeBefore;
 
-            AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText(), method);
+            method.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
             finall += bON.getWhomAssign().getVariable().getText()+"=" + ob.textToString + ";\n";
 
             vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
@@ -627,7 +627,7 @@ public class Translator
             if(vN.getValue().getType().equals(TokenType.FLOAT))
             {
                 float fl = Float.parseFloat(vN.getValue().getText());
-                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText(), method);
+                method.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
 
                 vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
                 vAC._allCode = bON.getWhomAssign().getVariable().getText()+"= new Float("+ fl + ")"+";\n";
@@ -636,7 +636,7 @@ public class Translator
             else if(vN.getValue().getType().equals(TokenType.INTEGER))
             {
                 int intulya = Integer.parseInt(vN.getValue().getText());
-                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText(), method);
+                method.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
 
                 vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
                 vAC._allCode = bON.getWhomAssign().getVariable().getText()+"= new Integer("+ intulya + ")"+";\n";
@@ -645,7 +645,7 @@ public class Translator
             else if(vN.getValue().getType().equals(TokenType.STRING))
             {
                 String stringulya = vN.getValue().getText();
-                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText(), method);
+                method.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
 
                 vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
                 vAC._allCode = bON.getWhomAssign().getVariable().getText()+"= new String(\""+ stringulya + "\")"+";\n";
@@ -662,7 +662,7 @@ public class Translator
 
 
             String varName = bON.getWhomAssign().getVariable().getText();
-            AddLocalVarIfNeeded(varName, method);
+            method.addLocalVariable(varName, pool.get("java.lang.Object"));
 
             vAC._nameOfVar = varName;
             codeText.append(varName).append("= TEMP_VAR;\n");
@@ -675,7 +675,7 @@ public class Translator
             if(cBN.getNodes().get(0) instanceof StringNode)
             {
                 StringNode sN = (StringNode)cBN.getNodes().get(0);
-                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText(), method);
+                method.addLocalVariable(bON.getWhomAssign().getVariable().getText(), pool.get("java.lang.Object"));
 
                 vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
                 vAC._allCode = bON.getWhomAssign().getVariable().getText()+"="+"\""+sN.getString().replace("\\", "\\\\").replace("\"", "\\\"") +"\""+";\n";
@@ -704,12 +704,12 @@ public class Translator
                 VarAndCode vAC = DoBinOperationNode(bOON, method);
                 if(nameOfVar != null)
                 {
-                    AddLocalVarIfNeeded(nameOfVar, method);
+                    method.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
                 }
                 else if(bOON.getWhomAssign().getVariable().getType().equals(TokenType.VARIABLE))
                 {
                     nameOfVar = bOON.getWhomAssign().getVariable().getText();
-                    AddLocalVarIfNeeded(nameOfVar, method);
+                    method.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
                 }
 
                 codeText.append(vAC._allCode);
@@ -751,9 +751,46 @@ public class Translator
                 method.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
                 codeText.append("TEMP_VAR = ").append(iN.getVariable().getVariable().getText()).append(".toString();\n");
             }
+            else if(exN instanceof ProcCallNode) // вызов своей функции
+            {
+                ProcCallNode pCN = (ProcCallNode)exN;
+                // TODO: проверить работоспособность
+                VarAndCode vAC = AddSolveForOurFunc(pCN, pCN.getFunctionName().getString(), pCN.getArgs().size(), method);
+                codeText.append(vAC._allCode);
+                method.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
+                codeText.append("TEMP_VAR = ").append(vAC._nameOfVar).append(".toString();\n");
+            }
         }
         vACResult._allCode = codeText.toString();
         return vACResult;
+    }
+
+    private VarAndCode AddSolveForOurFunc(ProcCallNode pCN, String nameOfFunc, int numOfArgs, CtMethod method) throws Exception
+    {
+        VarAndCode result = new VarAndCode();
+        StringBuilder str = new StringBuilder();
+
+        String code = MakeArguments(pCN.getArgs(), method);
+        str.append(code);
+
+        String nameOfUniqVar = "Method_VAR";
+        result._nameOfVar = nameOfUniqVar; // задали имя переменной
+        str.append(nameOfUniqVar);
+        str.append(" = ").append(nameOfFunc).append("(");
+
+        for(int i = 0; i<numOfArgs; i++)
+        {
+            String nameOfVar = "ARG_" + i;
+            str.append(nameOfVar);
+            if(i != numOfArgs-1)
+                str.append(",");
+        }
+
+        str.append(");\n");
+        method.addLocalVariable(nameOfUniqVar, pool.get("java.lang.Object"));
+        result._allCode = str.toString();
+
+        return result;
     }
 
     private VarAndCode SolveBracesAndSquareArihmetic(List<ExpressionNode> nodes, CtMethod method) throws Exception // решает арифметические приколы
@@ -1164,18 +1201,5 @@ public class Translator
             return result;
         }
         return null;
-    }
-
-    private void AddLocalVarIfNeeded(String nameOfVar, CtMethod method) throws Exception
-    {
-        for(String str : _varNames)
-        {
-            if(str.equals(nameOfVar))
-            {
-                return;
-            }
-        }
-        _varNames.add(nameOfVar);
-        method.addLocalVariable(nameOfVar, pool.get("java.lang.Object"));
     }
 }
