@@ -12,6 +12,10 @@ public class Test extends BaseSource
 
     public static void main(String[] var0)
     {
-        Object ob = "";
+
+        if(true)
+        {
+
+        }
     }
 }

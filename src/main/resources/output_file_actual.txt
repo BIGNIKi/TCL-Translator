@@ -55,3 +55,11 @@ Command to add two nums: [expr $a + $b]
 5.0
 4.1622777
 105.0
+Two2
+Two2
+123
+Match two. 1 + two is 3
+1 isnt equals 2
+true
+Match three. 5 + three is 8
+Three

@@ -233,5 +233,191 @@ public class BaseSource
         catch (Exception ignored){}
         throw new ClassCastException();
     }
+
+    protected boolean GREATER_OR_EQUAL(Object a, Object b)
+    {
+        try	{
+            Integer a1 = (Integer) a;
+            Integer b1 = (Integer) b;
+            return a1 >= b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Integer a1 = (Integer) a;
+            Float b1 = (Float) b;
+            return a1 >= b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Integer b1 = (Integer) b;
+            return a1 >= b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Float b1 = (Float) b;
+            return a1 >= b1;
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
+    protected boolean LESS_OR_EQUAL(Object a, Object b)
+    {
+        try	{
+            Integer a1 = (Integer) a;
+            Integer b1 = (Integer) b;
+            return a1 <= b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Integer a1 = (Integer) a;
+            Float b1 = (Float) b;
+            return a1 <= b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Integer b1 = (Integer) b;
+            return a1 <= b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Float b1 = (Float) b;
+            return a1 <= b1;
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
+    protected boolean GREATER(Object a, Object b)
+    {
+        try	{
+            Integer a1 = (Integer) a;
+            Integer b1 = (Integer) b;
+            return a1 > b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Integer a1 = (Integer) a;
+            Float b1 = (Float) b;
+            return a1 > b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Integer b1 = (Integer) b;
+            return a1 > b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Float b1 = (Float) b;
+            return a1 > b1;
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
+    protected boolean LESS(Object a, Object b)
+    {
+        try	{
+            Integer a1 = (Integer) a;
+            Integer b1 = (Integer) b;
+            return a1 < b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Integer a1 = (Integer) a;
+            Float b1 = (Float) b;
+            return a1 < b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Integer b1 = (Integer) b;
+            return a1 < b1;
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Float b1 = (Float) b;
+            return a1 < b1;
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
+    protected boolean IS_EQUAL(Object a, Object b)
+    {
+        try	{
+            Integer a1 = (Integer) a;
+            Integer b1 = (Integer) b;
+            return a1.equals(b1);
+        }
+        catch (Exception ignored){}
+        try	{
+            Integer a1 = (Integer) a;
+            Float b1 = (Float) b;
+            return b1.equals(a1.floatValue());
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Integer b1 = (Integer) b;
+            return a1.equals(b1.floatValue());
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Float b1 = (Float) b;
+            return a1.equals(b1);
+        }
+        catch (Exception ignored){}
+        try	{
+            String a1 = (String) a;
+            String b1 = (String) b;
+            return a1.equals(b1);
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
+
+    protected boolean IS_NOT_EQUAL(Object a, Object b)
+    {
+        try	{
+            Integer a1 = (Integer) a;
+            Integer b1 = (Integer) b;
+            return !a1.equals(b1);
+        }
+        catch (Exception ignored){}
+        try	{
+            Integer a1 = (Integer) a;
+            Float b1 = (Float) b;
+            return !b1.equals(a1.floatValue());
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Integer b1 = (Integer) b;
+            return !a1.equals(b1.floatValue());
+        }
+        catch (Exception ignored){}
+        try	{
+            Float a1 = (Float) a;
+            Float b1 = (Float) b;
+            return !a1.equals(b1);
+        }
+        catch (Exception ignored){}
+        try	{
+            String a1 = (String) a;
+            String b1 = (String) b;
+            return !a1.equals(b1);
+        }
+        catch (Exception ignored){}
+        throw new ClassCastException();
+    }
 }
 

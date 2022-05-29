@@ -1,7 +1,7 @@
 package ast
 
 class IfNode : ExpressionNode() {
-    private val branches: MutableList<IfBranch> = mutableListOf()
+    val branches: MutableList<IfBranch> = mutableListOf()
 
     fun addBranch(branch: IfBranch) {
         branches.add(branch)

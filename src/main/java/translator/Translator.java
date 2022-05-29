@@ -37,10 +37,12 @@ public class Translator
         {
             lMain = CtNewMethod.make("public void evaluate() throws Exception {\n}", cc); // создает метод в класс cc
 
+            StringBuilder code = new StringBuilder();
             for(var node : ((StatementsNode)eN).getCodeStrings())
             {
-                ProcessBlock(node);
+                code.append(ProcessBlock(node));
             }
+            lMain.insertAfter(code.toString());
 
             cc.addMethod(lMain);
 
@@ -58,8 +60,6 @@ public class Translator
         {
             e.printStackTrace();
         }
-
-        //return null;
     }
 
     public void BuildAndRun()
@@ -92,8 +92,11 @@ public class Translator
         }
     }
 
-    private void ProcessBlock(ExpressionNode node) throws Exception
+    // возвращает код
+    private String ProcessBlock(ExpressionNode node) throws Exception
     {
+        StringBuilder codeResult = new StringBuilder();
+
         if(node instanceof UnarOperationNode) // нашли унарный оператор (напрмер puts)
         {
             UnarOperationNode uON = (UnarOperationNode) node;
@@ -103,25 +106,192 @@ public class Translator
                 VarAndCode vAC = SolvePUTS(uON);
                 if(vAC._allCode != null)
                 {
-                    lMain.insertAfter(vAC._allCode);
+                    codeResult.append(vAC._allCode);
                 }
-                lMain.insertAfter("System.out.println(" + vAC._nameOfVar + ".toString());\n");
+                codeResult.append("System.out.println(" + vAC._nameOfVar + ".toString());\n");
             }
         }
         else if(node instanceof BinOperationNode) // например set
         {
             BinOperationNode bON = (BinOperationNode) node;
             VarAndCode vAC = DoBinOperationNode(bON);
-            lMain.insertAfter(vAC._allCode);
+            codeResult.append(vAC._allCode);
         }
         else if(node instanceof SwitchNode) // switch
         {
             SwitchNode sN = (SwitchNode)node;
             VarAndCode vAC = SolveSwitch(sN);
-            lMain.insertAfter(vAC._allCode);
+            codeResult.append(vAC._allCode);
         }
+        else if(node instanceof IfNode) // if
+        {
+            IfNode iN = (IfNode)node;
+            String code = SolveIfElse(iN);
+            codeResult.append(code);
+        }
+
+        return codeResult.toString();
     }
 
+    private String SolveIfElse(IfNode iN) throws Exception
+    {
+        StringBuilder code = new StringBuilder();
+
+        for(int i = 0; i < iN.getBranches().size(); i++)
+        {
+            IfBranch iB = (IfBranch)iN.getBranches().get(i);
+            code.append(AddCondition(iB, i));
+            code.append("\n{\n");
+
+            // вставляем тело выражения
+            if(iB.getBody() instanceof CurlyBracesNodes)
+            {
+                CurlyBracesNodes cBN = (CurlyBracesNodes)iB.getBody();
+                for(var node : cBN.getNodes())
+                {
+                    code.append(ProcessBlock(node));
+                }
+            }
+            // вставляем тело выражения
+
+            code.append("}\n");
+        }
+
+        return code.toString();
+    }
+
+    // добавляет if() или else() или else
+    private String AddCondition(IfBranch iB, int orderNum)
+    {
+        StringBuilder result = new StringBuilder();
+
+        if(orderNum == 0) // самое первое
+            result.append("if(");
+        else if(iB.getCondition() == null) // когда без условия
+            result.append("else");
+        else
+            result.append("else if(");
+
+        // запись условия в скобках if(***)
+        if(iB.getCondition() != null && iB.getCondition() instanceof BracesNodes)
+        {
+            BracesNodes bN = (BracesNodes)iB.getCondition();
+            int numOfArg = 0; // 0 - первый аргумент 1 - второй аргумент (для булевских функций)
+            String nameOfFirstArg = "";
+            for(int i = 0; i<bN.getNodes().size(); i++)
+            {
+                ExpressionNode eN = bN.getNodes().get(i);
+                if(eN instanceof VariableNode) // ссылочная перменная
+                {
+                    VariableNode vN = (VariableNode)eN;
+                    //result.append(vN.getVariable().getText().substring(1));
+                    String res = vN.getVariable().getText().substring(1);
+                    if(numOfArg == 0)
+                    {
+                        nameOfFirstArg = res;
+                        numOfArg = 1;
+                    }
+                    else if(numOfArg == 1)
+                    {
+                        result.append(res).append(")");
+                        nameOfFirstArg = "";
+                        numOfArg = 0;
+                    }
+                }
+                // операция всегда будет после первого аргумента и не факт, что вообще будет
+                else if(eN instanceof OperationNode) // операция == >= <= < > !=
+                {
+                    OperationNode oN = (OperationNode)eN;
+                    if(oN.getOperation().getType().equals(TokenType.IS_EQUAL)) // ==
+                    {
+                        result.append("IS_EQUAL(").append(nameOfFirstArg).append(",");
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.GREATER_OR_EQUAL))
+                    {
+                        result.append("GREATER_OR_EQUAL(").append(nameOfFirstArg).append(",");
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.IS_NOT_EQUAL))
+                    {
+                        result.append("IS_NOT_EQUAL(").append(nameOfFirstArg).append(",");
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.AND))
+                    {
+                        if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
+                            result.append(nameOfFirstArg);
+                        result.append(" && ");
+                        nameOfFirstArg = "";
+                        numOfArg = 0;
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.OR))
+                    {
+                        if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
+                            result.append(nameOfFirstArg);
+                        result.append(" || ");
+                        nameOfFirstArg = "";
+                        numOfArg = 0;
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.LESS_OR_EQUAL))
+                    {
+                        result.append("LESS_OR_EQUAL(").append(nameOfFirstArg).append(",");
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.GREATER))
+                    {
+                        result.append("GREATER(").append(nameOfFirstArg).append(",");
+                    }
+                    else if(oN.getOperation().getType().equals(TokenType.LESS))
+                    {
+                        result.append("LESS(").append(nameOfFirstArg).append(",");
+                    }
+                }
+                else if(eN instanceof ValueNode) // значение - Integer Float String true false
+                {
+                    ValueNode vN = (ValueNode)eN;
+                    String res = "";
+                    if(vN.getValue().getType().equals(TokenType.INTEGER)) // Integer
+                    {
+                        //result.append("new Integer(").append(vN.getValue().getText()).append(")");
+                        res = "new Integer(" + vN.getValue().getText() + ")";
+                    }
+                    else if(vN.getValue().getType().equals(TokenType.FLOAT)) // Float
+                    {
+                        res = "new Float(" + vN.getValue().getText() + ")";
+                    }
+                    else if(vN.getValue().getType().equals(TokenType.STRING))
+                    {
+                        res = "new String(\"" + vN.getValue().getText() + "\")";
+                    }
+                    else if(vN.getValue().getType().equals(TokenType.TRUE))
+                    {
+                        res = "true";
+                    }
+                    else if(vN.getValue().getType().equals(TokenType.FALSE))
+                    {
+                        res = "false";
+                    }
+
+                    if(numOfArg == 0)
+                    {
+                        nameOfFirstArg = res;
+                        numOfArg = 1;
+                    }
+                    else if(numOfArg == 1)
+                    {
+                        result.append(res).append(")");
+                        nameOfFirstArg = "";
+                        numOfArg = 0;
+                    }
+                }
+            }
+
+            if(nameOfFirstArg.equals("true") || nameOfFirstArg.equals("false"))
+                result.append(nameOfFirstArg);
+            result.append(")");
+        }
+
+        return result.toString();
+    }
+
+    // Switch в TCL умеет сравнивать только строки
     private VarAndCode SolveSwitch(SwitchNode sN) throws Exception
     {
         VarAndCode resultRET = new VarAndCode();
@@ -288,6 +458,15 @@ public class Translator
 
                 vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
                 vAC._allCode = bON.getWhomAssign().getVariable().getText()+"= new Integer("+ intulya + ")"+";\n";
+                return vAC;
+            }
+            else if(vN.getValue().getType().equals(TokenType.STRING))
+            {
+                String stringulya = vN.getValue().getText();
+                AddLocalVarIfNeeded(bON.getWhomAssign().getVariable().getText());
+
+                vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
+                vAC._allCode = bON.getWhomAssign().getVariable().getText()+"= new String(\""+ stringulya + "\")"+";\n";
                 return vAC;
             }
         }
@@ -727,6 +906,7 @@ public class Translator
     // возвращает то, что нужно вывести
     // result.codeBefore - код для объявления лок переменных
     // result.textToString - name of var
+    // WARNING!!! result._allCode can be NULL
     private VarAndCode SolvePUTS(UnarOperationNode uON) throws Exception
     {
         VarAndCode result = new VarAndCode();
