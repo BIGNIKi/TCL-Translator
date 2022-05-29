@@ -1,3 +1,5 @@
-set a 0
-set Z [incr a 5]
-puts "$Z"
+proc sum {arg1 arg2} {
+	set x [expr $arg1+$arg2];
+	return $x
+}
+
