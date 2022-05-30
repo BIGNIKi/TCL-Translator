@@ -165,7 +165,7 @@ public class Translator
         }
         else if(node instanceof ProcCallNode)
         {
-            // TODO: aboba
+            // TODO: проверить proc'и на все case'ы
             ProcCallNode pCN = (ProcCallNode)node;
             VarAndCode vAC = AddSolveForOurFunc(pCN, pCN.getFunctionName().getString(), pCN.getArgs().size(), method);
             codeResult.append(vAC._allCode);
@@ -772,7 +772,7 @@ public class Translator
                 VarAndCode vAC = AddSolveForOurFunc(pCN, pCN.getFunctionName().getString(), pCN.getArgs().size(), method);
                 codeText.append(vAC._allCode);
                 method.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
-                codeText.append("TEMP_VAR = ").append(vAC._nameOfVar).append(".toString();\n");
+                codeText.append("TEMP_VAR = ").append(vAC._nameOfVar).append(";\n");
             }
         }
         vACResult._allCode = codeText.toString();

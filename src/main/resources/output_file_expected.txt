@@ -96,3 +96,7 @@ After command incr: 1
 Inside first loop: 1
 After command incr: 2
  Sum 2 + 3 equals: 5
+Command FOR was changed on puts
+Args: set i 1 $i < 10 incr i
+17
+22
