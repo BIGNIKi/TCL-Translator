@@ -100,3 +100,8 @@ Command FOR was changed on puts
 Args: set i 1 $i < 10 incr i
 17
 22
+2
+3
+18
+a b c
+10

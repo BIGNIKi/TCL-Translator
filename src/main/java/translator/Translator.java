@@ -7,7 +7,6 @@ import lexer.TokenType;
 import translator.helpers.IntRef;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Translator
@@ -180,7 +179,6 @@ public class Translator
         }
         else if(node instanceof ApplyNode)
         {
-            // todo: ЫДВАОЫДЛВАОДЛЫОВАДЛВЫАОДОЛ
             ApplyNode aN = (ApplyNode)node;
             VarAndCode vAC = SolveApply(aN, method);
             codeResult.append(vAC._allCode);
@@ -709,7 +707,6 @@ public class Translator
         {
             LambdaExprNode lEN = (LambdaExprNode)bON.getWhatAssign();
             String nameOfLambda = CreateLambda(lEN);// сопоставили этой переменной имя метода
-            // TODO: вызов лямбды здесь
             // переменная, в которую сетим = " + nameOfLambda.toString() + ";
             vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
             method.addLocalVariable(vAC._nameOfVar, pool.get("java.lang.Object"));
@@ -867,7 +864,6 @@ public class Translator
         if(aN.getLambdaExpr() instanceof VariableNode) // передали лямбду как переменную
         {
             VariableNode vN = (VariableNode)aN.getLambdaExpr();
-            // TODO: applyNode
             //code.append("Class<?> c = Class.forName(\"translator.helpers.TCLSource\");\n");
             method.addLocalVariable("c", pool.get("translator.helpers.ClassTest"));
             code.append("c = new translator.helpers.ClassTest();\n");
@@ -893,7 +889,6 @@ public class Translator
             //code.append("APPLY_VAR = ");
             code.append(res._nameOfVar).append(" = ");
             code.append("method.invoke(this, params.objs);\n");
-            System.out.println("");
         }
         else if(aN.getLambdaExpr() instanceof LambdaExprNode)
         {
@@ -1180,7 +1175,6 @@ public class Translator
                 LambdaExprNode lEN = (LambdaExprNode)eN;
                 String nameOfLambda = CreateLambda(lEN);
                 result.append(nameOfVar).append(" = \"").append(nameOfLambda).append("\";\n");
-                // TODO: обработка LambdaExprNode внутри вызова своей функции
             }
         }
         return result.toString();
