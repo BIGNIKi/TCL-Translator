@@ -1,8 +1,8 @@
 package ast
 
 class LambdaExprNode(
-    private val args: List<VariableNode>,
-    private val body: ExpressionNode
+    val args: List<VariableNode>,
+    val body: ExpressionNode
 ): ExpressionNode() {
     private var exprAsString: StringNode? = null
 

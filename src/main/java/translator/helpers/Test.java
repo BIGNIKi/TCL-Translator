@@ -1,24 +1,26 @@
+package translator.helpers;
 
-import translator.helpers.BaseSource;
+import java.lang.reflect.Method;
 
 public class Test extends BaseSource {
     public Test() {
     }
 
-    private Object FOR(Object var1, Object var2, Object var3) throws Exception {
-        Object TEMP_VAR = "Command FOR was changed on puts";
-        System.out.println(TEMP_VAR.toString());
-        TEMP_VAR = "Args: " + ((String)var1).toString() + "\n" + ((String)var2).toString() + "\n" + ((String)var3).toString() + "\n";
-        System.out.println(TEMP_VAR.toString());
-        return null;
+    private Object testo(Object a)
+    {
+        return "йоу";
     }
 
     public void evaluate() throws Exception {
-        Object var6 = null;
-        String ARG_0 = "set i 1";
-        String ARG_1 = "$i < 10";
-        String ARG_2 = "incr i";
-        this.FOR(ARG_0, ARG_1, ARG_2);
+        Class<Test> c = (Class<Test>) Class.forName("translator.helpers.Test");
+        //TCLSource
+        Class[] parameterTypes = new Class[1];
+        parameterTypes[0] = Object.class;
+        Method method = c.getDeclaredMethod("testo", parameterTypes);
+        Object[] params = new Object[1];
+        params[0] = new Object();
+        Object a = method.invoke(this, params);
+        System.out.println((String) a);
     }
 
     public static void main(String[] var0) throws Exception

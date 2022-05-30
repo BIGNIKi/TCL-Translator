@@ -7,6 +7,7 @@ import lexer.TokenType;
 import translator.helpers.IntRef;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Translator
@@ -19,13 +20,13 @@ public class Translator
 
     private CtMethod lMain; // метод evaluate
 
-    //private int localVars = 0; // номер следующей локальной переменной в методе evaluate
-    private final List<String> _varNames = new ArrayList<>(); // имена переменных
+    private int _numLambda = 0; // порядковый номер следующей лямбды, которую определим
 
 
     public Translator() throws Exception
     {
         pool = ClassPool.getDefault(); // подсасываем все классы из default директории
+        //pool.insertClassPath("translator.helpers.ClassTest");
         cc = pool.makeClass("TCLSource"); // создали класс
         cc.setSuperclass(pool.get("translator.helpers.BaseSource")); // отнаследовали его от BaseSource
         cc.addConstructor(CtNewConstructor.make("public TCLSource(){}", cc)); // бахнули публичный конструктор
@@ -42,7 +43,8 @@ public class Translator
             {
                 code.append(ProcessBlock(node, lMain));
             }
-            lMain.insertAfter(code.toString());
+            String finalClass = code.toString();
+            lMain.insertAfter(finalClass);
 
             cc.addMethod(lMain);
 
@@ -162,12 +164,25 @@ public class Translator
                 VariableNode vN = (VariableNode)rN.getReturnValue();
                 codeResult.append("return ").append(vN.getVariable().getText().substring(1)).append(";\n");
             }
+            else if(rN.getReturnValue() instanceof SquareBracesNodes)
+            {
+                SquareBracesNodes sBN = (SquareBracesNodes)rN.getReturnValue();
+                VarAndCode bla = SolveSquareBraces(sBN, null, method);
+                codeResult.append(bla._allCode);
+                codeResult.append("return ").append(bla._nameOfVar).append(";\n");
+            }
         }
         else if(node instanceof ProcCallNode)
         {
-            // TODO: проверить proc'и на все case'ы
             ProcCallNode pCN = (ProcCallNode)node;
             VarAndCode vAC = AddSolveForOurFunc(pCN, pCN.getFunctionName().getString(), pCN.getArgs().size(), method);
+            codeResult.append(vAC._allCode);
+        }
+        else if(node instanceof ApplyNode)
+        {
+            // todo: ЫДВАОЫДЛВАОДЛЫОВАДЛВЫАОДОЛ
+            ApplyNode aN = (ApplyNode)node;
+            VarAndCode vAC = SolveApply(aN, method);
             codeResult.append(vAC._allCode);
         }
 
@@ -183,7 +198,6 @@ public class Translator
             if(i != 0)
                 codik.append(",");
             codik.append("Object ").append(pN.getArgs().get(i).getVariable().getText());
-            //pN.getArgs().get(i).getVariable().setText("$" + (i+1));
         }
         codik.append(")").append("throws Exception {return null;}");
         code += codik.toString();
@@ -207,14 +221,8 @@ public class Translator
                 resultCodeMethod.append(ProcessBlock(eN, newMethod));
             }
         }
-        //resultCodeMethod.append("}");
-        //newMethod.setBody(resultCodeMethod.toString());
 
         String finalCut = resultCodeMethod.toString();
-/*        for(int i = 0; i<pN.getArgs().size(); i++)
-        {
-            finalCut = finalCut.replace(pN.getArgs().get(i).getVariable().getText(), "$" + Integer.toString(i+1));
-        }*/
 
         newMethod.insertBefore(finalCut);
 
@@ -697,7 +705,64 @@ public class Translator
                 return vAC;
             }
         }
+        else if(bON.getWhatAssign() instanceof LambdaExprNode)
+        {
+            LambdaExprNode lEN = (LambdaExprNode)bON.getWhatAssign();
+            String nameOfLambda = CreateLambda(lEN);// сопоставили этой переменной имя метода
+            // TODO: вызов лямбды здесь
+            // переменная, в которую сетим = " + nameOfLambda.toString() + ";
+            vAC._nameOfVar = bON.getWhomAssign().getVariable().getText();
+            method.addLocalVariable(vAC._nameOfVar, pool.get("java.lang.Object"));
+            vAC._allCode = bON.getWhomAssign().getVariable().getText() + " = \"" + nameOfLambda + "\";\n";
+            return vAC;
+        }
         return null;
+    }
+
+    private String CreateLambda(LambdaExprNode lEN) throws Exception
+    {
+        String nameOfMethod = "LAMBDA_" + _numLambda;
+        _numLambda++;
+
+        String code = "private Object ";
+        StringBuilder codik = new StringBuilder(nameOfMethod). append("(");
+        for(int i = 0; i<lEN.getArgs().size(); i++)
+        {
+            if(i != 0)
+                codik.append(",");
+            codik.append("Object ").append(lEN.getArgs().get(i).getVariable().getText());
+        }
+        codik.append(")").append("throws Exception {return null;}");
+        code += codik.toString();
+        CtMethod newMethod = CtNewMethod.make(code, cc); // создали метод
+
+        StringBuilder resultCodeMethod = new StringBuilder();
+
+        for(int i = 0; i<lEN.getArgs().size(); i++)
+        {
+            VariableNode vN = lEN.getArgs().get(i);
+            newMethod.addLocalVariable(vN.getVariable().getText(), pool.get("java.lang.Object"));
+            resultCodeMethod.append(vN.getVariable().getText()).append(" = ").append("$").append(i+1).append(";\n");
+        }
+
+        if(lEN.getBody() instanceof CurlyBracesNodes)
+        {
+            CurlyBracesNodes cBN = (CurlyBracesNodes)lEN.getBody();
+            for(int i = 0; i<cBN.getNodes().size(); i++)
+            {
+                ExpressionNode eN = cBN.getNodes().get(i);
+                resultCodeMethod.append(ProcessBlock(eN, newMethod));
+            }
+        }
+
+        String finalCut = resultCodeMethod.toString();
+
+        newMethod.insertBefore(finalCut);
+
+        cc.addMethod(newMethod);
+        ////////
+
+        return nameOfMethod;
     }
 
     // []
@@ -774,9 +839,83 @@ public class Translator
                 method.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
                 codeText.append("TEMP_VAR = ").append(vAC._nameOfVar).append(";\n");
             }
+            else if(exN instanceof ApplyNode) // если применяем лямбду
+            {
+                ApplyNode aN = (ApplyNode)exN;
+
+                VarAndCode vAC = SolveApply(aN, method);
+                codeText.append(vAC._allCode);
+                method.addLocalVariable("TEMP_VAR", pool.get("java.lang.Object")); // объявление временной переменной для расчетов
+                codeText.append("TEMP_VAR = ").append(vAC._nameOfVar).append(";\n");
+            }
         }
         vACResult._allCode = codeText.toString();
         return vACResult;
+    }
+
+    private VarAndCode SolveApply(ApplyNode aN, CtMethod method) throws Exception
+    {
+        VarAndCode res = new VarAndCode();
+        res._nameOfVar = "APPLY_VAR";
+
+        StringBuilder code = new StringBuilder();
+
+        //String text = MakeArguments(aN.getArgs(), method);
+        //code.append(text);
+        method.addLocalVariable(res._nameOfVar, pool.get("java.lang.Object"));
+
+        if(aN.getLambdaExpr() instanceof VariableNode) // передали лямбду как переменную
+        {
+            VariableNode vN = (VariableNode)aN.getLambdaExpr();
+            // TODO: applyNode
+            //code.append("Class<?> c = Class.forName(\"translator.helpers.TCLSource\");\n");
+            method.addLocalVariable("c", pool.get("translator.helpers.ClassTest"));
+            code.append("c = new translator.helpers.ClassTest();\n");
+            code.append("c.c = Class.forName(\"TCLSource\");\n");
+            method.addLocalVariable("parameterTypes", pool.get("translator.helpers.ClassArray"));
+            code.append("parameterTypes = new translator.helpers.ClassArray(").append(aN.getArgs().size()).append(");\n");
+            //code.append("parameterTypes = new Class[").append(aN.getArgs().size()).append("];\n");
+            for(int i = 0; i<aN.getArgs().size(); i++)
+            {
+                code.append("parameterTypes.pam[").append(i).append("] = Object.class;\n");
+            }
+            method.addLocalVariable("method", pool.get("java.lang.reflect.Method"));
+            code.append("method = c.c.getDeclaredMethod(").append(vN.getVariable().getText().substring(1)).append(".toString(), parameterTypes.pam);\n");
+            method.addLocalVariable("params", pool.get("translator.helpers.ObjectArray"));
+            code.append("params = new translator.helpers.ObjectArray(").append(aN.getArgs().size()).append(");\n");
+            //code.append("params = new Object[").append(aN.getArgs().size()).append("];\n");
+            code.append(MakeArguments(aN.getArgs(), method));
+            for(int i = 0; i<aN.getArgs().size(); i++)
+            {
+                code.append("params.objs[").append(i).append("] = ");
+                code.append("ARG_").append(i).append(";\n");
+            }
+            //code.append("APPLY_VAR = ");
+            code.append(res._nameOfVar).append(" = ");
+            code.append("method.invoke(this, params.objs);\n");
+            System.out.println("");
+        }
+        else if(aN.getLambdaExpr() instanceof LambdaExprNode)
+        {
+            String text = MakeArguments(aN.getArgs(), method);
+            code.append(text);
+            //code.append("APPLY_VAR = ");
+            code.append(res._nameOfVar).append(" = ");
+            LambdaExprNode lEN = (LambdaExprNode)aN.getLambdaExpr();
+            String nameOfLambda = CreateLambda(lEN);
+            code.append(nameOfLambda);
+            code.append("(");
+            for(int i = 0; i<aN.getArgs().size(); i++)
+            {
+                String nameeOfVar = "ARG_" + i;
+                code.append(nameeOfVar);
+                if(i != aN.getArgs().size()-1)
+                    code.append(",");
+            }
+            code.append(");\n");
+        }
+        res._allCode = code.toString();
+        return res;
     }
 
     private VarAndCode AddSolveForOurFunc(ProcCallNode pCN, String nameOfFunc, int numOfArgs, CtMethod method) throws Exception
@@ -1015,6 +1154,11 @@ public class Translator
                     String newInteger = "new Integer(" + vN.getValue().getText() +")";
                     result.append(nameOfVar).append(" = ").append(newInteger).append(";\n");
                 }
+                else if(vN.getValue().getType().equals(TokenType.STRING))
+                {
+                    String newString = "new String(\"" + vN.getValue().getText() +"\")";
+                    result.append(nameOfVar).append(" = ").append(newString).append(";\n");
+                }
             }
             else if(eN instanceof VariableNode)
             {
@@ -1030,6 +1174,13 @@ public class Translator
                     result.append(nameOfVar).append(" = \"").append(sN.getString()).append("\";\n");
                 }
 
+            }
+            else if(eN instanceof LambdaExprNode)
+            {
+                LambdaExprNode lEN = (LambdaExprNode)eN;
+                String nameOfLambda = CreateLambda(lEN);
+                result.append(nameOfVar).append(" = \"").append(nameOfLambda).append("\";\n");
+                // TODO: обработка LambdaExprNode внутри вызова своей функции
             }
         }
         return result.toString();
